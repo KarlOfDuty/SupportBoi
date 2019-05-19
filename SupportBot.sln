@@ -3,9 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.28803.352
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DSharpPlusBot", "DSharpPlusBot\DSharpPlusBot.csproj", "{81197D46-D2FD-403E-811A-68C5305C4795}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordNETBot", "DiscordNETBot\DiscordNETBot.csproj", "{B06CCC2F-5AB9-4738-8E1A-AE06586B2C3D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SupportBot", "SupportBot\SupportBot.csproj", "{81197D46-D2FD-403E-811A-68C5305C4795}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +15,6 @@ Global
 		{81197D46-D2FD-403E-811A-68C5305C4795}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{81197D46-D2FD-403E-811A-68C5305C4795}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{81197D46-D2FD-403E-811A-68C5305C4795}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B06CCC2F-5AB9-4738-8E1A-AE06586B2C3D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B06CCC2F-5AB9-4738-8E1A-AE06586B2C3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B06CCC2F-5AB9-4738-8E1A-AE06586B2C3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B06CCC2F-5AB9-4738-8E1A-AE06586B2C3D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
