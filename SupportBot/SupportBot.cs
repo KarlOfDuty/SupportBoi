@@ -4,22 +4,28 @@ using System.Text;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.EventArgs;
+using DSharpPlus.CommandsNext;
 using Newtonsoft.Json.Linq;
+using SupportBot.Commands;
 using SupportBot.Properties;
 using YamlDotNet.Serialization;
+
+// TODO: Add ColorfulConsole
 
 namespace SupportBot
 {
 	internal class SupportBot
 	{
 		private string token = "";
+		private string prefix = "";
 		private DiscordClient discordClient;
+		private CommandsNextModule commands;
 		static void Main(string[] args)
 		{
 			new SupportBot().MainAsync().GetAwaiter().GetResult();
 		}
 
-		public async Task MainAsync()
+		private async Task MainAsync()
 		{
 			try
 			{
@@ -48,9 +54,17 @@ namespace SupportBot
 				this.discordClient = new DiscordClient(cfg);
 
 				Console.WriteLine("Hooking events...");
-				this.discordClient.Ready += this.Client_Ready;
-				this.discordClient.GuildAvailable += this.Client_GuildAvailable;
-				this.discordClient.ClientErrored += this.Client_ClientError;
+				this.discordClient.Ready += this.OnReady;
+				this.discordClient.GuildAvailable += this.OnGuildAvailable;
+				this.discordClient.ClientErrored += this.OnClientError;
+
+				Console.WriteLine("Registering commands...");
+				this.commands.RegisterCommands<TicketCommands>();
+				this.commands.RegisterCommands<ModeratorCommands>();
+				this.commands.RegisterCommands<AdminCommands>();
+
+				Console.WriteLine("Hooking command events...");
+				this.commands.CommandErrored += this.OnCommandError;
 
 				Console.WriteLine("Connecting to Discord...");
 				await this.discordClient.ConnectAsync();
@@ -86,30 +100,32 @@ namespace SupportBot
 
 			// Sets up the bot
 			this.token = json.SelectToken("token").Value<string>();
+			this.prefix = json.SelectToken("prefix").Value<string>();
 		}
 
-		private Task Client_Ready(ReadyEventArgs e)
+		private Task OnReady(ReadyEventArgs e)
 		{
-			// let's log the fact that this event occured
-			Console.WriteLine("Ready.");
-			e.Client.DebugLogger.LogMessage(LogLevel.Info, "ExampleBot", "Client is ready to process events.", DateTime.Now);
+			e.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBot", "Client is ready to process events.", DateTime.Now);
 			return Task.CompletedTask;
 		}
 
-		private Task Client_GuildAvailable(GuildCreateEventArgs e)
+		private Task OnGuildAvailable(GuildCreateEventArgs e)
 		{
-			// let's log the name of the guild that was just
-			// sent to our client
-			e.Client.DebugLogger.LogMessage(LogLevel.Info, "ExampleBot", $"Guild available: {e.Guild.Name}", DateTime.Now);
+			e.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBot", $"Guild available: {e.Guild.Name}", DateTime.Now);
 
 			return Task.CompletedTask;
 		}
 
-		private Task Client_ClientError(ClientErrorEventArgs e)
+		private Task OnClientError(ClientErrorEventArgs e)
 		{
-			// let's log the details of the error that just 
-			// occured in our client
-			e.Client.DebugLogger.LogMessage(LogLevel.Error, "ExampleBot", $"Exception occured: {e.Exception.GetType()}: {e.Exception.Message}", DateTime.Now);
+			e.Client.DebugLogger.LogMessage(LogLevel.Error, "SupportBot", $"Exception occured: {e.Exception.GetType()}: {e.Exception.Message}", DateTime.Now);
+
+			return Task.CompletedTask;
+		}
+
+		private Task OnCommandError(CommandErrorEventArgs e)
+		{
+			e.Context.Client.DebugLogger.LogMessage(LogLevel.Error, "SupportBot", $"Exception occured: {e.Exception.GetType()}: {e.Exception.Message}", DateTime.Now);
 
 			return Task.CompletedTask;
 		}
