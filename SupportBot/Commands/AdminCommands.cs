@@ -5,12 +5,13 @@ using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
+using DSharpPlus.Entities;
 
 namespace SupportBot.Commands
 {
-	[Group("admin")]
 	[Description("Admin commands.")]
 	[Hidden]
+	[RequirePermissions(Permissions.ManageGuild)]
 	public class AdminCommands
 	{
 		[Command("setlogchannel")]
@@ -49,6 +50,12 @@ namespace SupportBot.Commands
 		public async Task Reload(CommandContext command)
 		{
 			Config.LoadConfig();
+			DiscordEmbed message = new DiscordEmbedBuilder
+			{
+				Color = DiscordColor.Green,
+				Description = "Config reloaded."
+			};
+			await command.RespondAsync("", false, message);
 		}
 	}
 }
