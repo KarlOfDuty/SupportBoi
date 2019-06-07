@@ -16,10 +16,22 @@ namespace SupportBot
 {
 	internal class SupportBot
 	{
-		private string token = "";
-		private string prefix = "";
+		public static SupportBot instance;
+
+		internal string token = "";
+		internal string prefix = "";
+		internal ulong logChannel;
+		internal ulong ticketCategory;
+
+		private String hostName = "127.0.0.1";
+		private int port = 3306;
+		public String database = "supportbot";
+		private String username = "";
+		private String password = "";
+
 		private DiscordClient discordClient;
 		private CommandsNextModule commands;
+
 		static void Main(string[] args)
 		{
 			new SupportBot().MainAsync().GetAwaiter().GetResult();
@@ -27,8 +39,10 @@ namespace SupportBot
 
 		private async Task MainAsync()
 		{
+			instance = this;
 			try
 			{
+				Console.WriteLine(Directory.GetCurrentDirectory());
 				Console.WriteLine("Loading config...");
 				this.LoadConfig();
 
@@ -39,6 +53,10 @@ namespace SupportBot
 					Console.ReadLine();
 					return;
 				}
+
+				Console.WriteLine("Connecting to database...");
+				Database.SetConnectionString(this.hostName, this.port, this.database, this.username, this.password);
+				Database.SetupTables();
 
 				Console.WriteLine("Setting up Discord client...");
 				DiscordConfiguration cfg = new DiscordConfiguration
@@ -59,6 +77,11 @@ namespace SupportBot
 				this.discordClient.ClientErrored += this.OnClientError;
 
 				Console.WriteLine("Registering commands...");
+				commands = discordClient.UseCommandsNext(new CommandsNextConfiguration
+				{
+					StringPrefix = this.prefix
+				});
+
 				this.commands.RegisterCommands<TicketCommands>();
 				this.commands.RegisterCommands<ModeratorCommands>();
 				this.commands.RegisterCommands<AdminCommands>();
@@ -75,7 +98,7 @@ namespace SupportBot
 			catch (Exception e)
 			{
 				Console.WriteLine(e);
-				while (true) { }
+				Console.ReadLine();
 			}
 		}
 
@@ -99,8 +122,17 @@ namespace SupportBot
 			JObject json = JObject.Parse(serializer.Serialize(yamlObject));
 
 			// Sets up the bot
-			this.token = json.SelectToken("token").Value<string>();
-			this.prefix = json.SelectToken("prefix").Value<string>();
+			this.token = json.SelectToken("bot.token").Value<string>();
+			this.prefix = json.SelectToken("bot.prefix").Value<string>();
+			this.logChannel = json.SelectToken("bot.log-channel").Value<ulong>();
+			this.ticketCategory = json.SelectToken("bot.ticket-category").Value<ulong>();
+
+			// Reads database info
+			this.hostName = json.SelectToken("database.address").Value<string>();
+			this.port = json.SelectToken("database.port").Value<int>();
+			this.database = json.SelectToken("database.name").Value<string>();
+			this.username = json.SelectToken("database.user").Value<string>();
+			this.password = json.SelectToken("database.password").Value<string>();
 		}
 
 		private Task OnReady(ReadyEventArgs e)

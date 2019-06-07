@@ -1,5 +1,15 @@
-﻿# Bot token
-token: "<add-token-here>"
+bot:
+    # Bot token
+    token: "<add-token-here>"
+    # Command prefix
+    prefix: +
 
-# Command prefix
-prefix: +
+database:
+    # Address and port of the mysql server
+    address: "127.0.0.1"
+    port: 3306
+    # Name of the database to use
+    name: "supportbot"
+    # Username and password for authentication
+    user: ""
+    password: ""
