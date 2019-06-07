@@ -1,8 +1,10 @@
-bot:
+﻿bot:
     # Bot token
     token: "<add-token-here>"
     # Command prefix
     prefix: +
+    log-channel: 000000000000000000
+    ticket-category: 000000000000000000
 
 database:
     # Address and port of the mysql server
