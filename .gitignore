@@ -330,3 +330,5 @@ ASALocalRun/
 .mfractor/
 
 SupportBot/config\.yml
+
+SupportBot/transcripts/
