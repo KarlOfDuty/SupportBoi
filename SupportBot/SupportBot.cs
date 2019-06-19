@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.EventArgs;
 using DSharpPlus.CommandsNext;
+using DSharpPlus.Entities;
 using SupportBot.Commands;
 
 // TODO: Add ColorfulConsole
@@ -12,7 +13,7 @@ namespace SupportBot
 {
 	internal class SupportBot
 	{
-		public static SupportBot instance;
+		internal static SupportBot instance;
 
 		private DiscordClient discordClient;
 		private CommandsNextModule commands;
@@ -44,13 +45,23 @@ namespace SupportBot
 				Database.SetupTables();
 
 				Console.WriteLine("Setting up Discord client...");
+
+				// Checking log level
+				if (!Enum.TryParse(Config.logLevel, true, out LogLevel logLevel))
+				{
+					Console.WriteLine("Log level " + Config.logLevel + " invalid, using 'Info' instead.");
+					logLevel = LogLevel.Info;
+				}
+
+				// Setting up client configuration
+				// TODO: Reload this info when the reload command is used
 				DiscordConfiguration cfg = new DiscordConfiguration
 				{
 					Token = Config.token,
 					TokenType = TokenType.Bot,
 
 					AutoReconnect = true,
-					LogLevel = LogLevel.Debug,
+					LogLevel = logLevel,
 					UseInternalLogHandler = true
 				};
 

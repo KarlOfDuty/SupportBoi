@@ -1,11 +1,13 @@
-﻿bot:
+bot:
     # Bot token
     token: "<add-token-here>"
     # Command prefix
-    prefix: +
+    prefix: "+"
     log-channel: 000000000000000000
     ticket-category: 000000000000000000
 
+    # Decides what messages are shown in console, possible values are: Critical, Error, Warning, Info, Debug
+    console-log-level: "Info"
 database:
     # Address and port of the mysql server
     address: "127.0.0.1"
