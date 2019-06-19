@@ -42,6 +42,9 @@ namespace SupportBot.Commands
 				string ticketID = id.ToString("00000");
 				await ticketChannel.ModifyAsync("ticket-" + ticketID);
 				await ticketChannel.AddOverwriteAsync(command.Member,Permissions.AccessChannels, Permissions.None);
+
+				await ticketChannel.SendMessageAsync("Hello, " + command.Member.Mention + "!\n" + Config.welcomeMessage);
+
 				DiscordEmbed message = new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Green,
@@ -55,9 +58,11 @@ namespace SupportBot.Commands
 		{
 			using (MySqlConnection c = Database.GetConnection())
 			{
+				ulong channelID = command.Channel.Id;
+				string channelName = command.Channel.Name;
 				c.Open();
 				MySqlCommand selection = new MySqlCommand(@"SELECT * FROM tickets WHERE channel_id=@channel_id", c);
-				selection.Parameters.AddWithValue("@channel_id", command.Channel.Id);
+				selection.Parameters.AddWithValue("@channel_id", channelID);
 				selection.Prepare();
 				MySqlDataReader results = selection.ExecuteReader();
 
@@ -75,6 +80,7 @@ namespace SupportBot.Commands
 
 				// Build transcript
 				string ticketNumber = results.GetInt32("id").ToString("00000");
+				results.Close();
 
 				// As Discord only allows reading of 100 messages at a time they have to be read in this slightly clunky way
 				LinkedList<DiscordMessage> allMessages = new LinkedList<DiscordMessage>();
@@ -115,15 +121,7 @@ namespace SupportBot.Commands
 					return;
 				}
 
-				// Delete the channel and database entry
-				await command.Channel.DeleteAsync("Ticket closed.");
-				MySqlCommand deletion = new MySqlCommand(@"DELETE FROM tickets WHERE channel_id=@channel_id", c);
-				deletion.Parameters.AddWithValue("@channel_id", command.Channel.Id);
-				deletion.Prepare();
-				deletion.ExecuteNonQuery();
-
 				// Log it if the log channel exists
-				string channelName = command.Channel.Name;
 				DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
 				if (logChannel != null)
 				{
@@ -135,6 +133,13 @@ namespace SupportBot.Commands
 					};
 					await logChannel.SendMessageAsync("", false, message);
 				}
+
+				// Delete the channel and database entry
+				await command.Channel.DeleteAsync("Ticket closed.");
+				MySqlCommand deletion = new MySqlCommand(@"DELETE FROM tickets WHERE channel_id=@channel_id", c);
+				deletion.Parameters.AddWithValue("@channel_id", channelID);
+				deletion.Prepare();
+				deletion.ExecuteNonQuery();
 			}
 		}
 	}

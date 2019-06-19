@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Text;
 using Newtonsoft.Json.Linq;
@@ -13,6 +13,7 @@ namespace SupportBot
 		internal static string prefix = "";
 		internal static ulong logChannel;
 		internal static ulong ticketCategory;
+		internal static string welcomeMessage = "";
 		internal static string logLevel = "Info";
 
 		internal static String hostName = "127.0.0.1";
@@ -44,6 +45,7 @@ namespace SupportBot
 			prefix = json.SelectToken("bot.prefix").Value<string>();
 			logChannel = json.SelectToken("bot.log-channel").Value<ulong>();
 			ticketCategory = json.SelectToken("bot.ticket-category").Value<ulong>();
+			welcomeMessage = json.SelectToken("bot.welcome-message").Value<string>();
 			logLevel = json.SelectToken("bot.console-log-level").Value<string>();
 
 			// Reads database info

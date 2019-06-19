@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Threading.Tasks;
 using DSharpPlus;
@@ -101,6 +101,7 @@ namespace SupportBot
 		private Task OnReady(ReadyEventArgs e)
 		{
 			e.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBot", "Client is ready to process events.", DateTime.Now);
+			discordClient.UpdateStatusAsync(new DiscordGame(Config.prefix + "new"), UserStatus.Online);
 			return Task.CompletedTask;
 		}
 

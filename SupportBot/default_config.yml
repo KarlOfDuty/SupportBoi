@@ -1,11 +1,12 @@
-bot:
+﻿bot:
     # Bot token
     token: "<add-token-here>"
     # Command prefix
     prefix: "+"
     log-channel: 000000000000000000
     ticket-category: 000000000000000000
-
+    # Message posted when a ticket is opened
+    welcome-message: "Please describe your issue below, and include all information needed for us to take action, such as coordinates, in-game names and screenshots/chat logs."
     # Decides what messages are shown in console, possible values are: Critical, Error, Warning, Info, Debug
     console-log-level: "Info"
 database:
