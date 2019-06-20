@@ -20,14 +20,31 @@ namespace SupportBot.Commands
 			using (MySqlConnection c = Database.GetConnection())
 			{
 				DiscordChannel category = command.Guild.GetChannel(Config.ticketCategory);
-				DiscordChannel ticketChannel = await command.Guild.CreateChannelAsync("ticket", ChannelType.Text, category);
+				DiscordChannel ticketChannel;
+
+				try
+				{
+					ticketChannel = await command.Guild.CreateChannelAsync("ticket", ChannelType.Text, category);
+
+				}
+				catch(Exception)
+				{
+					DiscordEmbed error = new DiscordEmbedBuilder
+					{
+						Color = DiscordColor.Red,
+						Description = "Error occured while creating ticket, " + command.Member.Mention + "!\nIs the channel limit reached in the server or ticket category?"
+					};
+					await command.RespondAsync("", false, error);
+					return;
+				}
+
 
 				if (ticketChannel == null)
 				{
 					DiscordEmbed error = new DiscordEmbedBuilder
 					{
 						Color = DiscordColor.Red,
-						Description = "Could not open ticket, " + command.Member.Mention + "!"
+						Description = "Error occured while creating ticket, " + command.Member.Mention + "!\nIs the channel limit reached in the server or ticket category?"
 					};
 					await command.RespondAsync("", false, error);
 					return;
