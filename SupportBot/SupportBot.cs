@@ -28,10 +28,10 @@ namespace SupportBot
 			instance = this;
 			try
 			{
-				Console.WriteLine(Directory.GetCurrentDirectory());
-				Console.WriteLine("Loading config...");
+				Console.WriteLine("Loading config \"" + Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar + "config.yml\"");
 				Config.LoadConfig();
 
+				// Check if token is unset
 				if (Config.token == "<add-token-here>" || Config.token == "" || Config.token == null)
 				{
 					Console.WriteLine("You need to set your bot token in the config and start the bot again.");
@@ -40,9 +40,20 @@ namespace SupportBot
 					return;
 				}
 
+				// Database connection and setup
 				Console.WriteLine("Connecting to database...");
 				Database.SetConnectionString(Config.hostName, Config.port, Config.database, Config.username, Config.password);
-				Database.SetupTables();
+				try
+				{
+					Database.SetupTables();
+				}
+				catch (Exception e)
+				{
+					Console.WriteLine("Could not set up database tables, please confirm connection settings, status of the server and permissions of MySQL user. Error: " + e.Message);
+					Console.WriteLine("Press enter to close application.");
+					Console.ReadLine();
+					return;
+				}
 
 				Console.WriteLine("Setting up Discord client...");
 
