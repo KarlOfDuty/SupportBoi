@@ -118,5 +118,50 @@ namespace SupportBot.Commands
 			}
 
 		}
+		[Command("unblacklist")]
+		[Description("Un-blacklists a user from opening tickets.")]
+		public async Task Unblacklist(CommandContext command)
+		{
+			// Check if the user has permission to use this command.
+			if (!Config.IsModerator(command.Member.Roles))
+			{
+				DiscordEmbed error = new DiscordEmbedBuilder
+				{
+					Color = DiscordColor.Red,
+					Description = "You do not have permission to use this command."
+				};
+				await command.RespondAsync("", false, error);
+				command.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBot", "User tried to use command but did not have permission.", DateTime.Now);
+				return;
+			}
+
+			IReadOnlyList<DiscordUser> mentionedUsers = command.Message.MentionedUsers;
+
+			foreach (DiscordUser mentionedUser in mentionedUsers)
+			{
+				try
+				{
+					Database.Unblacklist(mentionedUser.Id);
+					DiscordEmbed message = new DiscordEmbedBuilder
+					{
+						Color = DiscordColor.Green,
+						Description = "Removed " + mentionedUser.Mention + " from blacklist."
+					};
+					await command.RespondAsync("", false, message);
+				}
+				catch (Exception)
+				{
+					DiscordEmbed message = new DiscordEmbedBuilder
+					{
+						Color = DiscordColor.Red,
+						Description = "Error occured while removing " + mentionedUser.Mention + " from blacklist."
+					};
+					await command.RespondAsync("", false, message);
+					throw;
+				}
+
+			}
+
+		}
 	}
 }

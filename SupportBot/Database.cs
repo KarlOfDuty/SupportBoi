@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using DSharpPlus.Entities;
 using MySql.Data.MySqlClient;
 
@@ -92,9 +92,21 @@ namespace SupportBot
 			using (MySqlConnection c = GetConnection())
 			{
 				c.Open();
-				MySqlCommand cmd = new MySqlCommand(@"INSERT INTO blacklisted (user_id,time,moderator_id) VALUES (now(), @user_id, @moderator_id);", c);
+				MySqlCommand cmd = new MySqlCommand(@"INSERT INTO blacklisted_users (user_id,time,moderator_id) VALUES (@user_id, now(), @moderator_id);", c);
 				cmd.Parameters.AddWithValue("@user_id", blacklistedID);
 				cmd.Parameters.AddWithValue("@moderator_id", staffID);
+				cmd.Prepare();
+				cmd.ExecuteNonQuery();
+			}
+		}
+		public static void Unblacklist(ulong blacklistedID)
+		{
+			using (MySqlConnection c = GetConnection())
+			{
+				c.Open();
+				MySqlCommand cmd = new MySqlCommand(@"DELETE FROM blacklisted_users WHERE user_id=@user_id", c);
+				cmd.Parameters.AddWithValue("@user_id", blacklistedID);
+				cmd.Prepare();
 				cmd.ExecuteNonQuery();
 			}
 		}
