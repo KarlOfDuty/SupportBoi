@@ -89,7 +89,6 @@ namespace SupportBot
 			}
 
 			// Setting up client configuration
-			// TODO: Reload this info when the reload command is used
 			DiscordConfiguration cfg = new DiscordConfiguration
 			{
 				Token = Config.token,
@@ -136,6 +135,12 @@ namespace SupportBot
 		{
 			e.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBot", $"Guild available: {e.Guild.Name}", DateTime.Now);
 
+			IReadOnlyList<DiscordRole> roles = e.Guild.Roles;
+
+			foreach (DiscordRole role in roles)
+			{
+				e.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBot", role.Name.PadRight(40, '.') + role.Id, DateTime.Now);
+			}
 			return Task.CompletedTask;
 		}
 
