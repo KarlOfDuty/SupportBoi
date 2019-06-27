@@ -21,7 +21,7 @@ namespace SupportBot.Commands
 			IEnumerable<DiscordRole> roles = command.Member.Roles;
 
 			// Check if the user has permission to use this command.
-			if (roles.All(x => x.Id != Config.adminRole || x.Id != Config.moderatorRole))
+			if (!SupportBot.IsModerator(command.Member.Roles))
 			{
 				DiscordEmbed error = new DiscordEmbedBuilder
 				{

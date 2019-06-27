@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.EventArgs;
@@ -121,6 +123,26 @@ namespace SupportBot
 
 			Console.WriteLine("Connecting to Discord...");
 			await this.discordClient.ConnectAsync();
+		}
+
+		/// <summary>
+		/// Checks whether a user has a moderator rank or higher in discord.
+		/// </summary>
+		/// <param name="roles">The user's roles.</param>
+		/// <returns>True if the user has moderator access, false if not.</returns>
+		public static bool IsModerator(IEnumerable<DiscordRole> roles)
+		{
+			return roles.Any(x => x.Id == Config.adminRole || x.Id == Config.moderatorRole);
+		}
+
+		/// <summary>
+		/// Checks whether a user has an admin rank in discord.
+		/// </summary>
+		/// <param name="roles">The user's roles.</param>
+		/// <returns>True if the user has admin access, false if not.</returns>
+		public static bool IsAdmin(IEnumerable<DiscordRole> roles)
+		{
+			return roles.Any(x => x.Id == Config.adminRole);
 		}
 
 		private Task OnReady(ReadyEventArgs e)
