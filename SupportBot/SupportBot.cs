@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using DSharpPlus;
@@ -15,8 +15,8 @@ namespace SupportBot
 	{
 		internal static SupportBot instance;
 
-		private DiscordClient discordClient;
-		private CommandsNextModule commands;
+		private DiscordClient discordClient = null;
+		private CommandsNextModule commands = null;
 
 		static void Main(string[] args)
 		{
@@ -28,85 +28,99 @@ namespace SupportBot
 			instance = this;
 			try
 			{
-				Console.WriteLine("Loading config \"" + Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar + "config.yml\"");
-				Config.LoadConfig();
-
-				// Check if token is unset
-				if (Config.token == "<add-token-here>" || Config.token == "" || Config.token == null)
-				{
-					Console.WriteLine("You need to set your bot token in the config and start the bot again.");
-					Console.WriteLine("Press enter to close application.");
-					Console.ReadLine();
-					return;
-				}
-
-				// Database connection and setup
-				Console.WriteLine("Connecting to database...");
-				Database.SetConnectionString(Config.hostName, Config.port, Config.database, Config.username, Config.password);
-				try
-				{
-					Database.SetupTables();
-				}
-				catch (Exception e)
-				{
-					Console.WriteLine("Could not set up database tables, please confirm connection settings, status of the server and permissions of MySQL user. Error: " + e.Message);
-					Console.WriteLine("Press enter to close application.");
-					Console.ReadLine();
-					return;
-				}
-
-				Console.WriteLine("Setting up Discord client...");
-
-				// Checking log level
-				if (!Enum.TryParse(Config.logLevel, true, out LogLevel logLevel))
-				{
-					Console.WriteLine("Log level " + Config.logLevel + " invalid, using 'Info' instead.");
-					logLevel = LogLevel.Info;
-				}
-
-				// Setting up client configuration
-				// TODO: Reload this info when the reload command is used
-				DiscordConfiguration cfg = new DiscordConfiguration
-				{
-					Token = Config.token,
-					TokenType = TokenType.Bot,
-
-					AutoReconnect = true,
-					LogLevel = logLevel,
-					UseInternalLogHandler = true
-				};
-
-				this.discordClient = new DiscordClient(cfg);
-
-				Console.WriteLine("Hooking events...");
-				this.discordClient.Ready += this.OnReady;
-				this.discordClient.GuildAvailable += this.OnGuildAvailable;
-				this.discordClient.ClientErrored += this.OnClientError;
-
-				Console.WriteLine("Registering commands...");
-				commands = discordClient.UseCommandsNext(new CommandsNextConfiguration
-				{
-					StringPrefix = Config.prefix
-				});
-
-				this.commands.RegisterCommands<TicketCommands>();
-				this.commands.RegisterCommands<ModeratorCommands>();
-				this.commands.RegisterCommands<AdminCommands>();
-
-				Console.WriteLine("Hooking command events...");
-				this.commands.CommandErrored += this.OnCommandError;
-
-				Console.WriteLine("Connecting to Discord...");
-				await this.discordClient.ConnectAsync();
+				this.Reload();
 
 				// Block this task until the program is closed.
 				await Task.Delay(-1);
 			}
 			catch (Exception e)
 			{
+				Console.WriteLine("Fatal error:");
 				Console.WriteLine(e);
 				Console.ReadLine();
 			}
+		}
+
+		public async void Reload()
+		{
+			if (this.discordClient != null)
+			{
+				await this.discordClient.DisconnectAsync();
+				this.discordClient.Dispose();
+				Console.WriteLine("Discord client disconnected.");
+			}
+
+			Console.WriteLine("Loading config \"" + Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar + "config.yml\"");
+			Config.LoadConfig();
+
+			// Check if token is unset
+			if (Config.token == "<add-token-here>" || Config.token == "" || Config.token == null)
+			{
+				Console.WriteLine("You need to set your bot token in the config and start the bot again.");
+				Console.WriteLine("Press enter to close application.");
+				Console.ReadLine();
+				return;
+			}
+
+			// Database connection and setup
+			Console.WriteLine("Connecting to database...");
+			Database.SetConnectionString(Config.hostName, Config.port, Config.database, Config.username, Config.password);
+			try
+			{
+				Database.SetupTables();
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine("Could not set up database tables, please confirm connection settings, status of the server and permissions of MySQL user. Error: " + e.Message);
+				Console.WriteLine("Press enter to close application.");
+				Console.ReadLine();
+				return;
+			}
+
+			Console.WriteLine("Setting up Discord client...");
+
+			// Checking log level
+			if (!Enum.TryParse(Config.logLevel, true, out LogLevel logLevel))
+			{
+				Console.WriteLine("Log level " + Config.logLevel + " invalid, using 'Info' instead.");
+				logLevel = LogLevel.Info;
+			}
+
+			// Setting up client configuration
+			// TODO: Reload this info when the reload command is used
+			DiscordConfiguration cfg = new DiscordConfiguration
+			{
+				Token = Config.token,
+				TokenType = TokenType.Bot,
+
+				AutoReconnect = true,
+				LogLevel = logLevel,
+				UseInternalLogHandler = true
+			};
+
+			this.discordClient = new DiscordClient(cfg);
+
+			Console.WriteLine("Hooking events...");
+			this.discordClient.Ready += this.OnReady;
+			this.discordClient.GuildAvailable += this.OnGuildAvailable;
+			this.discordClient.ClientErrored += this.OnClientError;
+
+			Console.WriteLine("Registering commands...");
+			commands = discordClient.UseCommandsNext(new CommandsNextConfiguration
+			{
+				StringPrefix = Config.prefix
+			});
+
+			this.commands.RegisterCommands<TicketCommands>();
+			this.commands.RegisterCommands<ModeratorCommands>();
+			this.commands.RegisterCommands<AdminCommands>();
+
+			Console.WriteLine("Hooking command events...");
+			this.commands.CommandExecuted += this.OnCommandExecuted;
+			this.commands.CommandErrored += this.OnCommandError;
+
+			Console.WriteLine("Connecting to Discord...");
+			await this.discordClient.ConnectAsync();
 		}
 
 		private Task OnReady(ReadyEventArgs e)

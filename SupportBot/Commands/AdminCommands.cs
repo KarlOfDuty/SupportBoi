@@ -1,58 +1,46 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
+using DSharpPlus.CommandsNext.Exceptions;
 using DSharpPlus.Entities;
 
 namespace SupportBot.Commands
 {
 	[Description("Admin commands.")]
 	[Hidden]
-	[RequirePermissions(Permissions.ManageGuild)]
+	[Cooldown(1, 10, CooldownBucketType.User)]
 	public class AdminCommands
 	{
-		[Command("setlogchannel")]
-		[RequirePermissions(Permissions.Administrator)]
-		public async Task SetLogChannel(CommandContext command, string id)
-		{
-			await command.RespondAsync("Received setlogchannel command");
-		}
-
-		[Command("addrole")]
-		[RequirePermissions(Permissions.Administrator)]
-		public async Task AddRole(CommandContext command)
-		{
-			await command.RespondAsync("Received addrole command");
-		}
-
-		[Command("removerole")]
-		[RequirePermissions(Permissions.Administrator)]
-		public async Task RemoveRole(CommandContext command)
-		{
-			await command.RespondAsync("Received removerole command");
-		}
-
-		[Command("addcategory")]
-		public async Task AddCategory(CommandContext command, string id, string name)
-		{
-			await command.RespondAsync("Received addcategory command");
-		}
-		[Command("removecategory")]
-		public async Task RemoveCategory(CommandContext command, string id)
-		{
-			await command.RespondAsync("Received removecategory command");
-		}
-
 		[Command("reload")]
 		public async Task Reload(CommandContext command)
 		{
-			Config.LoadConfig();
+			IEnumerable<DiscordRole> roles = command.Member.Roles;
+
+			// Check if the user has permission to use this command.
+			if (roles.All(x => x.Id != Config.adminRole))
+			{
+				DiscordEmbed error = new DiscordEmbedBuilder
+				{
+					Color = DiscordColor.Red,
+					Description = "You do not have permission to use this command."
+				};
+				await command.RespondAsync("", false, error);
+				command.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBot", "User tried to use command but did not have permission.", DateTime.Now);
+				return;
+			}
+
 			DiscordEmbed message = new DiscordEmbedBuilder
 			{
 				Color = DiscordColor.Green,
-				Description = "Config reloaded."
+				Description = "Reloading bot application..."
 			};
 			await command.RespondAsync("", false, message);
+			Console.WriteLine("Reloading bot...");
+			SupportBot.instance.Reload();
 		}
 	}
 }
