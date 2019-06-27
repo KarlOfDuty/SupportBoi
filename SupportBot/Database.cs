@@ -1,4 +1,5 @@
 ﻿using System;
+using DSharpPlus.Entities;
 using MySql.Data.MySqlClient;
 
 namespace SupportBot
@@ -43,6 +44,47 @@ namespace SupportBot
 				createTickets.ExecuteNonQuery();
 				createBlacklisted.ExecuteNonQuery();
 			}
+		}
+
+		public static bool IsTicket(ulong channelID)
+		{
+			using (MySqlConnection c = GetConnection())
+			{
+				c.Open();
+				MySqlCommand selection = new MySqlCommand(@"SELECT * FROM tickets WHERE channel_id=@channel_id", c);
+				selection.Parameters.AddWithValue("@channel_id", channelID);
+				selection.Prepare();
+				MySqlDataReader results = selection.ExecuteReader();
+
+				// Check if ticket exists in the database
+				if (!results.Read())
+				{
+					return false;
+				}
+				results.Close();
+			}
+			return true;
+		}
+
+		public static bool IsBlacklisted(ulong userID)
+		{
+			using (MySqlConnection c = GetConnection())
+			{
+				c.Open();
+				MySqlCommand selection = new MySqlCommand(@"SELECT * FROM blacklisted_users WHERE user_id=@user_id", c);
+				selection.Parameters.AddWithValue("@user_id", userID);
+				selection.Prepare();
+				MySqlDataReader results = selection.ExecuteReader();
+
+				// Check if user is blacklisted
+				if (results.Read())
+				{
+					return true;
+				}
+				results.Close();
+			}
+
+			return false;
 		}
 	}
 }

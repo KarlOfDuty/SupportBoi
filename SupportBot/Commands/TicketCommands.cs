@@ -12,6 +12,8 @@ using Newtonsoft.Json;
 
 namespace SupportBot.Commands
 {
+	[Description("Public ticket commands.")]
+	[Cooldown(1, 10, CooldownBucketType.User)]
 	public class TicketCommands
 	{
 		[Command("new")]
@@ -19,6 +21,18 @@ namespace SupportBot.Commands
 		{
 			using (MySqlConnection c = Database.GetConnection())
 			{
+				// Check if user is blacklisted
+				if (Database.IsBlacklisted(command.User.Id))
+				{
+					DiscordEmbed error = new DiscordEmbedBuilder
+					{
+						Color = DiscordColor.Red,
+						Description = "You are banned from opening tickets."
+					};
+					await command.RespondAsync("", false, error);
+					return;
+				}
+
 				DiscordChannel category = command.Guild.GetChannel(Config.ticketCategory);
 				DiscordChannel ticketChannel;
 
@@ -66,7 +80,7 @@ namespace SupportBot.Commands
 				{
 					Color = DiscordColor.Green,
 					Description = "Ticket opened, " + command.Member.Mention + "!\n" + ticketChannel.Mention
-				};//.AddField(":point_down:", ticketChannel.Mention);
+				};
 				await command.RespondAsync("", false, message);
 			}
 		}
