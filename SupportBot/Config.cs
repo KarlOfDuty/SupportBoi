@@ -21,6 +21,9 @@ namespace SupportBot
 		internal static String database = "supportbot";
 		internal static String username = "";
 		internal static String password = "";
+
+		internal static ulong adminRole = 0;
+		internal static ulong moderatorRole = 0;
 		public static void LoadConfig()
 		{
 			// Writes default config to file if it does not already exist
@@ -54,6 +57,9 @@ namespace SupportBot
 			database = json.SelectToken("database.name").Value<string>();
 			username = json.SelectToken("database.user").Value<string>();
 			password = json.SelectToken("database.password").Value<string>();
+
+			adminRole = json.SelectToken("permissions.admin-role").Value<ulong>();
+			moderatorRole = json.SelectToken("permissions.moderator-role").Value<ulong>();
 		}
 	}
 }
