@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using DSharpPlus.Entities;
 using MySql.Data.MySqlClient;
 
@@ -36,7 +36,7 @@ namespace SupportBot
 					c);
 				MySqlCommand createBlacklisted = new MySqlCommand(
 					"CREATE TABLE IF NOT EXISTS blacklisted_users(" +
-					"user_id INT UNSIGNED NOT NULL UNIQUE PRIMARY KEY," +
+					"user_id BIGINT UNSIGNED NOT NULL UNIQUE PRIMARY KEY," +
 					"time TIMESTAMP NOT NULL," +
 					"moderator_id BIGINT UNSIGNED NOT NULL)",
 					c);
