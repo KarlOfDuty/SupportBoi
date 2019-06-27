@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
+using DSharpPlus.Entities;
 using Newtonsoft.Json.Linq;
 using SupportBot.Properties;
 using YamlDotNet.Serialization;
@@ -60,6 +63,26 @@ namespace SupportBot
 
 			adminRole = json.SelectToken("permissions.admin-role").Value<ulong>();
 			moderatorRole = json.SelectToken("permissions.moderator-role").Value<ulong>();
+		}
+
+		/// <summary>
+		/// Checks whether a user has a moderator rank or higher in discord.
+		/// </summary>
+		/// <param name="roles">The user's roles.</param>
+		/// <returns>True if the user has moderator access, false if not.</returns>
+		public static bool IsModerator(IEnumerable<DiscordRole> roles)
+		{
+			return roles.Any(x => x.Id == Config.adminRole || x.Id == Config.moderatorRole);
+		}
+
+		/// <summary>
+		/// Checks whether a user has an admin rank in discord.
+		/// </summary>
+		/// <param name="roles">The user's roles.</param>
+		/// <returns>True if the user has admin access, false if not.</returns>
+		public static bool IsAdmin(IEnumerable<DiscordRole> roles)
+		{
+			return roles.Any(x => x.Id == Config.adminRole);
 		}
 	}
 }
