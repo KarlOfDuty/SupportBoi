@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Threading.Tasks;
 using DSharpPlus;
@@ -140,6 +140,13 @@ namespace SupportBot
 		private Task OnClientError(ClientErrorEventArgs e)
 		{
 			e.Client.DebugLogger.LogMessage(LogLevel.Error, "SupportBot", $"Exception occured: {e.Exception.GetType()}: {e.Exception}", DateTime.Now);
+
+			return Task.CompletedTask;
+		}
+
+		private Task OnCommandExecuted(CommandExecutionEventArgs e)
+		{
+			e.Context.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBot", $"User {e.Context.User.Username} used command '{e.Command.Name}' successfully.", DateTime.Now);
 
 			return Task.CompletedTask;
 		}
