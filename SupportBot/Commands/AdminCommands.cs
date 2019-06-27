@@ -18,8 +18,6 @@ namespace SupportBot.Commands
 		[Command("reload")]
 		public async Task Reload(CommandContext command)
 		{
-			IEnumerable<DiscordRole> roles = command.Member.Roles;
-
 			// Check if the user has permission to use this command.
 			if (!Config.IsAdmin(command.Member.Roles))
 			{

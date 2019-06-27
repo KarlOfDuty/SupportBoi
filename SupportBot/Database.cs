@@ -86,5 +86,17 @@ namespace SupportBot
 
 			return false;
 		}
+
+		public static void Blacklist(ulong blacklistedID, ulong staffID)
+		{
+			using (MySqlConnection c = GetConnection())
+			{
+				c.Open();
+				MySqlCommand cmd = new MySqlCommand(@"INSERT INTO blacklisted (user_id,time,moderator_id) VALUES (now(), @user_id, @moderator_id);", c);
+				cmd.Parameters.AddWithValue("@user_id", blacklistedID);
+				cmd.Parameters.AddWithValue("@moderator_id", staffID);
+				cmd.ExecuteNonQuery();
+			}
+		}
 	}
 }

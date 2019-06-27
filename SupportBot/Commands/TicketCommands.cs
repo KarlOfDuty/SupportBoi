@@ -140,7 +140,7 @@ namespace SupportBot.Commands
 					// The transcripts are saved as pure json data instead of html so the transcript design can change in the future
 					File.WriteAllText("./transcripts/" + ticketNumber + ".json", jsonString);
 				}
-				catch (Exception e)
+				catch (Exception)
 				{
 					DiscordEmbed error = new DiscordEmbedBuilder
 					{
@@ -148,8 +148,7 @@ namespace SupportBot.Commands
 						Description = "ERROR: Could not save transcript file. Aborting..."
 					};
 					await command.RespondAsync("", false, error);
-					command.Client.DebugLogger.LogMessage(LogLevel.Error, "SupportBot", "Error occured while creating transcript file:\n" + e, DateTime.Now);
-					return;
+					throw;
 				}
 
 				// Log it if the log channel exists
