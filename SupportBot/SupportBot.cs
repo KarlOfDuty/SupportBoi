@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.EventArgs;
 using DSharpPlus.CommandsNext;
+using DSharpPlus.CommandsNext.Exceptions;
 using DSharpPlus.Entities;
 using SupportBot.Commands;
 
@@ -161,7 +162,25 @@ namespace SupportBot
 		private Task OnCommandError(CommandErrorEventArgs e)
 		{
 			e.Context.Client.DebugLogger.LogMessage(LogLevel.Error, "SupportBot", $"Exception occured: {e.Exception.GetType()}: {e.Exception}", DateTime.Now);
-
+			if (e.Exception is ChecksFailedException)
+			{
+				DiscordEmbed error = new DiscordEmbedBuilder
+				{
+					Color = DiscordColor.Red,
+					Description = "Unknown Discord API error occured, please try again."
+				};
+				e.Context.Channel.SendMessageAsync("", false, error).Start();
+			}
+			else
+			{
+				DiscordEmbed error = new DiscordEmbedBuilder
+				{
+					Color = DiscordColor.Red,
+					Description = "Internal error occured, please report this to the developer."
+				};
+				e.Context.Channel.SendMessageAsync("", false, error).Start();
+			}
+			
 			return Task.CompletedTask;
 		}
 	}
