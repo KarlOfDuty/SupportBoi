@@ -58,6 +58,18 @@ namespace SupportBot.Commands
 						Description = "Added " + mentionedMember.Mention + " to ticket."
 					};
 					await command.RespondAsync("", false, message);
+					
+					// Log it if the log channel exists
+					DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
+					if (logChannel != null)
+					{
+						DiscordEmbed logMessage = new DiscordEmbedBuilder
+						{
+							Color = DiscordColor.Green,
+							Description =  mentionedMember.Mention + " was added to " + command.Channel.Mention + " by " + command.Member.Mention + "."
+						};
+						await logChannel.SendMessageAsync("", false, logMessage);
+					}
 				}
 				catch (Exception)
 				{
@@ -71,7 +83,7 @@ namespace SupportBot.Commands
 				}
 
 			}
-			
+
 		}
 		[Command("blacklist")]
 		[Description("Blacklists a user from opening tickets.")]
@@ -103,6 +115,18 @@ namespace SupportBot.Commands
 						Description = "Blacklisted " + mentionedUser.Mention + "."
 					};
 					await command.RespondAsync("", false, message);
+
+					// Log it if the log channel exists
+					DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
+					if (logChannel != null)
+					{
+						DiscordEmbed logMessage = new DiscordEmbedBuilder
+						{
+							Color = DiscordColor.Green,
+							Description = mentionedUser.Mention + " was blacklisted from opening tickets by " + command.Member.Mention + "."
+						};
+						await logChannel.SendMessageAsync("", false, logMessage);
+					}
 				}
 				catch (Exception)
 				{
@@ -114,9 +138,7 @@ namespace SupportBot.Commands
 					await command.RespondAsync("", false, message);
 					throw;
 				}
-
 			}
-
 		}
 		[Command("unblacklist")]
 		[Description("Un-blacklists a user from opening tickets.")]
@@ -148,6 +170,18 @@ namespace SupportBot.Commands
 						Description = "Removed " + mentionedUser.Mention + " from blacklist."
 					};
 					await command.RespondAsync("", false, message);
+
+					// Log it if the log channel exists
+					DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
+					if (logChannel != null)
+					{
+						DiscordEmbed logMessage = new DiscordEmbedBuilder
+						{
+							Color = DiscordColor.Green,
+							Description = mentionedUser.Mention + " was unblacklisted from opening tickets by " + command.Member.Mention + "."
+						};
+						await logChannel.SendMessageAsync("", false, logMessage);
+					}
 				}
 				catch (Exception)
 				{

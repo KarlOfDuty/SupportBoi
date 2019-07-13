@@ -82,6 +82,19 @@ namespace SupportBot.Commands
 					Description = "Ticket opened, " + command.Member.Mention + "!\n" + ticketChannel.Mention
 				};
 				await command.RespondAsync("", false, message);
+
+				// Log it if the log channel exists
+				DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
+				if (logChannel != null)
+				{
+					DiscordEmbed logMessage = new DiscordEmbedBuilder
+					{
+						Color = DiscordColor.Green,
+						Description = "Ticket " + ticketChannel.Mention + " opened by " + command.Member.Mention + ".\n",
+						Footer = new DiscordEmbedBuilder.EmbedFooter { Text = "Ticket " + ticketID }
+					};
+					await logChannel.SendMessageAsync("", false, logMessage);
+				}
 			}
 		}
 		[Command("close")]
