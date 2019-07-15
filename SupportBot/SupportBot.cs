@@ -169,7 +169,7 @@ namespace SupportBot
 					Color = DiscordColor.Red,
 					Description = "Unknown Discord API error occured, please try again."
 				};
-				e.Context.Channel.SendMessageAsync("", false, error).Start();
+				e.Context?.Channel?.SendMessageAsync("", false, error);
 			}
 			else
 			{
@@ -178,7 +178,7 @@ namespace SupportBot
 					Color = DiscordColor.Red,
 					Description = "Internal error occured, please report this to the developer."
 				};
-				e.Context.Channel.SendMessageAsync("", false, error).Start();
+				e.Context?.Channel?.SendMessageAsync("", false, error);
 			}
 			
 			return Task.CompletedTask;
