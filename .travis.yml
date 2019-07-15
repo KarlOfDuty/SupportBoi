@@ -4,4 +4,4 @@ dotnet: 2.2.300
 dist: bionic
 script:
   - dotnet restore
-  - dotnet build ./SupportBot/
+  - dotnet build ./SupportBoi/
