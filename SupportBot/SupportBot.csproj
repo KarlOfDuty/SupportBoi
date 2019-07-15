@@ -14,7 +14,35 @@
     <PackageReference Include="DSharpPlus.Interactivity" Version="3.2.3" />
     <PackageReference Include="MySql.Data" Version="8.0.16" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+    <PackageReference Include="Stylet" Version="1.2.0" />
     <PackageReference Include="YamlDotNet" Version="6.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="DiscordChatExporter.Core.Markdown">
+      <HintPath>lib\DiscordChatExporter.Core.Markdown.dll</HintPath>
+    </Reference>
+    <Reference Include="DiscordChatExporter.Core.Models">
+      <HintPath>lib\DiscordChatExporter.Core.Models.dll</HintPath>
+    </Reference>
+    <Reference Include="DiscordChatExporter.Core.Rendering">
+      <HintPath>lib\DiscordChatExporter.Core.Rendering.dll</HintPath>
+    </Reference>
+    <Reference Include="DiscordChatExporter.Core.Services">
+      <HintPath>lib\DiscordChatExporter.Core.Services.dll</HintPath>
+    </Reference>
+    <Reference Include="Failsafe">
+      <HintPath>lib\Failsafe.dll</HintPath>
+    </Reference>
+    <Reference Include="Scriban">
+      <HintPath>lib\Scriban.dll</HintPath>
+    </Reference>
+    <Reference Include="Tyrrrz.Extensions">
+      <HintPath>lib\Tyrrrz.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="Tyrrrz.Settings">
+      <HintPath>lib\Tyrrrz.Settings.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>
