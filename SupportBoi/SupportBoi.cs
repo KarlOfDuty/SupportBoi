@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -6,8 +7,10 @@ using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.EventArgs;
 using DSharpPlus.CommandsNext;
+using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.CommandsNext.Exceptions;
 using DSharpPlus.Entities;
+using Org.BouncyCastle.Bcpg;
 using SupportBoi.Commands;
 
 namespace SupportBoi
@@ -159,18 +162,26 @@ namespace SupportBoi
 
 		private Task OnCommandError(CommandErrorEventArgs e)
 		{
-			e.Context.Client.DebugLogger.LogMessage(LogLevel.Error, "SupportBoi", $"Exception occured: {e.Exception.GetType()}: {e.Exception}", DateTime.Now);
-			if (e.Exception is ChecksFailedException)
+			if (e.Exception is CommandNotFoundException)
 			{
-				DiscordEmbed error = new DiscordEmbedBuilder
+				return Task.CompletedTask;
+			}
+			else if (e.Exception is ChecksFailedException)
+			{
+				foreach (CheckBaseAttribute attr in ((ChecksFailedException)e.Exception).FailedChecks)
 				{
-					Color = DiscordColor.Red,
-					Description = "Unknown Discord API error occured, please try again."
-				};
-				e.Context?.Channel?.SendMessageAsync("", false, error);
+					DiscordEmbed error = new DiscordEmbedBuilder
+					{
+						Color = DiscordColor.Red,
+						Description = ParseFailedCheck(attr)
+					};
+					e.Context?.Channel?.SendMessageAsync("", false, error);
+				}
+
 			}
 			else
 			{
+				e.Context.Client.DebugLogger.LogMessage(LogLevel.Error, "SupportBoi", $"Exception occured: {e.Exception.GetType()}: {e.Exception}", DateTime.Now);
 				DiscordEmbed error = new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Red,
@@ -180,6 +191,41 @@ namespace SupportBoi
 			}
 			
 			return Task.CompletedTask;
+		}
+
+		private string ParseFailedCheck(CheckBaseAttribute attr)
+		{
+			if (attr is CooldownAttribute)
+			{
+				return "You cannot use do that so often!";
+			}
+
+			if (attr is RequireOwnerAttribute)
+			{
+				return "Only the server owner can use that command!";
+			}
+
+			if (attr is RequirePermissionsAttribute)
+			{
+				return "You don't have permission to do that!";
+			}
+
+			if (attr is RequireRolesAttributeAttribute)
+			{
+				return "You do not have a required role!";
+			}
+
+			if (attr is RequireUserPermissionsAttribute)
+			{
+				return "You don't have permission to do that!";
+			}
+
+			if (attr is RequireNsfwAttribute)
+			{
+				return "This command can only be used in an NSFW channel!";
+			}
+
+			return "Unknown Discord API error occured, please try again later.";
 		}
 	}
 }
