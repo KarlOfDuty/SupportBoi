@@ -19,14 +19,17 @@ namespace SupportBot
 		internal static string welcomeMessage = "";
 		internal static string logLevel = "Info";
 
-		internal static String hostName = "127.0.0.1";
+		internal static string hostName = "127.0.0.1";
 		internal static int port = 3306;
-		internal static String database = "supportbot";
-		internal static String username = "";
-		internal static String password = "";
+		internal static string database = "supportbot";
+		internal static string username = "";
+		internal static string password = "";
 
 		internal static ulong adminRole = 0;
 		internal static ulong moderatorRole = 0;
+
+		internal static string timestampFormat = "yyyy-MMM-dd HH:mm";
+
 		public static void LoadConfig()
 		{
 			// Writes default config to file if it does not already exist
@@ -47,22 +50,25 @@ namespace SupportBot
 			JObject json = JObject.Parse(serializer.Serialize(yamlObject));
 
 			// Sets up the bot
-			token = json.SelectToken("bot.token").Value<string>();
-			prefix = json.SelectToken("bot.prefix").Value<string>();
+			token = json.SelectToken("bot.token").Value<string>() ?? "";
+			prefix = json.SelectToken("bot.prefix").Value<string>() ?? "";
 			logChannel = json.SelectToken("bot.log-channel").Value<ulong>();
 			ticketCategory = json.SelectToken("bot.ticket-category").Value<ulong>();
-			welcomeMessage = json.SelectToken("bot.welcome-message").Value<string>();
-			logLevel = json.SelectToken("bot.console-log-level").Value<string>();
+			welcomeMessage = json.SelectToken("bot.welcome-message").Value<string>() ?? "";
+			logLevel = json.SelectToken("bot.console-log-level").Value<string>() ?? "";
 
 			// Reads database info
-			hostName = json.SelectToken("database.address").Value<string>();
+			hostName = json.SelectToken("database.address").Value<string>() ?? "";
 			port = json.SelectToken("database.port").Value<int>();
-			database = json.SelectToken("database.name").Value<string>();
-			username = json.SelectToken("database.user").Value<string>();
-			password = json.SelectToken("database.password").Value<string>();
+			database = json.SelectToken("database.name").Value<string>() ?? "";
+			username = json.SelectToken("database.user").Value<string>() ?? "";
+			password = json.SelectToken("database.password").Value<string>() ?? "";
 
 			adminRole = json.SelectToken("permissions.admin-role").Value<ulong>();
 			moderatorRole = json.SelectToken("permissions.moderator-role").Value<ulong>();
+
+			timestampFormat = json.SelectToken("transcripts.timestamp-format").Value<string>() ?? "yyyy-MMM-dd HH:mm";
+			timestampFormat = timestampFormat.Trim();
 		}
 
 		/// <summary>

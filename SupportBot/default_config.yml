@@ -11,6 +11,10 @@
     welcome-message: "Please describe your issue below, and include all information needed for us to take action, such as coordinates, in-game names and screenshots/chat logs."
     # Decides what messages are shown in console, possible values are: Critical, Error, Warning, Info, Debug
     console-log-level: "Info"
+
+transcripts:
+    timestamp-format: "yyyy-MM-dd HH:mm"
+
 database:
     # Address and port of the mysql server
     address: "127.0.0.1"
