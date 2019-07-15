@@ -1,4 +1,4 @@
-# Support Boi [![Build Status](https://travis-ci.com/KarlOfDuty/SupportBot.svg?branch=master)](https://travis-ci.com/KarlOfDuty/SupportBot) [![Release](https://img.shields.io/github/release/KarlofDuty/SupportBoi.svg)](https://github.com/KarlOfDuty/SupportBoi/releases) [![Patreon](https://img.shields.io/badge/patreon-donate-orange.svg)](https://patreon.com/karlofduty)
+# Support Boi [![Build Status](https://travis-ci.com/KarlOfDuty/SupportBot.svg?branch=master)](https://travis-ci.com/KarlOfDuty/SupportBot) [![Release](https://img.shields.io/github/release/KarlofDuty/SupportBoi.svg)](https://github.com/KarlOfDuty/SupportBoi/releases) [![Discord Server](https://img.shields.io/discord/430468637183442945.svg?label=discord)](https://discord.gg/C5qMvkj) [![Patreon](https://img.shields.io/badge/patreon-donate-orange.svg)](https://patreon.com/karlofduty)
 
 A support ticket Discord bot. Uses a MySQL database for storage of active tickets and also saves closed tickets as flatfile HTML documents.
 
