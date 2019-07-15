@@ -12,7 +12,7 @@ namespace SupportBoi.Commands
 {
 	[Description("Moderator commands.")]
 	[Hidden]
-	[Cooldown(1, 10, CooldownBucketType.User)]
+	[Cooldown(1, 5, CooldownBucketType.User)]
 	public class ModeratorCommands
 	{
 		[Command("add")]

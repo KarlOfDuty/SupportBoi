@@ -13,10 +13,10 @@ using Newtonsoft.Json;
 namespace SupportBoi.Commands
 {
 	[Description("Public ticket commands.")]
-	[Cooldown(1, 10, CooldownBucketType.User)]
 	public class TicketCommands
 	{
 		[Command("new")]
+		[Cooldown(1, 5, CooldownBucketType.User)]
 		public async Task New(CommandContext command)
 		{
 			using (MySqlConnection c = Database.GetConnection())
@@ -98,6 +98,7 @@ namespace SupportBoi.Commands
 			}
 		}
 		[Command("close")]
+		[Cooldown(1, 5, CooldownBucketType.User)]
 		public async Task Close(CommandContext command)
 		{
 			using (MySqlConnection c = Database.GetConnection())
@@ -163,6 +164,7 @@ namespace SupportBoi.Commands
 			}
 		}
 		[Command("transcript")]
+		[Cooldown(1, 5, CooldownBucketType.User)]
 		public async Task Transcript(CommandContext command)
 		{
 			using (MySqlConnection c = Database.GetConnection())

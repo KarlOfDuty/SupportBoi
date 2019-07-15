@@ -13,7 +13,7 @@ namespace SupportBoi.Commands
 {
 	[Description("Admin commands.")]
 	[Hidden]
-	[Cooldown(1, 10, CooldownBucketType.User)]
+	[Cooldown(1, 5, CooldownBucketType.User)]
 	public class AdminCommands
 	{
 		[Command("reload")]
