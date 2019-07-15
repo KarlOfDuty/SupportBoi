@@ -57,7 +57,7 @@ namespace SupportBot
 			Config.LoadConfig();
 
 			// Check if token is unset
-			if (Config.token == "<add-token-here>" || Config.token == "" || Config.token == null)
+			if (Config.token == "<add-token-here>" || Config.token == "")
 			{
 				Console.WriteLine("You need to set your bot token in the config and start the bot again.");
 				Console.WriteLine("Press enter to close application.");

@@ -162,7 +162,6 @@ namespace SupportBot.Commands
 				deletion.ExecuteNonQuery();
 			}
 		}
-
 		[Command("transcript")]
 		public async Task Transcript(CommandContext command)
 		{
