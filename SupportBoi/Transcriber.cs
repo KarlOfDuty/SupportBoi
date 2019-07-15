@@ -8,7 +8,7 @@ using DiscordChatExporter.Core.Services;
 using DiscordChatExporter.Core.Services.Helpers;
 using StyletIoC;
 
-namespace SupportBot
+namespace SupportBoi
 {
 	internal static class Transcriber
 	{

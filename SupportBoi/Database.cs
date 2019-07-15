@@ -2,7 +2,7 @@
 using DSharpPlus.Entities;
 using MySql.Data.MySqlClient;
 
-namespace SupportBot
+namespace SupportBoi
 {
 	public static class Database
 	{

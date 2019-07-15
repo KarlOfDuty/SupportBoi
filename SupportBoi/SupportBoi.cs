@@ -8,22 +8,20 @@ using DSharpPlus.EventArgs;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Exceptions;
 using DSharpPlus.Entities;
-using SupportBot.Commands;
+using SupportBoi.Commands;
 
-// TODO: Add ColorfulConsole
-
-namespace SupportBot
+namespace SupportBoi
 {
-	internal class SupportBot
+	internal class SupportBoi
 	{
-		internal static SupportBot instance;
+		internal static SupportBoi instance;
 
 		private DiscordClient discordClient = null;
 		private CommandsNextModule commands = null;
 
 		static void Main(string[] args)
 		{
-			new SupportBot().MainAsync().GetAwaiter().GetResult();
+			new SupportBoi().MainAsync().GetAwaiter().GetResult();
 		}
 
 		private async Task MainAsync()
@@ -127,41 +125,41 @@ namespace SupportBot
 
 		private Task OnReady(ReadyEventArgs e)
 		{
-			e.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBot", "Client is ready to process events.", DateTime.Now);
+			e.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", "Client is ready to process events.", DateTime.Now);
 			discordClient.UpdateStatusAsync(new DiscordGame(Config.prefix + "new"), UserStatus.Online);
 			return Task.CompletedTask;
 		}
 
 		private Task OnGuildAvailable(GuildCreateEventArgs e)
 		{
-			e.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBot", $"Guild available: {e.Guild.Name}", DateTime.Now);
+			e.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", $"Guild available: {e.Guild.Name}", DateTime.Now);
 
 			IReadOnlyList<DiscordRole> roles = e.Guild.Roles;
 
 			foreach (DiscordRole role in roles)
 			{
-				e.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBot", role.Name.PadRight(40, '.') + role.Id, DateTime.Now);
+				e.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", role.Name.PadRight(40, '.') + role.Id, DateTime.Now);
 			}
 			return Task.CompletedTask;
 		}
 
 		private Task OnClientError(ClientErrorEventArgs e)
 		{
-			e.Client.DebugLogger.LogMessage(LogLevel.Error, "SupportBot", $"Exception occured: {e.Exception.GetType()}: {e.Exception}", DateTime.Now);
+			e.Client.DebugLogger.LogMessage(LogLevel.Error, "SupportBoi", $"Exception occured: {e.Exception.GetType()}: {e.Exception}", DateTime.Now);
 
 			return Task.CompletedTask;
 		}
 
 		private Task OnCommandExecuted(CommandExecutionEventArgs e)
 		{
-			e.Context.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBot", $"User {e.Context.User.Username} used command '{e.Command.Name}' successfully.", DateTime.Now);
+			e.Context.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", $"User {e.Context.User.Username} used command '{e.Command.Name}' successfully.", DateTime.Now);
 
 			return Task.CompletedTask;
 		}
 
 		private Task OnCommandError(CommandErrorEventArgs e)
 		{
-			e.Context.Client.DebugLogger.LogMessage(LogLevel.Error, "SupportBot", $"Exception occured: {e.Exception.GetType()}: {e.Exception}", DateTime.Now);
+			e.Context.Client.DebugLogger.LogMessage(LogLevel.Error, "SupportBoi", $"Exception occured: {e.Exception.GetType()}: {e.Exception}", DateTime.Now);
 			if (e.Exception is ChecksFailedException)
 			{
 				DiscordEmbed error = new DiscordEmbedBuilder

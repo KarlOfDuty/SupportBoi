@@ -8,7 +8,7 @@ using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using MySql.Data.MySqlClient;
 
-namespace SupportBot.Commands
+namespace SupportBoi.Commands
 {
 	[Description("Moderator commands.")]
 	[Hidden]
@@ -28,7 +28,7 @@ namespace SupportBot.Commands
 					Description = "You do not have permission to use this command."
 				};
 				await command.RespondAsync("", false, error);
-				command.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBot", "User tried to use command but did not have permission.", DateTime.Now);
+				command.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", "User tried to use command but did not have permission.", DateTime.Now);
 				return;
 			}
 
@@ -98,7 +98,7 @@ namespace SupportBot.Commands
 					Description = "You do not have permission to use this command."
 				};
 				await command.RespondAsync("", false, error);
-				command.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBot", "User tried to use command but did not have permission.", DateTime.Now);
+				command.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", "User tried to use command but did not have permission.", DateTime.Now);
 				return;
 			}
 
@@ -153,7 +153,7 @@ namespace SupportBot.Commands
 					Description = "You do not have permission to use this command."
 				};
 				await command.RespondAsync("", false, error);
-				command.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBot", "User tried to use command but did not have permission.", DateTime.Now);
+				command.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", "User tried to use command but did not have permission.", DateTime.Now);
 				return;
 			}
 

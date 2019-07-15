@@ -10,7 +10,7 @@ using DSharpPlus.Entities;
 using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
 
-namespace SupportBot.Commands
+namespace SupportBoi.Commands
 {
 	[Description("Public ticket commands.")]
 	[Cooldown(1, 10, CooldownBucketType.User)]

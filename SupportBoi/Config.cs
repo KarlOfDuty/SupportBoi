@@ -5,10 +5,10 @@ using System.Linq;
 using System.Text;
 using DSharpPlus.Entities;
 using Newtonsoft.Json.Linq;
-using SupportBot.Properties;
+using SupportBoi.Properties;
 using YamlDotNet.Serialization;
 
-namespace SupportBot
+namespace SupportBoi
 {
 	internal static class Config
 	{
