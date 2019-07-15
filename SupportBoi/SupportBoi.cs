@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.EventArgs;
@@ -10,7 +11,6 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.CommandsNext.Exceptions;
 using DSharpPlus.Entities;
-using Org.BouncyCastle.Bcpg;
 using SupportBoi.Commands;
 
 namespace SupportBoi
@@ -30,6 +30,8 @@ namespace SupportBoi
 		private async Task MainAsync()
 		{
 			instance = this;
+			
+			Console.WriteLine("Starting SupportBoi version " + this.GetVersion() + "...");
 			try
 			{
 				this.Reload();
@@ -43,6 +45,12 @@ namespace SupportBoi
 				Console.WriteLine(e);
 				Console.ReadLine();
 			}
+		}
+
+		private string GetVersion()
+		{
+			Version version = Assembly.GetEntryAssembly()?.GetName().Version;
+			return version?.Major + "." + version?.Minor + "." + version?.Build + (version?.Revision == 0 ? "" : "-" + (char)(64 + version?.Revision ?? 0));
 		}
 
 		public async void Reload()
