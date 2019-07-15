@@ -18,13 +18,15 @@ A support ticket Discord bot. Uses a MySQL database for storage of active ticket
 
 ## Setup:
 
-1. Create a new bot application over at https://discordapp.com/developers/applications/.
+1. Create a new bot application over at: https://discordapp.com/developers/applications/.
 
-2. Download the bot for your operating system and extract it somewhere on your computer.
+2. Install .NET Core 2.2: https://dotnet.microsoft.com/download/dotnet-core/2.2.
 
-3. Set up the config (`config.yml`) to your specifications, follow the instructions inside of the config.
+3. Download the bot for your operating system and extract it somewhere on your computer.
 
-4. Run `./SupportBoi` on Linux or `SupportBoi.exe` on Windows.
+4. Set up the config (`config.yml`) to your specifications, follow the instructions inside of the config.
+
+5. Run `./SupportBoi` on Linux or `SupportBoi.exe` on Windows.
 
 ## Default Config:
 
