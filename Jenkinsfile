@@ -3,12 +3,12 @@ pipeline {
   stages {
     stage('Linux Build') {
       steps {
-        sh 'dotnet build ./SupportBoi/ --no-restore -c Release -f netcoreapp2.2 -r linux-x64'
+        sh 'dotnet build ./SupportBoi/ -c Release -f netcoreapp2.2 -r linux-x64'
       }
     }
     stage('Windows Build') {
       steps {
-        sh 'dotnet build ./SupportBoi/ --no-restore -c Release -f netcoreapp2.2 -r win-x64'
+        sh 'dotnet build ./SupportBoi/ -c Release -f netcoreapp2.2 -r win-x64'
       }
     }
     stage('Zip') {
