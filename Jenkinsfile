@@ -15,12 +15,14 @@ pipeline {
       parallel {
         stage('Linux') {
           steps {
-            sh 'zip -r SupportBoi_Linux-x64.zip ./SupportBoi/bin/Release/netcoreapp2.2/linux-x64/publish'
+            sh 'cd ./SupportBoi/bin/Release/netcoreapp2.2/linux-x64/publish'
+            sh 'zip -r SupportBoi_Linux-x64.zip *'
           }
         }
         stage('Windows') {
           steps {
-            sh 'zip -r SupportBoi_Win-x64.zip ./SupportBoi/bin/Release/netcoreapp2.2/win-x64/publish'
+            sh 'cd ./SupportBoi/bin/Release/netcoreapp2.2/win-x64/publish'
+            sh 'zip -r SupportBoi_Win-x64.zip *'
           }
         }
       }
