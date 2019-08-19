@@ -1,23 +1,14 @@
 pipeline {
   agent any
   stages {
-    stage('Dependencies') {
+    stage('Linux Build') {
       steps {
-        sh 'dotnet restore'
+        sh 'dotnet build ./SupportBoi/ --no-restore -c Release -f netcoreapp2.2 -r linux-x64'
       }
     }
-    stage('Build') {
-      parallel {
-        stage('Linux') {
-          steps {
-            sh 'dotnet build ./SupportBoi/ --no-restore -c Release -f netcoreapp2.2 -r linux-x64'
-          }
-        }
-        stage('Windows') {
-          steps {
-            sh 'dotnet build ./SupportBoi/ --no-restore -c Release -f netcoreapp2.2 -r win-x64'
-          }
-        }
+    stage('Windows Build') {
+      steps {
+        sh 'dotnet build ./SupportBoi/ --no-restore -c Release -f netcoreapp2.2 -r win-x64'
       }
     }
     stage('Zip') {
