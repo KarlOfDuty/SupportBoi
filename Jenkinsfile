@@ -27,7 +27,7 @@ pipeline {
     }
     stage('Archive') {
       parallel {
-        stage('Archive') {
+        stage('Linux') {
           steps {
             archiveArtifacts(artifacts: 'SupportBoi_Linux-x64.zip', caseSensitive: true)
           }
