@@ -23,7 +23,7 @@ pipeline {
         }
         stage('Windows') {
           steps {
-            dir(path: 'cd ./SupportBoi/bin/Release/netcoreapp2.2/win-x64/publish') {
+            dir(path: './SupportBoi/bin/Release/netcoreapp2.2/win-x64/publish') {
               sh 'zip -r SupportBoi_Win-x64.zip *'
             }
 
