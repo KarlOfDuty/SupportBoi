@@ -170,70 +170,57 @@ namespace SupportBoi
 
 		private Task OnCommandError(CommandErrorEventArgs e)
 		{
-			if (e.Exception is CommandNotFoundException)
+			switch (e.Exception)
 			{
-				return Task.CompletedTask;
-			}
-			else if (e.Exception is ChecksFailedException)
-			{
-				foreach (CheckBaseAttribute attr in ((ChecksFailedException)e.Exception).FailedChecks)
+				case CommandNotFoundException _:
+					return Task.CompletedTask;
+				case ChecksFailedException _:
 				{
+					foreach (CheckBaseAttribute attr in ((ChecksFailedException)e.Exception).FailedChecks)
+					{
+						DiscordEmbed error = new DiscordEmbedBuilder
+						{
+							Color = DiscordColor.Red,
+							Description = this.ParseFailedCheck(attr)
+						};
+						e.Context?.Channel?.SendMessageAsync("", false, error);
+					}
+					return Task.CompletedTask;
+				}
+
+				default:
+				{
+					e.Context.Client.DebugLogger.LogMessage(LogLevel.Error, "SupportBoi", $"Exception occured: {e.Exception.GetType()}: {e.Exception}", DateTime.Now);
 					DiscordEmbed error = new DiscordEmbedBuilder
 					{
 						Color = DiscordColor.Red,
-						Description = ParseFailedCheck(attr)
+						Description = "Internal error occured, please report this to the developer."
 					};
 					e.Context?.Channel?.SendMessageAsync("", false, error);
+					return Task.CompletedTask;
 				}
-
 			}
-			else
-			{
-				e.Context.Client.DebugLogger.LogMessage(LogLevel.Error, "SupportBoi", $"Exception occured: {e.Exception.GetType()}: {e.Exception}", DateTime.Now);
-				DiscordEmbed error = new DiscordEmbedBuilder
-				{
-					Color = DiscordColor.Red,
-					Description = "Internal error occured, please report this to the developer."
-				};
-				e.Context?.Channel?.SendMessageAsync("", false, error);
-			}
-			
-			return Task.CompletedTask;
 		}
 
 		private string ParseFailedCheck(CheckBaseAttribute attr)
 		{
-			if (attr is CooldownAttribute)
+			switch (attr)
 			{
-				return "You cannot use do that so often!";
+				case CooldownAttribute _:
+					return "You cannot use do that so often!";
+				case RequireOwnerAttribute _:
+					return "Only the server owner can use that command!";
+				case RequirePermissionsAttribute _:
+					return "You don't have permission to do that!";
+				case RequireRolesAttributeAttribute _:
+					return "You do not have a required role!";
+				case RequireUserPermissionsAttribute _:
+					return "You don't have permission to do that!";
+				case RequireNsfwAttribute _:
+					return "This command can only be used in an NSFW channel!";
+				default:
+					return "Unknown Discord API error occured, please try again later.";
 			}
-
-			if (attr is RequireOwnerAttribute)
-			{
-				return "Only the server owner can use that command!";
-			}
-
-			if (attr is RequirePermissionsAttribute)
-			{
-				return "You don't have permission to do that!";
-			}
-
-			if (attr is RequireRolesAttributeAttribute)
-			{
-				return "You do not have a required role!";
-			}
-
-			if (attr is RequireUserPermissionsAttribute)
-			{
-				return "You don't have permission to do that!";
-			}
-
-			if (attr is RequireNsfwAttribute)
-			{
-				return "This command can only be used in an NSFW channel!";
-			}
-
-			return "Unknown Discord API error occured, please try again later.";
 		}
 	}
 }
