@@ -1,16 +1,20 @@
 pipeline {
   agent any
   stages {
-    stage('Linux Build') {
-      steps {
-        sh 'msbuild SupportBoi/SupportBoi.csproj -restore -t:Publish -p:PublishProfile=Linux64.pubxml -p:OutputPath=bin/linux/ -p:TargetFramework=netcoreapp2.2 -p:SelfContained=true -p:RuntimeIdentifier=linux-x64'
+	stage('Build') {
+	  parallel {
+		stage('Linux') {
+		  steps {
+			sh 'msbuild SupportBoi/SupportBoi.csproj -restore -t:Publish -p:PublishProfile=Linux64.pubxml -p:OutputPath=bin/linux/ -p:TargetFramework=netcoreapp2.2 -p:SelfContained=true -p:RuntimeIdentifier=linux-x64'
+		  }
+		}
+		stage('Windows') {
+		  steps {
+			sh 'msbuild SupportBoi/SupportBoi.csproj -restore -t:Publish -p:PublishProfile=Windows64.pubxml -p:OutputPath=bin/win/ -p:TargetFramework=netcoreapp2.2 -p:SelfContained=true -p:RuntimeIdentifier=win-x64'
+		  }
+		}
       }
-    }
-    stage('Windows Build') {
-      steps {
-        sh 'msbuild SupportBoi/SupportBoi.csproj -restore -t:Publish -p:PublishProfile=Windows64.pubxml -p:OutputPath=bin/win/ -p:TargetFramework=netcoreapp2.2 -p:SelfContained=true -p:RuntimeIdentifier=win-x64'
-      }
-    }
+	}
     stage('Zip') {
       parallel {
         stage('Linux') {
