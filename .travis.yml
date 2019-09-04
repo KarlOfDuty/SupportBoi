@@ -1,7 +1,0 @@
-language: csharp
-mono: none
-dotnet: 2.2.300
-dist: bionic
-script:
-  - dotnet restore
-  - dotnet build ./SupportBoi/
