@@ -12,9 +12,9 @@ A support ticket Discord bot. Uses a MySQL database for storage of active ticket
 | `add` | Moderator | Adds a user to the ticket. |
 | `blacklist` | Moderator | Blacklists a player from opening tickets. |
 | `unblacklist` | Moderator | Un-blacklists a player from opening tickets. |
-| `reload` | Admin | Allows a player to grant reserved slots. |
-| `setticket` | Admin | Allows a player to remove reserved slots. |
-| `unsetticket` | Admin | Allows a player to grant vanilla ranks. |
+| `reload` | Admin | Reloads the config. |
+| `setticket` | Admin | Sets an existing channel as a ticket. |
+| `unsetticket` | Admin | Removes a ticket without deleting the channel. |
 
 ## Setup:
 
