@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using DiscordChatExporter.Core.Models;
 using DiscordChatExporter.Core.Services;
-using DiscordChatExporter.Core.Services.Helpers;
 using StyletIoC;
 
 namespace SupportBoi

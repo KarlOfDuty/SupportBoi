@@ -1,20 +1,16 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Configuration;
-using System.Linq;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Exceptions;
-using MySql.Data.MySqlClient;
 
 namespace SupportBoi.Commands
 {
 	[Description("Moderator commands.")]
 	[Hidden]
-	[Cooldown(1, 5, CooldownBucketType.User)]
 	public class ModeratorCommands
 	{
 		[Command("add")]

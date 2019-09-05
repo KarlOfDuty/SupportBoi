@@ -1,5 +1,4 @@
 ﻿using System;
-using DSharpPlus.Entities;
 using MySql.Data.MySqlClient;
 
 namespace SupportBoi
