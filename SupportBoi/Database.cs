@@ -87,27 +87,42 @@ namespace SupportBoi
 			return false;
 		}
 
-		public static void Blacklist(ulong blacklistedID, ulong staffID)
+		public static bool Blacklist(ulong blacklistedID, ulong staffID)
 		{
 			using (MySqlConnection c = GetConnection())
 			{
-				c.Open();
-				MySqlCommand cmd = new MySqlCommand(@"INSERT INTO blacklisted_users (user_id,time,moderator_id) VALUES (@user_id, now(), @moderator_id);", c);
-				cmd.Parameters.AddWithValue("@user_id", blacklistedID);
-				cmd.Parameters.AddWithValue("@moderator_id", staffID);
-				cmd.Prepare();
-				cmd.ExecuteNonQuery();
+				try
+				{
+					c.Open();
+					MySqlCommand cmd = new MySqlCommand(@"INSERT INTO blacklisted_users (user_id,time,moderator_id) VALUES (@user_id, now(), @moderator_id);", c);
+					cmd.Parameters.AddWithValue("@user_id", blacklistedID);
+					cmd.Parameters.AddWithValue("@moderator_id", staffID);
+					cmd.Prepare();
+					return cmd.ExecuteNonQuery() > 0;
+				}
+				catch (MySqlException)
+				{
+					return false;
+				}
 			}
 		}
-		public static void Unblacklist(ulong blacklistedID)
+		public static bool Unblacklist(ulong blacklistedID)
 		{
 			using (MySqlConnection c = GetConnection())
 			{
-				c.Open();
-				MySqlCommand cmd = new MySqlCommand(@"DELETE FROM blacklisted_users WHERE user_id=@user_id", c);
-				cmd.Parameters.AddWithValue("@user_id", blacklistedID);
-				cmd.Prepare();
-				cmd.ExecuteNonQuery();
+				try
+				{
+					c.Open();
+					MySqlCommand cmd = new MySqlCommand(@"DELETE FROM blacklisted_users WHERE user_id=@user_id", c);
+					cmd.Parameters.AddWithValue("@user_id", blacklistedID);
+					cmd.Prepare();
+					return cmd.ExecuteNonQuery() > 0;
+				}
+				catch (MySqlException)
+				{
+					return false;
+				}
+
 			}
 		}
 	}
