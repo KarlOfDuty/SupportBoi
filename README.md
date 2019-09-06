@@ -2,7 +2,7 @@
 
 A support ticket Discord bot. Uses a MySQL database for storage of active tickets and also saves closed tickets as flatfile HTML documents.
 
-## Commands:
+## Commands
 
 | Command | Role | Description |
 |--- |--- |---- |
@@ -16,7 +16,7 @@ A support ticket Discord bot. Uses a MySQL database for storage of active ticket
 | `setticket` | Admin | Sets an existing channel as a ticket. |
 | `unsetticket` | Admin | Removes a ticket without deleting the channel. |
 
-## Setup:
+## Setup
 
 1. Create a new bot application over at: https://discordapp.com/developers/applications/.
 
@@ -28,7 +28,7 @@ A support ticket Discord bot. Uses a MySQL database for storage of active ticket
 
 5. Run `./SupportBoi` on Linux or `SupportBoi.exe` on Windows.
 
-## Default Config:
+## Default Config
 
 ```yaml
 bot:
