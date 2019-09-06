@@ -4,7 +4,7 @@ A support ticket Discord bot. Uses a MySQL database for storage of active ticket
 
 ## Commands:
 
-| Command | Role | Description
+| Command | Role | Description |
 |--- |--- |---- |
 | `new` | Everyone | Opens a new ticket channel. |
 | `close` | Everyone | Closes a ticket channel and posts a ticket transcript in the log channel. |
