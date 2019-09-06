@@ -18,9 +18,9 @@ A support ticket Discord bot. Uses a MySQL database for storage of active ticket
 
 ## Setup
 
- 1. Create a new bot application over at: https://discordapp.com/developers/applications/.
+ 1. [Create a new bot application](https://discordapp.com/developers/applications/).
 
- 2. Install .NET Core 2.2: https://dotnet.microsoft.com/download/dotnet-core/2.2.
+ 2. [Install .NET Core 2.2](https://dotnet.microsoft.com/download/dotnet-core/2.2).
 
  3. Download the bot for your operating system and extract it somewhere on your computer.
 
