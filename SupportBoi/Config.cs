@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -24,10 +25,23 @@ namespace SupportBoi
 		internal static string username = "";
 		internal static string password = "";
 
-		internal static ulong adminRole = 0;
-		internal static ulong moderatorRole = 0;
-
 		internal static string timestampFormat = "yyyy-MMM-dd HH:mm";
+
+		private static readonly Dictionary<string, ulong[]> permissions = new Dictionary<string, ulong[]>
+		{
+            { "new",						new ulong[]{ } },
+			{ "close",						new ulong[]{ } },
+            { "transcript",					new ulong[]{ } },
+			{ "status",						new ulong[]{ } },
+			{ "add",						new ulong[]{ } },
+			{ "assign",						new ulong[]{ } },
+			{ "unassign",					new ulong[]{ } },
+			{ "blacklist",					new ulong[]{ } },
+			{ "unblacklist",				new ulong[]{ } },
+			{ "reload",						new ulong[]{ } },
+			{ "setticket",					new ulong[]{ } },
+			{ "unsetticket",				new ulong[]{ } },
+		};
 
 		public static void LoadConfig()
 		{
@@ -63,31 +77,31 @@ namespace SupportBoi
 			username = json.SelectToken("database.user").Value<string>() ?? "";
 			password = json.SelectToken("database.password").Value<string>() ?? "";
 
-			adminRole = json.SelectToken("permissions.admin-role").Value<ulong>();
-			moderatorRole = json.SelectToken("permissions.moderator-role").Value<ulong>();
-
 			timestampFormat = json.SelectToken("transcripts.timestamp-format").Value<string>() ?? "yyyy-MMM-dd HH:mm";
 			timestampFormat = timestampFormat.Trim();
+
+			foreach (KeyValuePair<string, ulong[]> node in permissions.ToList())
+			{
+				try
+				{
+					permissions[node.Key] = json.SelectToken(node.Key).Value<JArray>().Values<ulong>().ToArray();
+				}
+				catch (ArgumentNullException)
+				{
+					Console.WriteLine("Config array '" + node.Key + "' not found, using default value: []");
+				}
+			}
 		}
 
 		/// <summary>
-		/// Checks whether a user has a moderator rank or higher in discord.
+		/// Checks whether a user has a specific permission.
 		/// </summary>
-		/// <param name="roles">The user's roles.</param>
-		/// <returns>True if the user has moderator access, false if not.</returns>
-		public static bool IsModerator(IEnumerable<DiscordRole> roles)
+		/// <param name="member">The Discord user to check.</param>
+		/// <param name="permission">The permission name to check.</param>
+		/// <returns></returns>
+		public static bool HasPermission(DiscordMember member, string permission)
 		{
-			return roles.Any(x => x.Id == Config.adminRole || x.Id == Config.moderatorRole);
-		}
-
-		/// <summary>
-		/// Checks whether a user has an admin rank in discord.
-		/// </summary>
-		/// <param name="roles">The user's roles.</param>
-		/// <returns>True if the user has admin access, false if not.</returns>
-		public static bool IsAdmin(IEnumerable<DiscordRole> roles)
-		{
-			return roles.Any(x => x.Id == Config.adminRole);
+			return member.Roles.Any(role => permissions[permission].Contains(role.Id));
 		}
 	}
 }
