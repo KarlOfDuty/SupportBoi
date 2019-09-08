@@ -30,8 +30,19 @@ namespace SupportBoi
 					"id INT UNSIGNED NOT NULL UNIQUE PRIMARY KEY AUTO_INCREMENT," +
 					"created_time TIMESTAMP NOT NULL," +
 					"creator_id BIGINT UNSIGNED NOT NULL," +
+					"assigned_staff_id BIGINT UNSIGNED NOT NULL," +
 					"channel_id BIGINT UNSIGNED NOT NULL UNIQUE," +
-					"INDEX(created_time, channel_id))",
+					"INDEX(created_time, assigned_staff_id, channel_id))",
+					c);
+				MySqlCommand createTicketHistory = new MySqlCommand(
+					"CREATE TABLE IF NOT EXISTS ticket_history(" +
+					"id INT UNSIGNED NOT NULL UNIQUE PRIMARY KEY," +
+					"created_time TIMESTAMP NOT NULL," +
+					"closed_time TIMESTAMP NOT NULL," +
+					"creator_id BIGINT UNSIGNED NOT NULL," +
+					"assigned_staff_id BIGINT UNSIGNED NOT NULL," +
+					"channel_id BIGINT UNSIGNED NOT NULL UNIQUE," +
+					"INDEX(created_time, closed_time, channel_id))",
 					c);
 				MySqlCommand createBlacklisted = new MySqlCommand(
 					"CREATE TABLE IF NOT EXISTS blacklisted_users(" +
@@ -39,9 +50,16 @@ namespace SupportBoi
 					"time TIMESTAMP NOT NULL," +
 					"moderator_id BIGINT UNSIGNED NOT NULL)",
 					c);
+				MySqlCommand createStaffList = new MySqlCommand(
+					"CREATE TABLE IF NOT EXISTS staff_list(" +
+					"user_id BIGINT UNSIGNED NOT NULL UNIQUE PRIMARY KEY," +
+					"username VARCHAR(64) NOT NULL UNIQUE)",
+					c);
 				c.Open();
 				createTickets.ExecuteNonQuery();
 				createBlacklisted.ExecuteNonQuery();
+				createTicketHistory.ExecuteNonQuery();
+				createStaffList.ExecuteNonQuery();
 			}
 		}
 
