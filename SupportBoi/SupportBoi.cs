@@ -118,9 +118,18 @@ namespace SupportBoi
 				StringPrefix = Config.prefix
 			});
 
-			this.commands.RegisterCommands<TicketCommands>();
-			this.commands.RegisterCommands<ModeratorCommands>();
-			this.commands.RegisterCommands<AdminCommands>();
+			this.commands.RegisterCommands<AddCommand>();
+			this.commands.RegisterCommands<AssignCommand>();
+			this.commands.RegisterCommands<BlacklistCommand>();
+			this.commands.RegisterCommands<CloseCommand>();
+			this.commands.RegisterCommands<NewCommand>();
+			this.commands.RegisterCommands<ReloadCommand>();
+			this.commands.RegisterCommands<SetTicketCommand>();
+			this.commands.RegisterCommands<StatusCommand>();
+			this.commands.RegisterCommands<TranscriptCommand>();
+			this.commands.RegisterCommands<UnassignCommand>();
+			this.commands.RegisterCommands<UnblacklistCommand>();
+			this.commands.RegisterCommands<UnsetTicketCommand>();
 
 			Console.WriteLine("Hooking command events...");
 			this.commands.CommandExecuted += this.eventHandler.OnCommandExecuted;
