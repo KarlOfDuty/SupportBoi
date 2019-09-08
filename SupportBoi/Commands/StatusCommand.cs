@@ -10,7 +10,7 @@ namespace SupportBoi.Commands
 {
 	public class StatusCommand
 	{
-		[Command("close")]
+		[Command("status")]
 		[Cooldown(1, 5, CooldownBucketType.User)]
 		public async Task OnExecute(CommandContext command)
 		{
