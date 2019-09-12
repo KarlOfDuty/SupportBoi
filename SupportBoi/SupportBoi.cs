@@ -119,19 +119,23 @@ namespace SupportBoi
 			});
 
 			this.commands.RegisterCommands<AddCommand>();
+			this.commands.RegisterCommands<AddStaffCommand>();
 			this.commands.RegisterCommands<AssignCommand>();
 			this.commands.RegisterCommands<BlacklistCommand>();
 			this.commands.RegisterCommands<CloseCommand>();
 			this.commands.RegisterCommands<NewCommand>();
 			this.commands.RegisterCommands<ReloadCommand>();
+			this.commands.RegisterCommands<RemoveStaffCommand>();
 			this.commands.RegisterCommands<SetSummaryCommand>();
 			this.commands.RegisterCommands<SetTicketCommand>();
 			this.commands.RegisterCommands<StatusCommand>();
 			this.commands.RegisterCommands<SummaryCommand>();
+			this.commands.RegisterCommands<ToggleActiveCommand>();
 			this.commands.RegisterCommands<TranscriptCommand>();
 			this.commands.RegisterCommands<UnassignCommand>();
 			this.commands.RegisterCommands<UnblacklistCommand>();
 			this.commands.RegisterCommands<UnsetTicketCommand>();
+			this.commands.RegisterCommands<UpdateStaffCommand>();
 
 			Console.WriteLine("Hooking command events...");
 			this.commands.CommandErrored += this.eventHandler.OnCommandError;
