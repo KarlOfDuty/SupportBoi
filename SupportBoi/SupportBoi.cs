@@ -124,8 +124,10 @@ namespace SupportBoi
 			this.commands.RegisterCommands<CloseCommand>();
 			this.commands.RegisterCommands<NewCommand>();
 			this.commands.RegisterCommands<ReloadCommand>();
+			this.commands.RegisterCommands<SetSummaryCommand>();
 			this.commands.RegisterCommands<SetTicketCommand>();
 			this.commands.RegisterCommands<StatusCommand>();
+			this.commands.RegisterCommands<SummaryCommand>();
 			this.commands.RegisterCommands<TranscriptCommand>();
 			this.commands.RegisterCommands<UnassignCommand>();
 			this.commands.RegisterCommands<UnblacklistCommand>();

@@ -35,12 +35,14 @@ permissions:
     close: []
     transcript: []
     status: []
+    summary: []
     # Moderator commands
     add: []
     assign: []
     unassign: []
     blacklist: []
     unblacklist: []
+    setsummary: []
     # Admin commands
     reload: []
     setticket: []

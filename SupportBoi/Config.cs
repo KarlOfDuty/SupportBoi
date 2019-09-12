@@ -29,15 +29,20 @@ namespace SupportBoi
 
 		private static readonly Dictionary<string, ulong[]> permissions = new Dictionary<string, ulong[]>
 		{
+			// Public commands
             { "new",						new ulong[]{ } },
 			{ "close",						new ulong[]{ } },
             { "transcript",					new ulong[]{ } },
 			{ "status",						new ulong[]{ } },
+			{ "summary",					new ulong[]{ } },
+			// Moderator commands
 			{ "add",						new ulong[]{ } },
 			{ "assign",						new ulong[]{ } },
 			{ "unassign",					new ulong[]{ } },
 			{ "blacklist",					new ulong[]{ } },
 			{ "unblacklist",				new ulong[]{ } },
+			{ "setsummary",					new ulong[]{ } },
+			// Admin commands
 			{ "reload",						new ulong[]{ } },
 			{ "setticket",					new ulong[]{ } },
 			{ "unsetticket",				new ulong[]{ } },
