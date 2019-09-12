@@ -69,7 +69,8 @@ namespace SupportBoi
 					"id INT UNSIGNED NOT NULL UNIQUE PRIMARY KEY AUTO_INCREMENT," +
 					"created_time TIMESTAMP NOT NULL," +
 					"creator_id BIGINT UNSIGNED NOT NULL," +
-					"assigned_staff_id BIGINT UNSIGNED NOT NULL," +
+					"assigned_staff_id BIGINT UNSIGNED NOT NULL DEFAULT 0," +
+					"summary VARCHAR(5000) NOT NULL," +
 					"channel_id BIGINT UNSIGNED NOT NULL UNIQUE," +
 					"INDEX(created_time, assigned_staff_id, channel_id))",
 					c);
@@ -79,7 +80,8 @@ namespace SupportBoi
 					"created_time TIMESTAMP NOT NULL," +
 					"closed_time TIMESTAMP NOT NULL," +
 					"creator_id BIGINT UNSIGNED NOT NULL," +
-					"assigned_staff_id BIGINT UNSIGNED NOT NULL," +
+					"assigned_staff_id BIGINT UNSIGNED NOT NULL DEFAULT 0," +
+					"summary VARCHAR(5000) NOT NULL," +
 					"channel_id BIGINT UNSIGNED NOT NULL UNIQUE," +
 					"INDEX(created_time, closed_time, channel_id))",
 					c);
@@ -92,7 +94,8 @@ namespace SupportBoi
 				MySqlCommand createStaffList = new MySqlCommand(
 					"CREATE TABLE IF NOT EXISTS staff_list(" +
 					"user_id BIGINT UNSIGNED NOT NULL UNIQUE PRIMARY KEY," +
-					"username VARCHAR(64) NOT NULL UNIQUE)",
+					"username VARCHAR(256) NOT NULL UNIQUE," +
+					"active BOOLEAN NOT NULL DEFAULT true)",
 					c);
 				c.Open();
 				createTickets.ExecuteNonQuery();

@@ -43,8 +43,10 @@ namespace SupportBoi.Commands
 				}
 
 				c.Open();
-				MySqlCommand cmd = new MySqlCommand(@"INSERT INTO tickets (created_time,creator_id,channel_id) VALUES (now(), @creator_id, @channel_id);", c);
+				MySqlCommand cmd = new MySqlCommand(@"INSERT INTO tickets (created_time, creator_id, assigned_staff_id, summary, channel_id) VALUES (now(), @creator_id, @assigned_staff_id, @summary, @channel_id);", c);
 				cmd.Parameters.AddWithValue("@creator_id", command.User.Id);
+				cmd.Parameters.AddWithValue("@assigned_staff_id", 0);
+				cmd.Parameters.AddWithValue("@summary", "");
 				cmd.Parameters.AddWithValue("@channel_id", command.Channel.Id);
 				cmd.ExecuteNonQuery();
 				long id = cmd.LastInsertedId;

@@ -49,8 +49,15 @@ namespace SupportBoi.Commands
 					return;
 				}
 
+				
+				int id = results.GetInt32("id");
+				string createdTime = results.GetString("created_time");
+				ulong creatorID = results.GetUInt64("creator_id");
+				ulong assignedStaffID = results.GetUInt64("assigned_staff_id");
+				string summary = results.GetString("summary");
+
 				// Build transcript
-				string ticketNumber = results.GetInt32("id").ToString("00000");
+				string ticketNumber = id.ToString("00000");
 				results.Close();
 				string filePath = "";
 				try
@@ -80,6 +87,16 @@ namespace SupportBoi.Commands
 					};
 					await logChannel.SendFileAsync(filePath, "", false, message);
 				}
+
+				// Create an entry in the ticket history database
+				MySqlCommand archiveTicket = new MySqlCommand(@"INSERT INTO ticket_history (id, created_time, closed_time, creator_id, assigned_staff_id, summary, channel_id) VALUES (@id, @created_time, now(), @creator_id, @assigned_staff_id, @summary, @channel_id);", c);
+				archiveTicket.Parameters.AddWithValue("@id", id);
+				archiveTicket.Parameters.AddWithValue("@created_time", createdTime);
+				archiveTicket.Parameters.AddWithValue("@creator_id", creatorID);
+				archiveTicket.Parameters.AddWithValue("@assigned_staff_id", assignedStaffID);
+				archiveTicket.Parameters.AddWithValue("@summary", summary);
+				archiveTicket.Parameters.AddWithValue("@channel_id", channelID);
+				archiveTicket.ExecuteNonQuery();
 
 				// Delete the channel and database entry
 				await command.Channel.DeleteAsync("Ticket closed.");
