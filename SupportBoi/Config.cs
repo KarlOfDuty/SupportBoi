@@ -42,10 +42,14 @@ namespace SupportBoi
 			{ "blacklist",					new ulong[]{ } },
 			{ "unblacklist",				new ulong[]{ } },
 			{ "setsummary",					new ulong[]{ } },
+			{ "toggleactive",				new ulong[]{ } },
+			{ "updatestaff",				new ulong[]{ } },
 			// Admin commands
 			{ "reload",						new ulong[]{ } },
 			{ "setticket",					new ulong[]{ } },
 			{ "unsetticket",				new ulong[]{ } },
+			{ "addstaff",					new ulong[]{ } },
+			{ "removestaff",				new ulong[]{ } },
 		};
 
 		public static void LoadConfig()

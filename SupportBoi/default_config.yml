@@ -43,7 +43,11 @@ permissions:
     blacklist: []
     unblacklist: []
     setsummary: []
+    updatestaff: []
+    toggleactive: []
     # Admin commands
     reload: []
     setticket: []
     unsetticket: []
+    addstaff: []
+    removestaff: []
