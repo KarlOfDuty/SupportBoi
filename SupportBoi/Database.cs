@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Transactions;
 using MySql.Data.MySqlClient;
 
 namespace SupportBoi
@@ -19,6 +20,44 @@ namespace SupportBoi
 		public static MySqlConnection GetConnection()
 		{
 			return new MySqlConnection(connectionString);
+		}
+
+		public static long GetNumberOfTickets()
+		{
+			try
+			{
+				using (MySqlConnection c = GetConnection())
+				{
+					MySqlCommand countTickets = new MySqlCommand("SELECT COUNT(*) FROM tickets", c);
+					c.Open();
+					return (long)countTickets.ExecuteScalar();
+				}
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine("Error occured when attempting to count number of open tickets: " + e);
+			}
+
+			return -1;
+		}
+
+		public static long GetNumberOfClosedTickets()
+		{
+			try
+			{
+				using (MySqlConnection c = GetConnection())
+				{
+					MySqlCommand countTickets = new MySqlCommand("SELECT COUNT(*) FROM ticket_history", c);
+					c.Open();
+					return (long)countTickets.ExecuteScalar();
+				}
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine("Error occured when attempting to count number of open tickets: " + e);
+			}
+
+			return -1;
 		}
 
 		public static void SetupTables()

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -25,7 +25,7 @@ namespace SupportBoi
 		{
 			instance = this;
 			
-			Console.WriteLine("Starting SupportBoi version " + this.GetVersion() + "...");
+			Console.WriteLine("Starting SupportBoi version " + GetVersion() + "...");
 			try
 			{
 				this.Reload();
@@ -41,7 +41,7 @@ namespace SupportBoi
 			}
 		}
 
-		private string GetVersion()
+		public static string GetVersion()
 		{
 			Version version = Assembly.GetEntryAssembly()?.GetName().Version;
 			return version?.Major + "." + version?.Minor + "." + version?.Build + (version?.Revision == 0 ? "" : "-" + (char)(64 + version?.Revision ?? 0));
