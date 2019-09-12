@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -84,11 +84,11 @@ namespace SupportBoi
 			{
 				try
 				{
-					permissions[node.Key] = json.SelectToken(node.Key).Value<JArray>().Values<ulong>().ToArray();
+					permissions[node.Key] = json.SelectToken("permissions." + node.Key).Value<JArray>().Values<ulong>().ToArray();
 				}
 				catch (ArgumentNullException)
 				{
-					Console.WriteLine("Config array '" + node.Key + "' not found, using default value: []");
+					Console.WriteLine("Permission node '" + node.Key + "' was not found in the config, using default value: []");
 				}
 			}
 		}

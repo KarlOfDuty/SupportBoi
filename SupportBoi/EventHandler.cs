@@ -45,13 +45,6 @@ namespace SupportBoi
 			return Task.CompletedTask;
 		}
 
-		internal Task OnCommandExecuted(CommandExecutionEventArgs e)
-		{
-			e.Context.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", $"User {e.Context.User.Username} used command '{e.Command.Name}' successfully.", DateTime.Now);
-
-			return Task.CompletedTask;
-		}
-
 		internal Task OnCommandError(CommandErrorEventArgs e)
 		{
 			switch (e.Exception)

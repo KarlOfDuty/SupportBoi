@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -132,7 +132,6 @@ namespace SupportBoi
 			this.commands.RegisterCommands<UnsetTicketCommand>();
 
 			Console.WriteLine("Hooking command events...");
-			this.commands.CommandExecuted += this.eventHandler.OnCommandExecuted;
 			this.commands.CommandErrored += this.eventHandler.OnCommandError;
 
 			Console.WriteLine("Connecting to Discord...");
