@@ -89,13 +89,15 @@ namespace SupportBoi
 					"CREATE TABLE IF NOT EXISTS blacklisted_users(" +
 					"user_id BIGINT UNSIGNED NOT NULL UNIQUE PRIMARY KEY," +
 					"time TIMESTAMP NOT NULL," +
-					"moderator_id BIGINT UNSIGNED NOT NULL)",
+					"moderator_id BIGINT UNSIGNED NOT NULL," +
+					"INDEX(user_id, time))",
 					c);
 				MySqlCommand createStaffList = new MySqlCommand(
 					"CREATE TABLE IF NOT EXISTS staff_list(" +
 					"user_id BIGINT UNSIGNED NOT NULL UNIQUE PRIMARY KEY," +
 					"username VARCHAR(256) NOT NULL UNIQUE," +
-					"active BOOLEAN NOT NULL DEFAULT true)",
+					"active BOOLEAN NOT NULL DEFAULT true," +
+					"INDEX(user_id, username))",
 					c);
 				c.Open();
 				createTickets.ExecuteNonQuery();
