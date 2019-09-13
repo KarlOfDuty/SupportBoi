@@ -106,7 +106,6 @@ namespace SupportBoi
 				createStaffList.ExecuteNonQuery();
 			}
 		}
-
 		public static bool IsTicket(ulong channelID)
 		{
 			using (MySqlConnection c = GetConnection())
@@ -126,7 +125,6 @@ namespace SupportBoi
 			}
 			return true;
 		}
-
 		public static bool IsBlacklisted(ulong userID)
 		{
 			using (MySqlConnection c = GetConnection())
@@ -147,7 +145,6 @@ namespace SupportBoi
 
 			return false;
 		}
-
 		public static bool Blacklist(ulong blacklistedID, ulong staffID)
 		{
 			using (MySqlConnection c = GetConnection())
