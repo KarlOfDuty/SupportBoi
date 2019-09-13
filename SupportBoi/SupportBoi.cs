@@ -63,24 +63,37 @@ namespace SupportBoi
 			if (Config.token == "<add-token-here>" || Config.token == "")
 			{
 				Console.WriteLine("You need to set your bot token in the config and start the bot again.");
-				Console.WriteLine("Press enter to close application.");
-				Console.ReadLine();
-				return;
+				throw new ArgumentException("Invalid Discord bot token");
 			}
 
 			// Database connection and setup
-			Console.WriteLine("Connecting to database...");
-			Database.SetConnectionString(Config.hostName, Config.port, Config.database, Config.username, Config.password);
 			try
 			{
+				Console.WriteLine("Connecting to database...");
+				Database.SetConnectionString(Config.hostName, Config.port, Config.database, Config.username, Config.password);
 				Database.SetupTables();
+				Console.WriteLine("Done.");
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("Could not set up database tables, please confirm connection settings, status of the server and permissions of MySQL user. Error: " + e.Message);
-				Console.WriteLine("Press enter to close application.");
-				Console.ReadLine();
-				return;
+				Console.WriteLine("Could not set up database tables, please confirm connection settings, status of the server and permissions of MySQL user. Error: " + e);
+				throw;
+			}
+
+			// Set up Google Sheets integration if enabled
+			if (Config.sheetsEnabled)
+			{
+				try
+				{
+					Console.WriteLine("Setting up Google Sheets integration...");
+					Sheets.Reload();
+					Console.WriteLine("Done.");
+				}
+				catch (Exception e)
+				{
+					Console.WriteLine("Could not load Google Sheets API services, error: " + e);
+					throw;
+				}
 			}
 
 			Console.WriteLine("Setting up Discord client...");

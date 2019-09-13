@@ -52,6 +52,9 @@ namespace SupportBoi
 			{ "removestaff",				new ulong[]{ } },
 		};
 
+		internal static bool sheetsEnabled = false;
+		internal static string sheetID = "";
+
 		public static void LoadConfig()
 		{
 			// Writes default config to file if it does not already exist
@@ -100,6 +103,9 @@ namespace SupportBoi
 					Console.WriteLine("Permission node '" + node.Key + "' was not found in the config, using default value: []");
 				}
 			}
+
+			sheetsEnabled = json.SelectToken("sheets.enabled").Value<bool>();
+			sheetID = json.SelectToken("sheets.id").Value<string>() ?? "";
 		}
 
 		/// <summary>

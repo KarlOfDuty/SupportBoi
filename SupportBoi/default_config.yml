@@ -51,3 +51,11 @@ permissions:
     unsetticket: []
     addstaff: []
     removestaff: []
+
+sheets:
+    # Whether or not to use the google sheets integration
+    enabled: false
+    # The spreadsheet ID of the sheet, you can find it in the sheet's URL:
+    # https://docs.google.com/spreadsheets/d/<SpreadSheetID>/edit#gid=<SheetID>
+    # In the above link you would use <SpreadSheetID> and not <SheetID>
+    id: "ID here"
