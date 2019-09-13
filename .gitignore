@@ -332,3 +332,7 @@ ASALocalRun/
 SupportBoi/transcripts/
 
 SupportBoi/config\.yml
+
+SupportBoi/credentials.json
+
+SupportBoi/token.json/
