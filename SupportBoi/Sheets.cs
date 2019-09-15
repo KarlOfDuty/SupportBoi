@@ -96,11 +96,72 @@ namespace SupportBoi
 								Location = new DeveloperMetadataLocation { SheetId = sheetID }
 							}
 						}
+					},
+					new Request
+					{
+						AppendCells = new AppendCellsRequest
+						{
+							Rows = new List<RowData>
+							{
+								new RowData
+								{
+									Values = new List<CellData>
+									{
+										new CellData
+										{
+											UserEnteredValue = new ExtendedValue
+											{
+												StringValue = "Ticket Number"
+											}
+										},
+										new CellData
+										{
+											UserEnteredValue = new ExtendedValue
+											{
+												StringValue = "Channel"
+											}
+										},
+										new CellData
+										{
+											UserEnteredValue = new ExtendedValue
+											{
+												StringValue = "User"
+											}
+										},
+										new CellData
+										{
+											UserEnteredValue = new ExtendedValue
+											{
+												StringValue = "Time created"
+											}
+										},
+										new CellData
+										{
+											UserEnteredValue = new ExtendedValue
+											{
+												StringValue = "Last Message"
+											}
+										},
+										new CellData
+										{
+											UserEnteredValue = new ExtendedValue
+											{
+												StringValue = "Summary"
+											}
+										}
+									}
+								}
+							},
+							SheetId = sheetID,
+							Fields = "*"
+						}
 					}
 				}
 			};
 			service.Spreadsheets.BatchUpdate(metadataRequest, Config.spreadsheetID).Execute();
 			
+
+
 			return GetSpreadsheet().Sheets.FirstOrDefault(s => s.Properties.SheetId == sheetID);
 		}
 
