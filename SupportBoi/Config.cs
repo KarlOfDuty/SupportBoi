@@ -53,7 +53,7 @@ namespace SupportBoi
 		};
 
 		internal static bool sheetsEnabled = false;
-		internal static string sheetID = "";
+		internal static string spreadsheetID = "";
 
 		public static void LoadConfig()
 		{
@@ -105,7 +105,7 @@ namespace SupportBoi
 			}
 
 			sheetsEnabled = json.SelectToken("sheets.enabled").Value<bool>();
-			sheetID = json.SelectToken("sheets.id").Value<string>() ?? "";
+			spreadsheetID = json.SelectToken("sheets.id").Value<string>() ?? "";
 		}
 
 		/// <summary>
