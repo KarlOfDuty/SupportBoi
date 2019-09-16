@@ -155,7 +155,139 @@ namespace SupportBoi
 							SheetId = sheetID,
 							Fields = "*"
 						}
-					}
+					},
+					new Request
+					{
+						CreateDeveloperMetadata = new CreateDeveloperMetadataRequest
+						{
+							DeveloperMetadata = new DeveloperMetadata
+							{
+								Visibility = "document",
+								MetadataKey = "TicketData",
+								MetadataValue = "Ticket Number",
+								Location = new DeveloperMetadataLocation
+								{
+									DimensionRange = new DimensionRange
+									{
+										Dimension = "COLUMNS",
+										StartIndex = 0,
+										EndIndex = 1,
+										SheetId = sheetID
+									}
+								}
+							}
+						}
+					},
+					new Request
+					{
+						CreateDeveloperMetadata = new CreateDeveloperMetadataRequest
+						{
+							DeveloperMetadata = new DeveloperMetadata
+							{
+								Visibility = "document",
+								MetadataKey = "TicketData",
+								MetadataValue = "Channel",
+								Location = new DeveloperMetadataLocation
+								{
+									DimensionRange = new DimensionRange
+									{
+										Dimension = "COLUMNS",
+										StartIndex = 1,
+										EndIndex = 2,
+										SheetId = sheetID
+									}
+								}
+							}
+						}
+					},
+					new Request
+					{
+						CreateDeveloperMetadata = new CreateDeveloperMetadataRequest
+						{
+							DeveloperMetadata = new DeveloperMetadata
+							{
+								Visibility = "document",
+								MetadataKey = "TicketData",
+								MetadataValue = "User",
+								Location = new DeveloperMetadataLocation
+								{
+									DimensionRange = new DimensionRange
+									{
+										Dimension = "COLUMNS",
+										StartIndex = 2,
+										EndIndex = 3,
+										SheetId = sheetID
+									}
+								}
+							}
+						}
+					},
+					new Request
+					{
+						CreateDeveloperMetadata = new CreateDeveloperMetadataRequest
+						{
+							DeveloperMetadata = new DeveloperMetadata
+							{
+								Visibility = "document",
+								MetadataKey = "TicketData",
+								MetadataValue = "Time created",
+								Location = new DeveloperMetadataLocation
+								{
+									DimensionRange = new DimensionRange
+									{
+										Dimension = "COLUMNS",
+										StartIndex = 3,
+										EndIndex = 4,
+										SheetId = sheetID
+									}
+								}
+							}
+						}
+					},
+					new Request
+					{
+						CreateDeveloperMetadata = new CreateDeveloperMetadataRequest
+						{
+							DeveloperMetadata = new DeveloperMetadata
+							{
+								Visibility = "document",
+								MetadataKey = "TicketData",
+								MetadataValue = "Last Message",
+								Location = new DeveloperMetadataLocation
+								{
+									DimensionRange = new DimensionRange
+									{
+										Dimension = "COLUMNS",
+										StartIndex = 4,
+										EndIndex = 5,
+										SheetId = sheetID
+									}
+								}
+							}
+						}
+					},
+					new Request
+					{
+						CreateDeveloperMetadata = new CreateDeveloperMetadataRequest
+						{
+							DeveloperMetadata = new DeveloperMetadata
+							{
+								Visibility = "document",
+								MetadataKey = "TicketData",
+								MetadataValue = "Summary",
+								Location = new DeveloperMetadataLocation
+								{
+									DimensionRange = new DimensionRange
+									{
+										Dimension = "COLUMNS",
+										StartIndex = 5,
+										EndIndex = 6,
+										SheetId = sheetID
+									}
+								}
+							}
+						}
+					},
 				}
 			};
 			service.Spreadsheets.BatchUpdate(metadataRequest, Config.spreadsheetID).Execute();
