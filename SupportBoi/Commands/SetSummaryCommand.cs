@@ -30,7 +30,6 @@ namespace SupportBoi.Commands
 				}
 
 				ulong channelID = command.Channel.Id;
-				string channelName = command.Channel.Name;
 				c.Open();
 				MySqlCommand selection = new MySqlCommand(@"SELECT * FROM tickets WHERE channel_id=@channel_id", c);
 				selection.Parameters.AddWithValue("@channel_id", channelID);
@@ -48,6 +47,9 @@ namespace SupportBoi.Commands
 					await command.RespondAsync("", false, error);
 					return;
 				}
+
+				uint ticketID = results.GetUInt32("id");
+				ulong staffID = results.GetUInt64("assigned_staff_id");
 				results.Close();
 
 				string summary = command.Message.Content.Remove(0, (Config.prefix + "setsummary ").Length);
@@ -57,6 +59,8 @@ namespace SupportBoi.Commands
 				update.Parameters.AddWithValue("@channel_id", channelID);
 				update.Prepare();
 				update.ExecuteNonQuery();
+
+				Sheets.SetSummary(ticketID, staffID, summary);
 
 				DiscordEmbed message = new DiscordEmbedBuilder
 				{

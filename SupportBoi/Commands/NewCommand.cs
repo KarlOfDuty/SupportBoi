@@ -86,14 +86,12 @@ namespace SupportBoi.Commands
 
 				await ticketChannel.SendMessageAsync("Hello, " + command.Member.Mention + "!\n" + Config.welcomeMessage);
 
+				// Refreshes the channel as changes were made to it above
+				ticketChannel = command.Guild.GetChannel(ticketChannel.Id);
+
 				// Adds the ticket to the google sheets document if enabled
-				if (Config.sheetsEnabled)
-				{
-					// Refreshes the channel as changes were made to it above
-					ticketChannel = command.Guild.GetChannel(ticketChannel.Id);
-					Sheets.AddTicket(command.Member, ticketChannel, ticketID);
-				}
-				
+				Sheets.AddTicket(command.Member, ticketChannel, id.ToString());
+
 				DiscordEmbed message = new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Green,

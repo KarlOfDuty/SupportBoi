@@ -61,7 +61,7 @@ namespace SupportBoi
 			return request.Execute();
 		}
 
-		private static Sheet CreateSheet(string staffName, string staffID)
+		private static Sheet CreateSheet(string staffID, string staffName)
 		{
 			// Create new sheet
 			BatchUpdateSpreadsheetRequest createRequest = new BatchUpdateSpreadsheetRequest
@@ -70,7 +70,7 @@ namespace SupportBoi
 				{
 					new Request
 					{
-						AddSheet = new AddSheetRequest { Properties = new SheetProperties { Title = staffName ?? "Unassigned" } }
+						AddSheet = new AddSheetRequest { Properties = new SheetProperties { Title = staffName } }
 					}
 				}
 			};
@@ -90,7 +90,7 @@ namespace SupportBoi
 							{
 								Visibility = "document",
 								MetadataKey = "StaffID",
-								MetadataValue = staffID ?? "0",
+								MetadataValue = staffID,
 								Location = new DeveloperMetadataLocation { SheetId = sheetID }
 							}
 						}
@@ -345,6 +345,24 @@ namespace SupportBoi
 			return columnNames;
 		}
 
+		private static int GetTicketRow(Sheet sheet, uint ticketID)
+		{
+			Dictionary<string, string> columnLetters = GetTicketColumnLetters(sheet.Properties.SheetId ?? -1);
+			var request = service.Spreadsheets.Values.Get(Config.spreadsheetID,
+				$"{sheet.Properties.Title}!{columnLetters["ticketNumber"]}:{columnLetters["ticketNumber"]}");
+			ValueRange response = request.Execute();
+
+			for (int i = 0; i < response.Values.Count; i++)
+			{
+				if (uint.TryParse(response.Values[i][0].ToString(), out uint value) && value == ticketID)
+				{
+					return i + 1;
+				}
+			}
+
+			throw new ArgumentException("That ticket does not exist in the provided sheet. (" + sheet.Properties.Title + ")");
+		}
+
 		private static void UpdateCell(Sheet sheet, string columnLetter, int rowNumber, string data, string url = null)
 		{
 			ValueRange valueRange = new ValueRange
@@ -386,31 +404,34 @@ namespace SupportBoi
 			return response.ValueRanges.Select(x => x.Values.Count).ToArray().Max() + 1;
 		}
 
-		public static bool AddTicket(DiscordMember user, DiscordChannel channel, string ticketNumber, string staffID = null, string staffName = null)
+		private static Sheet GetOrCreateSheet(string staffID, string staffName = "Unknown staff member")
 		{
-			if (!Config.sheetsEnabled)
-			{
-				return false;
-			}
-
 			Spreadsheet spreadsheet = GetSpreadsheet();
 			if (spreadsheet == null)
 			{
-				return false;
+				throw new NullReferenceException("Google API returned null when attempting to find spreadsheet, is the ID correct?");
 			}
 
-			Sheet sheet;
 			try
 			{
 				// Checks for a sheet which has a staff id corresponding to this staff member in it's metadata
-				sheet = spreadsheet.Sheets.First(s => s?.DeveloperMetadata?.Any(m => m?.MetadataKey == "StaffID" && m.MetadataValue == (staffID ?? "0")) ?? false);
+				return spreadsheet.Sheets.First(s => s?.DeveloperMetadata?.Any(m => m?.MetadataKey == "StaffID" && m.MetadataValue == (staffID ?? "0")) ?? false);
 			}
 			catch (Exception)
 			{
 				// Creates a new sheet if the target one does not exist
-				sheet = CreateSheet(staffName, staffID);
+				return CreateSheet(staffID, staffID == null ? "Unassigned" : staffName);
+			}
+		}
+
+		public static void AddTicket(DiscordMember user, DiscordChannel channel, string ticketNumber, string staffID = null, string staffName = null)
+		{
+			if (!Config.sheetsEnabled)
+			{
+				return;
 			}
 
+			Sheet sheet = GetOrCreateSheet(staffID, staffName);
 
 			Dictionary<string, string> columnLetters = GetTicketColumnLetters(sheet.Properties.SheetId ?? -1);
 
@@ -422,8 +443,20 @@ namespace SupportBoi
 			UpdateCell(sheet, columnLetters["timeCreated"], nextRow, DateTime.Now.ToString("yyyy-MM-dd HH:mm"));
 			UpdateCell(sheet, columnLetters["lastMessage"], nextRow, DateTime.Now.ToString("yyyy-MM-dd HH:mm"));
 			UpdateCell(sheet, columnLetters["summary"], nextRow, "No summary yet. Use '" + Config.prefix + "setsummary' to edit it.");
+		}
+
+		public static void SetSummary(uint ticketID, ulong staffID, string summary)
+		{
+			if (!Config.sheetsEnabled)
+			{
+				return;
+			}
+
+			Sheet sheet = GetOrCreateSheet(staffID.ToString());
+
+			Dictionary<string, string> columnLetters = GetTicketColumnLetters(sheet.Properties.SheetId ?? -1);
 			
-			return true;
+			UpdateCell(sheet, columnLetters["summary"], GetTicketRow(sheet, ticketID), $"{summary}");
 		}
 
 		//public static bool RefreshLastMessageSent()
