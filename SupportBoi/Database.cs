@@ -125,6 +125,28 @@ namespace SupportBoi
 			}
 			return true;
 		}
+		public static bool IsTicket(ulong channelID, out uint ticketID)
+		{
+			using (MySqlConnection c = GetConnection())
+			{
+				c.Open();
+				MySqlCommand selection = new MySqlCommand(@"SELECT * FROM tickets WHERE channel_id=@channel_id", c);
+				selection.Parameters.AddWithValue("@channel_id", channelID);
+				selection.Prepare();
+				MySqlDataReader results = selection.ExecuteReader();
+
+				// Check if ticket exists in the database
+				if (!results.Read())
+				{
+					ticketID = 0;
+					return false;
+				}
+
+				ticketID = results.GetUInt32("id");
+				results.Close();
+				return true;
+			}
+		}
 		public static bool IsBlacklisted(ulong userID)
 		{
 			using (MySqlConnection c = GetConnection())

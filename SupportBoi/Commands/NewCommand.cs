@@ -89,8 +89,7 @@ namespace SupportBoi.Commands
 				// Refreshes the channel as changes were made to it above
 				ticketChannel = command.Guild.GetChannel(ticketChannel.Id);
 
-				// Adds the ticket to the google sheets document if enabled
-				Sheets.AddTicket(command.Member, ticketChannel, id.ToString());
+
 
 				DiscordEmbed message = new DiscordEmbedBuilder
 				{
@@ -111,6 +110,9 @@ namespace SupportBoi.Commands
 					};
 					await logChannel.SendMessageAsync("", false, logMessage);
 				}
+				
+				// Adds the ticket to the google sheets document if enabled
+				Sheets.AddTicket(command.Member, ticketChannel, id.ToString());
 			}
 		}
 	}

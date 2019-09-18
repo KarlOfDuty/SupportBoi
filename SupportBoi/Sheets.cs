@@ -342,12 +342,24 @@ namespace SupportBoi
 					columnNames.Add(metadata.DeveloperMetadata.MetadataValue, ColumnIndexToLetter(metadata.DeveloperMetadata.Location.DimensionRange.StartIndex ?? 0));
 				}
 			}
+
+			if (!columnNames.ContainsKey("ticketNumber") || !columnNames.ContainsKey("channel") || !columnNames.ContainsKey("user") || !columnNames.ContainsKey("timeCreated") || !columnNames.ContainsKey("lastMessage") || !columnNames.ContainsKey("summary"))
+			{
+				return null;
+			}
+
 			return columnNames;
 		}
 
 		private static int GetTicketRow(Sheet sheet, uint ticketID)
 		{
 			Dictionary<string, string> columnLetters = GetTicketColumnLetters(sheet.Properties.SheetId ?? -1);
+
+			if (columnLetters == null)
+			{
+				throw new ArgumentException("That ticket does not exist in the provided sheet. (" + sheet.Properties.Title + ")");
+			}
+
 			var request = service.Spreadsheets.Values.Get(Config.spreadsheetID,
 				$"{sheet.Properties.Title}!{columnLetters["ticketNumber"]}:{columnLetters["ticketNumber"]}");
 			ValueRange response = request.Execute();
@@ -361,6 +373,31 @@ namespace SupportBoi
 			}
 
 			throw new ArgumentException("That ticket does not exist in the provided sheet. (" + sheet.Properties.Title + ")");
+		}
+
+		private static Tuple<Sheet, int> GetTicketRow(uint ticketID)
+		{
+			foreach (Sheet sheet in GetSpreadsheet().Sheets)
+			{
+				Dictionary<string, string> columnLetters = GetTicketColumnLetters(sheet.Properties.SheetId ?? -1);
+
+				if (columnLetters == null)
+				{
+					continue;
+				}
+				
+				var request = service.Spreadsheets.Values.Get(Config.spreadsheetID, $"{sheet.Properties.Title}!{columnLetters["ticketNumber"]}:{columnLetters["ticketNumber"]}");
+				ValueRange response = request.Execute();
+
+				for (int i = 0; i < response.Values.Count; i++)
+				{
+					if (uint.TryParse(response.Values[i][0].ToString(), out uint value) && value == ticketID)
+					{
+						return Tuple.Create(sheet, i + 1);
+					}
+				}
+			}
+			throw new ArgumentException("That ticket does not exist in the spreadsheet.");
 		}
 
 		private static void UpdateCell(Sheet sheet, string columnLetter, int rowNumber, string data, string url = null)
@@ -459,19 +496,40 @@ namespace SupportBoi
 			UpdateCell(sheet, columnLetters["summary"], GetTicketRow(sheet, ticketID), $"{summary}");
 		}
 
-		//public static bool RefreshLastMessageSent()
-		//{
+		public static void RefreshLastMessageSent()
+		{
+			throw new NotImplementedException();
+		}
 
-		//}
+		public static void DeleteTicket(uint ticketID)
+		{
+			GetTicketRow(ticketID).Deconstruct(out Sheet sheet, out int ticketRow);
 
-		//public static bool RemoveTicket()
-		//{
+			BatchUpdateSpreadsheetRequest request = new BatchUpdateSpreadsheetRequest
+			{
+				Requests = new List<Request>
+				{
+					new Request
+					{
+						DeleteDimension = new DeleteDimensionRequest
+						{
+							Range = new DimensionRange
+							{
+								SheetId = sheet.Properties.SheetId,
+								Dimension = "ROWS",
+								StartIndex = ticketRow - 1,
+								EndIndex = ticketRow
+							}
+						}
+					}
+				}
+			};
+			service.Spreadsheets.BatchUpdate(request, Config.spreadsheetID).Execute();
+		}
 
-		//}
-
-		//public static bool AssignTicket()
-		//{
-
-		//}
+		public static void AssignTicket()
+		{
+			throw new NotImplementedException();
+		}
 	}
 }

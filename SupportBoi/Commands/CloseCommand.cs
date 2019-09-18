@@ -50,7 +50,7 @@ namespace SupportBoi.Commands
 				}
 
 				
-				int id = results.GetInt32("id");
+				uint id = results.GetUInt32("id");
 				string createdTime = results.GetString("created_time");
 				ulong creatorID = results.GetUInt64("creator_id");
 				ulong assignedStaffID = results.GetUInt64("assigned_staff_id");
@@ -104,6 +104,8 @@ namespace SupportBoi.Commands
 				deletion.Parameters.AddWithValue("@channel_id", channelID);
 				deletion.Prepare();
 				deletion.ExecuteNonQuery();
+
+				Sheets.DeleteTicket(id);
 			}
 		}
 	}
