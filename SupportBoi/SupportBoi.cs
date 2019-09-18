@@ -146,7 +146,6 @@ namespace SupportBoi
 			this.commands.RegisterCommands<UnassignCommand>();
 			this.commands.RegisterCommands<UnblacklistCommand>();
 			this.commands.RegisterCommands<UnsetTicketCommand>();
-			this.commands.RegisterCommands<UpdateStaffCommand>();
 
 			Console.WriteLine("Hooking command events...");
 			this.commands.CommandErrored += this.eventHandler.OnCommandError;

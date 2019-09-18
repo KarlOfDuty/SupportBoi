@@ -32,12 +32,12 @@ namespace SupportBoi.Commands
 
 				string[] parsedMessage = command.Message.Content.Remove(0, (Config.prefix + "addstaff ").Length).Replace("<@", "").Replace(">", "").Split();
 
-				if (parsedMessage.Length < 2)
+				if (parsedMessage.Length < 1)
 				{
 					DiscordEmbed error = new DiscordEmbedBuilder
 					{
 						Color = DiscordColor.Red,
-						Description = "You need to provide an ID/Mention followed by a nickname."
+						Description = "You need to provide an ID/Mention."
 					};
 					await command.RespondAsync("", false, error);
 					return;
@@ -54,9 +54,10 @@ namespace SupportBoi.Commands
 					return;
 				}
 
+				DiscordMember member;
 				try
 				{
-					await command.Client.GetUserAsync(userID);
+					member = await command.Guild.GetMemberAsync(userID);
 				}
 				catch (Exception)
 				{
@@ -69,12 +70,10 @@ namespace SupportBoi.Commands
 					return;
 				}
 
-				string username = string.Join('_', parsedMessage.Skip(1));
-
 				c.Open();
 				MySqlCommand cmd = new MySqlCommand(@"INSERT INTO staff_list (user_id, username) VALUES (@user_id, @username);", c);
 				cmd.Parameters.AddWithValue("@user_id", userID);
-				cmd.Parameters.AddWithValue("@username", username);
+				cmd.Parameters.AddWithValue("@username", member.DisplayName);
 				cmd.ExecuteNonQuery();
 
 				DiscordEmbed message = new DiscordEmbedBuilder
