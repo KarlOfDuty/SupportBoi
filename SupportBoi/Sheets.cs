@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -164,7 +164,7 @@ namespace SupportBoi
 							{
 								Visibility = "document",
 								MetadataKey = "TicketData",
-								MetadataValue = "Ticket Number",
+								MetadataValue = "ticketNumber",
 								Location = new DeveloperMetadataLocation
 								{
 									DimensionRange = new DimensionRange
@@ -186,7 +186,7 @@ namespace SupportBoi
 							{
 								Visibility = "document",
 								MetadataKey = "TicketData",
-								MetadataValue = "Channel",
+								MetadataValue = "channel",
 								Location = new DeveloperMetadataLocation
 								{
 									DimensionRange = new DimensionRange
@@ -208,7 +208,7 @@ namespace SupportBoi
 							{
 								Visibility = "document",
 								MetadataKey = "TicketData",
-								MetadataValue = "User",
+								MetadataValue = "user",
 								Location = new DeveloperMetadataLocation
 								{
 									DimensionRange = new DimensionRange
@@ -230,7 +230,7 @@ namespace SupportBoi
 							{
 								Visibility = "document",
 								MetadataKey = "TicketData",
-								MetadataValue = "Time created",
+								MetadataValue = "timeCreated",
 								Location = new DeveloperMetadataLocation
 								{
 									DimensionRange = new DimensionRange
@@ -252,7 +252,7 @@ namespace SupportBoi
 							{
 								Visibility = "document",
 								MetadataKey = "TicketData",
-								MetadataValue = "Last Message",
+								MetadataValue = "lastMessage",
 								Location = new DeveloperMetadataLocation
 								{
 									DimensionRange = new DimensionRange
@@ -274,7 +274,7 @@ namespace SupportBoi
 							{
 								Visibility = "document",
 								MetadataKey = "TicketData",
-								MetadataValue = "Summary",
+								MetadataValue = "summary",
 								Location = new DeveloperMetadataLocation
 								{
 									DimensionRange = new DimensionRange
@@ -297,8 +297,104 @@ namespace SupportBoi
 			return GetSpreadsheet().Sheets.FirstOrDefault(s => s.Properties.SheetId == sheetID);
 		}
 
-		public static bool AddTicket(CommandContext command, string channelID, string ticketNumber, string staffID = null, string staffName = null)
+		private static string ColumnIndexToLetter(int column)
 		{
+			const int offset = 26;
+			const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+			string columnName = "";
+
+			int tempNumber = column + 1;
+			while (tempNumber > 0)
+			{
+				int position = tempNumber % offset;
+				columnName = (position == 0 ? 'Z' : chars[position > 0 ? position - 1 : 0]) + columnName;
+				tempNumber = (tempNumber - 1) / offset;
+			}
+			return columnName;
+		}
+
+		private static Dictionary<string, string> GetTicketColumnLetters(int sheetID)
+		{
+			var response = service.Spreadsheets.DeveloperMetadata.Search(new SearchDeveloperMetadataRequest()
+			{
+				DataFilters = new List<DataFilter>
+				{
+					new DataFilter
+					{
+						DeveloperMetadataLookup = new DeveloperMetadataLookup
+						{
+							LocationType = "COLUMN",
+							MetadataKey = "TicketData",
+
+						}
+					}
+				}
+			}, Config.spreadsheetID).Execute();
+
+			Dictionary<string, string> columnNames = new Dictionary<string, string>();
+
+			foreach (MatchedDeveloperMetadata metadata in response.MatchedDeveloperMetadata)
+			{
+				bool isColumn = metadata.DeveloperMetadata.Location.DimensionRange.Dimension == "COLUMNS";
+				bool isCorrectSheet = metadata.DeveloperMetadata.Location.DimensionRange.SheetId == sheetID;
+
+				if (isColumn && isCorrectSheet)
+				{
+					columnNames.Add(metadata.DeveloperMetadata.MetadataValue, ColumnIndexToLetter(metadata.DeveloperMetadata.Location.DimensionRange.StartIndex ?? 0));
+				}
+			}
+			return columnNames;
+		}
+
+		private static void UpdateCell(Sheet sheet, string columnLetter, int rowNumber, string data, string url = null)
+		{
+			ValueRange valueRange = new ValueRange
+			{
+				MajorDimension = "COLUMNS",
+				Values = new List<IList<object>>
+				{
+					new List<object> { url == null ? data : $"=HYPERLINK({url}, {data})" }
+				}
+			};
+
+			SpreadsheetsResource.ValuesResource.UpdateRequest update = service.Spreadsheets.Values.Update(valueRange, Config.spreadsheetID, sheet.Properties.Title + "!" + columnLetter + rowNumber);
+			update.ValueInputOption = SpreadsheetsResource.ValuesResource.UpdateRequest.ValueInputOptionEnum.USERENTERED;
+			update.Execute();
+		}
+
+		private static void AddMissingColumn()
+		{
+			throw new NotImplementedException();
+		}
+
+		private static int GetNextEmptyRow(Sheet sheet)
+		{
+			Dictionary<string, string> columnLetters = GetTicketColumnLetters(sheet.Properties.SheetId ?? -1);
+
+			var request = service.Spreadsheets.Values.BatchGet(Config.spreadsheetID);
+			request.Ranges = new []
+			{
+				$"{sheet.Properties.Title}!{columnLetters["ticketNumber"]}:{columnLetters["ticketNumber"]}",
+				$"{sheet.Properties.Title}!{columnLetters["channel"]}:{columnLetters["channel"]}",
+				$"{sheet.Properties.Title}!{columnLetters["user"]}:{columnLetters["user"]}",
+				$"{sheet.Properties.Title}!{columnLetters["timeCreated"]}:{columnLetters["timeCreated"]}",
+				$"{sheet.Properties.Title}!{columnLetters["lastMessage"]}:{columnLetters["lastMessage"]}",
+				$"{sheet.Properties.Title}!{columnLetters["summary"]}:{columnLetters["summary"]}"
+			};
+			request.MajorDimension = SpreadsheetsResource.ValuesResource.BatchGetRequest.MajorDimensionEnum.ROWS;
+			BatchGetValuesResponse response = request.Execute();
+
+			return response.ValueRanges.Select(x => x.Values.Count).ToArray().Max() + 1;
+		}
+
+		public static bool AddTicket(DiscordMember user, DiscordChannel channel, string ticketNumber, string staffID = null, string staffName = null)
+		{
+			if (!Config.sheetsEnabled)
+			{
+				return false;
+			}
+
 			Spreadsheet spreadsheet = GetSpreadsheet();
 			if (spreadsheet == null)
 			{
@@ -309,13 +405,26 @@ namespace SupportBoi
 			try
 			{
 				// Checks for a sheet which has a staff id corresponding to this staff member in it's metadata
-				sheet = spreadsheet.Sheets.First(s => s?.DeveloperMetadata?.Any(m => m?.MetadataKey == "StaffID" && m?.MetadataValue == (staffID ?? "0")) ?? false);
+				sheet = spreadsheet.Sheets.First(s => s?.DeveloperMetadata?.Any(m => m?.MetadataKey == "StaffID" && m.MetadataValue == (staffID ?? "0")) ?? false);
 			}
 			catch (Exception)
 			{
 				// Creates a new sheet if the target one does not exist
 				sheet = CreateSheet(staffName, staffID);
 			}
+
+
+			Dictionary<string, string> columnLetters = GetTicketColumnLetters(sheet.Properties.SheetId ?? -1);
+
+			int nextRow = GetNextEmptyRow(sheet);
+
+			UpdateCell(sheet, columnLetters["ticketNumber"], nextRow, ticketNumber);
+			UpdateCell(sheet, columnLetters["channel"], nextRow, $"\"#{channel.Name}\"", $"\"https://discordapp.com/channels/{channel.GuildId}/{channel.Id}/\"");
+			UpdateCell(sheet, columnLetters["user"], nextRow, user.Nickname == null ? $"\"{user.Username}#{user.Discriminator}\"" : $"\"{user.DisplayName} ({user.Username}#{user.Discriminator})\"", $"\"https://discordapp.com/channels/@me/{user.Id}\"");
+			UpdateCell(sheet, columnLetters["timeCreated"], nextRow, DateTime.Now.ToString("yyyy-MM-dd HH:mm"));
+			UpdateCell(sheet, columnLetters["lastMessage"], nextRow, DateTime.Now.ToString("yyyy-MM-dd HH:mm"));
+			UpdateCell(sheet, columnLetters["summary"], nextRow, "No summary yet. Use '" + Config.prefix + "setsummary' to edit it.");
+			
 			return true;
 		}
 
