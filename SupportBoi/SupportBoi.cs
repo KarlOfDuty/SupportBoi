@@ -72,7 +72,6 @@ namespace SupportBoi
 				Console.WriteLine("Connecting to database...");
 				Database.SetConnectionString(Config.hostName, Config.port, Config.database, Config.username, Config.password);
 				Database.SetupTables();
-				Console.WriteLine("Done.");
 			}
 			catch (Exception e)
 			{
@@ -87,7 +86,6 @@ namespace SupportBoi
 				{
 					Console.WriteLine("Setting up Google Sheets integration...");
 					Sheets.Reload();
-					Console.WriteLine("Done.");
 				}
 				catch (Exception e)
 				{
