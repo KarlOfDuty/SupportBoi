@@ -20,12 +20,10 @@ namespace SupportBoi
 			                   ";userid=" + username + 
 			                   ";password=" + password;
 		}
-
 		public static MySqlConnection GetConnection()
 		{
 			return new MySqlConnection(connectionString);
 		}
-
 		public static long GetNumberOfTickets()
 		{
 			try
@@ -44,7 +42,6 @@ namespace SupportBoi
 
 			return -1;
 		}
-
 		public static long GetNumberOfClosedTickets()
 		{
 			try
@@ -63,7 +60,6 @@ namespace SupportBoi
 
 			return -1;
 		}
-
 		public static void SetupTables()
 		{
 			using (MySqlConnection c = GetConnection())
@@ -151,7 +147,6 @@ namespace SupportBoi
 				return true;
 			}
 		}
-
 		public static Ticket GetTicket(uint ticketID)
 		{
 			using (MySqlConnection c = GetConnection())
@@ -243,7 +238,6 @@ namespace SupportBoi
 
 			}
 		}
-
 		public static bool UnassignStaff(ulong ticketID)
 		{
 			using (MySqlConnection c = GetConnection())
@@ -263,13 +257,14 @@ namespace SupportBoi
 
 			}
 		}
-
-		public static StaffMember GetRandomActiveStaff()
+		public static StaffMember GetRandomActiveStaff(ulong currentStaffID)
 		{
 			using (MySqlConnection c = GetConnection())
 			{
 				c.Open();
-				MySqlCommand selection = new MySqlCommand(@"SELECT * FROM staff WHERE active = true", c);
+				MySqlCommand selection = new MySqlCommand(@"SELECT * FROM staff WHERE active = true AND user_id != @user_id", c);
+				selection.Parameters.AddWithValue("@user_id", currentStaffID);
+				selection.Prepare();
 				MySqlDataReader results = selection.ExecuteReader();
 
 				// Check if ticket exists in the database
@@ -285,12 +280,9 @@ namespace SupportBoi
 				}
 				results.Close();
 
-				int randomValue = random.Next(staffMembers.Count);
-				Console.WriteLine(randomValue + " " + staffMembers.Count);
-				return staffMembers[randomValue];
+				return staffMembers[random.Next(staffMembers.Count)];
 			}
 		}
-
 		public static bool IsStaff(ulong staffID)
 		{
 			using (MySqlConnection c = GetConnection())
@@ -310,7 +302,6 @@ namespace SupportBoi
 				return true;
 			}
 		}
-
 		public static bool TryGetStaff(ulong staffID, out StaffMember staffMember)
 		{
 			using (MySqlConnection c = GetConnection())
@@ -332,7 +323,6 @@ namespace SupportBoi
 				return true;
 			}
 		}
-
 		public class Ticket
 		{
 			public uint id;
@@ -352,7 +342,6 @@ namespace SupportBoi
 				this.channelID = reader.GetUInt64("channel_id");
 			}
 		}
-
 		public class StaffMember
 		{
 			public ulong userID;

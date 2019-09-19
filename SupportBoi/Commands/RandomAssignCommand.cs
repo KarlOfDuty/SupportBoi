@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
@@ -39,7 +39,18 @@ namespace SupportBoi.Commands
 				return;
 			}
 
-			Database.StaffMember staffEntry = Database.GetRandomActiveStaff();
+			Database.StaffMember staffEntry = Database.GetRandomActiveStaff(ticket.assignedStaffID);
+
+			if (staffEntry == null)
+			{
+				DiscordEmbed error = new DiscordEmbedBuilder
+				{
+					Color = DiscordColor.Red,
+					Description = "Error: There are no other staff to choose from."
+				};
+				await command.RespondAsync("", false, error);
+				return;
+			}
 
 			DiscordMember staffMember = null;
 			try
@@ -54,17 +65,6 @@ namespace SupportBoi.Commands
 				{
 					Color = DiscordColor.Red,
 					Description = "Error: Could not find user."
-				};
-				await command.RespondAsync("", false, error);
-				return;
-			}
-
-			if (!Database.IsStaff(staffMember.Id))
-			{
-				DiscordEmbed error = new DiscordEmbedBuilder
-				{
-					Color = DiscordColor.Red,
-					Description = "Error: User is not registered as staff."
 				};
 				await command.RespondAsync("", false, error);
 				return;
