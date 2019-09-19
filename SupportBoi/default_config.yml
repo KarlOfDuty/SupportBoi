@@ -11,9 +11,10 @@
     welcome-message: "Please describe your issue below, and include all information needed for us to take action, such as coordinates, in-game names and screenshots/chat logs."
     # Decides what messages are shown in console, possible values are: Critical, Error, Warning, Info, Debug.
     console-log-level: "Info"
-
-transcripts:
+    # Format for timestamps in transcripts and google sheets if used
     timestamp-format: "yyyy-MM-dd HH:mm"
+    # Whether or not staff members should be randomly assigned tickets when they are made. Individual staff members can opt out using the toggleactive command.
+    random-assignment: true
 
 database:
     # Address and port of the mysql server

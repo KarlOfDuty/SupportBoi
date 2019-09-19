@@ -18,14 +18,14 @@ namespace SupportBoi
 		internal static ulong ticketCategory;
 		internal static string welcomeMessage = "";
 		internal static string logLevel = "Info";
+		internal static string timestampFormat = "yyyy-MMM-dd HH:mm";
+		internal static bool randomAssignment = false;
 
 		internal static string hostName = "127.0.0.1";
 		internal static int port = 3306;
 		internal static string database = "supportbot";
 		internal static string username = "";
 		internal static string password = "";
-
-		internal static string timestampFormat = "yyyy-MMM-dd HH:mm";
 
 		private static readonly Dictionary<string, ulong[]> permissions = new Dictionary<string, ulong[]>
 		{
@@ -81,6 +81,8 @@ namespace SupportBoi
 			ticketCategory = json.SelectToken("bot.ticket-category").Value<ulong>();
 			welcomeMessage = json.SelectToken("bot.welcome-message").Value<string>() ?? "";
 			logLevel = json.SelectToken("bot.console-log-level").Value<string>() ?? "";
+			timestampFormat = json.SelectToken("bot.timestamp-format").Value<string>() ?? "yyyy-MM-dd HH:mm";
+			randomAssignment = json.SelectToken("bot.random-assignment").Value<bool>();
 
 			// Reads database info
 			hostName = json.SelectToken("database.address").Value<string>() ?? "";
@@ -89,7 +91,6 @@ namespace SupportBoi
 			username = json.SelectToken("database.user").Value<string>() ?? "";
 			password = json.SelectToken("database.password").Value<string>() ?? "";
 
-			timestampFormat = json.SelectToken("transcripts.timestamp-format").Value<string>() ?? "yyyy-MMM-dd HH:mm";
 			timestampFormat = timestampFormat.Trim();
 
 			foreach (KeyValuePair<string, ulong[]> node in permissions.ToList())

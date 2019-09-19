@@ -25,19 +25,13 @@ namespace SupportBoi.Commands
 						Description = "You do not have permission to use this command."
 					};
 					await command.RespondAsync("", false, error);
-					command.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", "User tried to use the setsummary command but did not have permission.", DateTime.Now);
+					command.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", "User tried to use the setsummary command but did not have permission.", DateTime.UtcNow);
 					return;
 				}
 
 				ulong channelID = command.Channel.Id;
-				c.Open();
-				MySqlCommand selection = new MySqlCommand(@"SELECT * FROM tickets WHERE channel_id=@channel_id", c);
-				selection.Parameters.AddWithValue("@channel_id", channelID);
-				selection.Prepare();
-				MySqlDataReader results = selection.ExecuteReader();
-
 				// Check if ticket exists in the database
-				if (!results.Read())
+				if (!Database.TryGetTicket(command.Channel.Id, out Database.Ticket ticket))
 				{
 					DiscordEmbed error = new DiscordEmbedBuilder
 					{
@@ -48,11 +42,7 @@ namespace SupportBoi.Commands
 					return;
 				}
 
-				uint ticketID = results.GetUInt32("id");
-				ulong staffID = results.GetUInt64("assigned_staff_id");
-				results.Close();
-
-				string summary = command.Message.Content.Remove(0, (Config.prefix + "setsummary ").Length);
+				string summary = command.Message.Content.Replace(Config.prefix + "setsummary", "").Trim();
 
 				MySqlCommand update = new MySqlCommand(@"UPDATE tickets SET summary = @summary WHERE channel_id = @channel_id", c);
 				update.Parameters.AddWithValue("@summary", summary);
@@ -60,7 +50,7 @@ namespace SupportBoi.Commands
 				update.Prepare();
 				update.ExecuteNonQuery();
 
-				Sheets.SetSummary(ticketID, staffID, summary);
+				Sheets.SetSummary(ticket.id, summary);
 
 				DiscordEmbed message = new DiscordEmbedBuilder
 				{

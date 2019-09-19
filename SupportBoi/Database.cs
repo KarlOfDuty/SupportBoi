@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net.NetworkInformation;
 using System.Transactions;
 using MySql.Data.MySqlClient;
 
@@ -6,7 +7,7 @@ namespace SupportBoi
 {
 	public static class Database
 	{
-		private static String connectionString = "";
+		private static string connectionString = "";
 
 		public static void SetConnectionString(string host, int port, string database, string username, string password)
 		{
@@ -93,11 +94,11 @@ namespace SupportBoi
 					"INDEX(user_id, time))",
 					c);
 				MySqlCommand createStaffList = new MySqlCommand(
-					"CREATE TABLE IF NOT EXISTS staff_list(" +
+					"CREATE TABLE IF NOT EXISTS staff(" +
 					"user_id BIGINT UNSIGNED NOT NULL UNIQUE PRIMARY KEY," +
-					"username VARCHAR(256) NOT NULL UNIQUE," +
+					"name VARCHAR(256) NOT NULL UNIQUE," +
 					"active BOOLEAN NOT NULL DEFAULT true," +
-					"INDEX(user_id, username))",
+					"INDEX(user_id, name))",
 					c);
 				c.Open();
 				createTickets.ExecuteNonQuery();
@@ -125,7 +126,7 @@ namespace SupportBoi
 			}
 			return true;
 		}
-		public static bool IsTicket(ulong channelID, out uint ticketID)
+		public static bool TryGetTicket(ulong channelID, out Ticket ticket)
 		{
 			using (MySqlConnection c = GetConnection())
 			{
@@ -138,13 +139,27 @@ namespace SupportBoi
 				// Check if ticket exists in the database
 				if (!results.Read())
 				{
-					ticketID = 0;
+					ticket = null;
 					return false;
 				}
 
-				ticketID = results.GetUInt32("id");
+				ticket = new Ticket(results);
 				results.Close();
 				return true;
+			}
+		}
+
+		public static Ticket GetTicket(uint ticketID)
+		{
+			using (MySqlConnection c = GetConnection())
+			{
+				c.Open();
+				MySqlCommand selection = new MySqlCommand(@"SELECT * FROM tickets WHERE id=@id", c);
+				selection.Parameters.AddWithValue("@id", ticketID);
+				selection.Prepare();
+				MySqlDataReader results = selection.ExecuteReader();
+
+				return results.Read() ? new Ticket(results) : null;
 			}
 		}
 		public static bool IsBlacklisted(ulong userID)
@@ -203,6 +218,122 @@ namespace SupportBoi
 					return false;
 				}
 
+			}
+		}
+		public static bool AssignStaff(uint ticketID, ulong staffID)
+		{
+			using (MySqlConnection c = GetConnection())
+			{
+				try
+				{
+					c.Open();
+					MySqlCommand update = new MySqlCommand(@"UPDATE tickets SET assigned_staff_id = @assigned_staff_id WHERE id = @id", c);
+					update.Parameters.AddWithValue("@assigned_staff_id", staffID);
+					update.Parameters.AddWithValue("@id", ticketID);
+					update.Prepare();
+					return update.ExecuteNonQuery() > 0;
+				}
+				catch (MySqlException)
+				{
+					return false;
+				}
+
+			}
+		}
+
+		public static bool UnassignStaff(ulong ticketID)
+		{
+			using (MySqlConnection c = GetConnection())
+			{
+				try
+				{
+					c.Open();
+					MySqlCommand update = new MySqlCommand(@"UPDATE tickets SET assigned_staff_id = 0 WHERE id = @id", c);
+					update.Parameters.AddWithValue("@id", ticketID);
+					update.Prepare();
+					return update.ExecuteNonQuery() > 0;
+				}
+				catch (MySqlException)
+				{
+					return false;
+				}
+
+			}
+		}
+
+		public static bool IsStaff(ulong staffID)
+		{
+			using (MySqlConnection c = GetConnection())
+			{
+				c.Open();
+				MySqlCommand selection = new MySqlCommand(@"SELECT * FROM staff WHERE user_id=@user_id", c);
+				selection.Parameters.AddWithValue("@user_id", staffID);
+				selection.Prepare();
+				MySqlDataReader results = selection.ExecuteReader();
+
+				// Check if ticket exists in the database
+				if (!results.Read())
+				{
+					return false;
+				}
+				results.Close();
+				return true;
+			}
+		}
+
+		public static bool TryGetStaff(ulong staffID, out StaffMember staffMember)
+		{
+			using (MySqlConnection c = GetConnection())
+			{
+				c.Open();
+				MySqlCommand selection = new MySqlCommand(@"SELECT * FROM staff WHERE user_id=@user_id", c);
+				selection.Parameters.AddWithValue("@user_id", staffID);
+				selection.Prepare();
+				MySqlDataReader results = selection.ExecuteReader();
+
+				// Check if ticket exists in the database
+				if (!results.Read())
+				{
+					staffMember = null;
+					return false;
+				}
+				staffMember = new StaffMember(results);
+				results.Close();
+				return true;
+			}
+		}
+
+		public class Ticket
+		{
+			public uint id;
+			public DateTime createdTime;
+			public ulong creatorID;
+			public ulong assignedStaffID;
+			public string summary;
+			public ulong channelID;
+
+			public Ticket(MySqlDataReader reader)
+			{
+				this.id = reader.GetUInt32("id");
+				this.createdTime = reader.GetDateTime("created_time");
+				this.creatorID = reader.GetUInt64("creator_id");
+				this.assignedStaffID = reader.GetUInt64("assigned_staff_id");
+				this.summary = reader.GetString("summary");
+				this.channelID = reader.GetUInt64("channel_id");
+			}
+		}
+
+		public class StaffMember
+		{
+			public ulong userID;
+			public string name;
+			public bool active;
+
+			public StaffMember(MySqlDataReader reader)
+			{
+				this.userID = reader.GetUInt64("user_id");
+				this.name = reader.GetString("name");
+				this.active = reader.GetBoolean("active");
 			}
 		}
 	}

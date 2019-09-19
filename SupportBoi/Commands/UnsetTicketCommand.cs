@@ -26,12 +26,12 @@ namespace SupportBoi.Commands
 						Description = "You do not have permission to use this command."
 					};
 					await command.RespondAsync("", false, error);
-					command.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", "User tried to use unsetticket command but did not have permission.", DateTime.Now);
+					command.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", "User tried to use unsetticket command but did not have permission.", DateTime.UtcNow);
 					return;
 				}
 
 				// Check if ticket exists in the database
-				if (!Database.IsTicket(command.Channel.Id, out uint ticketID))
+				if (!Database.TryGetTicket(command.Channel.Id, out Database.Ticket ticket))
 				{
 					DiscordEmbed error = new DiscordEmbedBuilder
 					{
@@ -66,7 +66,7 @@ namespace SupportBoi.Commands
 					await logChannel.SendMessageAsync("", false, logMessage);
 				}
 
-				Sheets.DeleteTicket(ticketID);
+				Sheets.DeleteTicket(ticket.id);
 			}
 		}
 	}

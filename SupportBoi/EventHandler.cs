@@ -20,27 +20,27 @@ namespace SupportBoi
 
 		internal Task OnReady(ReadyEventArgs e)
 		{
-			e.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", "Client is ready to process events.", DateTime.Now);
+			e.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", "Client is ready to process events.", DateTime.UtcNow);
 			this.discordClient.UpdateStatusAsync(new DiscordGame(Config.prefix + "new"), UserStatus.Online);
 			return Task.CompletedTask;
 		}
 
 		internal Task OnGuildAvailable(GuildCreateEventArgs e)
 		{
-			e.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", $"Guild available: {e.Guild.Name}", DateTime.Now);
+			e.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", $"Guild available: {e.Guild.Name}", DateTime.UtcNow);
 
 			IReadOnlyList<DiscordRole> roles = e.Guild.Roles;
 
 			foreach (DiscordRole role in roles)
 			{
-				e.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", role.Name.PadRight(40, '.') + role.Id, DateTime.Now);
+				e.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", role.Name.PadRight(40, '.') + role.Id, DateTime.UtcNow);
 			}
 			return Task.CompletedTask;
 		}
 
 		internal Task OnClientError(ClientErrorEventArgs e)
 		{
-			e.Client.DebugLogger.LogMessage(LogLevel.Error, "SupportBoi", $"Exception occured: {e.Exception.GetType()}: {e.Exception}", DateTime.Now);
+			e.Client.DebugLogger.LogMessage(LogLevel.Error, "SupportBoi", $"Exception occured: {e.Exception.GetType()}: {e.Exception}", DateTime.UtcNow);
 
 			return Task.CompletedTask;
 		}
@@ -67,7 +67,7 @@ namespace SupportBoi
 
 				default:
 					{
-						e.Context.Client.DebugLogger.LogMessage(LogLevel.Error, "SupportBoi", $"Exception occured: {e.Exception.GetType()}: {e.Exception}", DateTime.Now);
+						e.Context.Client.DebugLogger.LogMessage(LogLevel.Error, "SupportBoi", $"Exception occured: {e.Exception.GetType()}: {e.Exception}", DateTime.UtcNow);
 						DiscordEmbed error = new DiscordEmbedBuilder
 						{
 							Color = DiscordColor.Red,

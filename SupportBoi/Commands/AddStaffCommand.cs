@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DSharpPlus;
@@ -26,13 +27,14 @@ namespace SupportBoi.Commands
 						Description = "You do not have permission to use this command."
 					};
 					await command.RespondAsync("", false, error);
-					command.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", "User tried to use the addstaff command but did not have permission.", DateTime.Now);
+					command.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", "User tried to use the addstaff command but did not have permission.", DateTime.UtcNow);
 					return;
 				}
 
-				string[] parsedMessage = command.Message.Content.Remove(0, (Config.prefix + "addstaff ").Length).Replace("<@", "").Replace(">", "").Split();
+				string strippedMessage = command.Message.Content.Replace(Config.prefix, "");
+				string[] parsedMessage = strippedMessage.Replace("<@", "").Replace(">", "").Split();
 
-				if (parsedMessage.Length < 1)
+				if (parsedMessage.Length < 2)
 				{
 					DiscordEmbed error = new DiscordEmbedBuilder
 					{
@@ -43,7 +45,7 @@ namespace SupportBoi.Commands
 					return;
 				}
 
-				if (!ulong.TryParse(parsedMessage[0], out ulong userID))
+				if (!ulong.TryParse(parsedMessage[1], out ulong userID))
 				{
 					DiscordEmbed error = new DiscordEmbedBuilder
 					{
@@ -70,16 +72,26 @@ namespace SupportBoi.Commands
 					return;
 				}
 
+
+				MySqlCommand cmd;
+				if (Database.IsStaff(userID))
+				{
+					cmd = new MySqlCommand(@"UPDATE staff SET name = @name WHERE user_id = @user_id", c);
+				}
+				else
+				{
+					cmd = new MySqlCommand(@"INSERT INTO staff (user_id, name) VALUES (@user_id, @name);", c);
+				}
+
 				c.Open();
-				MySqlCommand cmd = new MySqlCommand(@"INSERT INTO staff_list (user_id, username) VALUES (@user_id, @username);", c);
 				cmd.Parameters.AddWithValue("@user_id", userID);
-				cmd.Parameters.AddWithValue("@username", member.DisplayName);
+				cmd.Parameters.AddWithValue("@name", member.DisplayName);
 				cmd.ExecuteNonQuery();
 
 				DiscordEmbed message = new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Green,
-					Description = "Staff member added."
+					Description = member.Mention + " was added to staff."
 				};
 				await command.RespondAsync("", false, message);
 
@@ -90,8 +102,9 @@ namespace SupportBoi.Commands
 					DiscordEmbed logMessage = new DiscordEmbedBuilder
 					{
 						Color = DiscordColor.Green,
-						Description = command.Member.Mention + " was added to the staff list.\n",
+						Description = member.Mention + " was added to staff.\n",
 					};
+					await logChannel.SendMessageAsync("", false, logMessage);
 				}
 			}
 		}

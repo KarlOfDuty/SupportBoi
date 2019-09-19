@@ -25,7 +25,7 @@ namespace SupportBoi.Commands
 						Description = "You do not have permission to use this command."
 					};
 					await command.RespondAsync("", false, error);
-					command.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", "User tried to use the status command but did not have permission.", DateTime.Now);
+					command.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", "User tried to use the status command but did not have permission.", DateTime.UtcNow);
 					return;
 				}
 

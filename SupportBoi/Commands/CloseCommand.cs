@@ -14,88 +14,77 @@ namespace SupportBoi.Commands
 		[Cooldown(1, 5, CooldownBucketType.User)]
 		public async Task OnExecute(CommandContext command)
 		{
+			// Check if the user has permission to use this command.
+			if (!Config.HasPermission(command.Member, "close"))
+			{
+				DiscordEmbed error = new DiscordEmbedBuilder
+				{
+					Color = DiscordColor.Red,
+					Description = "You do not have permission to use this command."
+				};
+				await command.RespondAsync("", false, error);
+				command.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", "User tried to use the close command but did not have permission.", DateTime.UtcNow);
+				return;
+			}
+
+			ulong channelID = command.Channel.Id;
+			string channelName = command.Channel.Name;
+
+			// Check if ticket exists in the database
+			if (!Database.TryGetTicket(channelID, out Database.Ticket ticket))
+			{
+				DiscordEmbed error = new DiscordEmbedBuilder
+				{
+					Color = DiscordColor.Red,
+					Description = "This channel is not a ticket."
+				};
+				await command.RespondAsync("", false, error);
+				return;
+			}
+
+			// Build transcript
+			string ticketNumber = ticket.id.ToString("00000");
+			string filePath = "";
+			try
+			{
+				filePath = await Transcriber.ExecuteAsync(command.Channel.Id.ToString(), ticketNumber);
+			}
+			catch (Exception)
+			{
+				DiscordEmbed error = new DiscordEmbedBuilder
+				{
+					Color = DiscordColor.Red,
+					Description = "ERROR: Could not save transcript file. Aborting..."
+				};
+				await command.RespondAsync("", false, error);
+				throw;
+			}
+
+			// Log it if the log channel exists
+			DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
+			if (logChannel != null)
+			{
+				DiscordEmbed message = new DiscordEmbedBuilder
+				{
+					Color = DiscordColor.Green,
+					Description = "Ticket " + ticketNumber + " closed by " + command.Member.Mention + ".\n",
+					Footer = new DiscordEmbedBuilder.EmbedFooter { Text = '#' + channelName }
+				};
+				await logChannel.SendFileAsync(filePath, "", false, message);
+			}
+
 			using (MySqlConnection c = Database.GetConnection())
 			{
-				// Check if the user has permission to use this command.
-				if (!Config.HasPermission(command.Member, "close"))
-				{
-					DiscordEmbed error = new DiscordEmbedBuilder
-					{
-						Color = DiscordColor.Red,
-						Description = "You do not have permission to use this command."
-					};
-					await command.RespondAsync("", false, error);
-					command.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", "User tried to use command but did not have permission.", DateTime.Now);
-					return;
-				}
-
-				ulong channelID = command.Channel.Id;
-				string channelName = command.Channel.Name;
-				c.Open();
-				MySqlCommand selection = new MySqlCommand(@"SELECT * FROM tickets WHERE channel_id=@channel_id", c);
-				selection.Parameters.AddWithValue("@channel_id", channelID);
-				selection.Prepare();
-				MySqlDataReader results = selection.ExecuteReader();
-
-				// Check if ticket exists in the database
-				if (!results.Read())
-				{
-					DiscordEmbed error = new DiscordEmbedBuilder
-					{
-						Color = DiscordColor.Red,
-						Description = "This channel is not a ticket."
-					};
-					await command.RespondAsync("", false, error);
-					return;
-				}
-
-				
-				uint id = results.GetUInt32("id");
-				string createdTime = results.GetString("created_time");
-				ulong creatorID = results.GetUInt64("creator_id");
-				ulong assignedStaffID = results.GetUInt64("assigned_staff_id");
-				string summary = results.GetString("summary");
-
-				// Build transcript
-				string ticketNumber = id.ToString("00000");
-				results.Close();
-				string filePath = "";
-				try
-				{
-					filePath = await Transcriber.ExecuteAsync(command.Channel.Id.ToString(), ticketNumber);
-				}
-				catch (Exception)
-				{
-					DiscordEmbed error = new DiscordEmbedBuilder
-					{
-						Color = DiscordColor.Red,
-						Description = "ERROR: Could not save transcript file. Aborting..."
-					};
-					await command.RespondAsync("", false, error);
-					throw;
-				}
-
-				// Log it if the log channel exists
-				DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
-				if (logChannel != null)
-				{
-					DiscordEmbed message = new DiscordEmbedBuilder
-					{
-						Color = DiscordColor.Green,
-						Description = "Ticket " + ticketNumber + " closed by " + command.Member.Mention + ".\n",
-						Footer = new DiscordEmbedBuilder.EmbedFooter { Text = '#' + channelName }
-					};
-					await logChannel.SendFileAsync(filePath, "", false, message);
-				}
-
 				// Create an entry in the ticket history database
 				MySqlCommand archiveTicket = new MySqlCommand(@"INSERT INTO ticket_history (id, created_time, closed_time, creator_id, assigned_staff_id, summary, channel_id) VALUES (@id, @created_time, now(), @creator_id, @assigned_staff_id, @summary, @channel_id);", c);
-				archiveTicket.Parameters.AddWithValue("@id", id);
-				archiveTicket.Parameters.AddWithValue("@created_time", createdTime);
-				archiveTicket.Parameters.AddWithValue("@creator_id", creatorID);
-				archiveTicket.Parameters.AddWithValue("@assigned_staff_id", assignedStaffID);
-				archiveTicket.Parameters.AddWithValue("@summary", summary);
+				archiveTicket.Parameters.AddWithValue("@id", ticket.id);
+				archiveTicket.Parameters.AddWithValue("@created_time", ticket.createdTime);
+				archiveTicket.Parameters.AddWithValue("@creator_id", ticket.creatorID);
+				archiveTicket.Parameters.AddWithValue("@assigned_staff_id", ticket.assignedStaffID);
+				archiveTicket.Parameters.AddWithValue("@summary", ticket.summary);
 				archiveTicket.Parameters.AddWithValue("@channel_id", channelID);
+
+				c.Open();
 				archiveTicket.ExecuteNonQuery();
 
 				// Delete the channel and database entry
@@ -105,7 +94,7 @@ namespace SupportBoi.Commands
 				deletion.Prepare();
 				deletion.ExecuteNonQuery();
 
-				Sheets.DeleteTicket(id);
+				Sheets.DeleteTicket(ticket.id);
 			}
 		}
 	}

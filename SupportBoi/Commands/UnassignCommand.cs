@@ -4,6 +4,7 @@ using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using DSharpPlus.Exceptions;
 
 namespace SupportBoi.Commands
 {
@@ -22,13 +23,12 @@ namespace SupportBoi.Commands
 					Description = "You do not have permission to use this command."
 				};
 				await command.RespondAsync("", false, error);
-				command.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi",
-					"User tried to use command but did not have permission.", DateTime.Now);
+				command.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", "User tried to use the unassign command but did not have permission.", DateTime.UtcNow);
 				return;
 			}
 
 			// Check if ticket exists in the database
-			if (!Database.IsTicket(command.Channel.Id))
+			if (!Database.TryGetTicket(command.Channel.Id, out Database.Ticket ticket))
 			{
 				DiscordEmbed error = new DiscordEmbedBuilder
 				{
@@ -39,7 +39,49 @@ namespace SupportBoi.Commands
 				return;
 			}
 
-			// TODO: Add ticket assigning to mysql database and implement google sheets api
+			if (!Database.UnassignStaff(ticket.id))
+			{
+				DiscordEmbed error = new DiscordEmbedBuilder
+				{
+					Color = DiscordColor.Red,
+					Description = "Error: Failed to unassign staff from ticket."
+				};
+				await command.RespondAsync("", false, error);
+				return;
+			}
+
+			DiscordEmbed message = new DiscordEmbedBuilder
+			{
+				Color = DiscordColor.Green,
+				Description = "Unassigned staff from ticket " + ticket.id + "."
+			};
+			await command.RespondAsync("", false, message);
+
+			// Log it if the log channel exists
+			DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
+			if (logChannel != null)
+			{
+				DiscordEmbed logMessage = new DiscordEmbedBuilder
+				{
+					Color = DiscordColor.Green,
+					Description = "Staff was unassigned from " + command.Channel.Mention + " by " + command.Member.Mention + "."
+				};
+				await logChannel.SendMessageAsync("", false, logMessage);
+			}
+
+			if (Config.sheetsEnabled)
+			{
+				Sheets.DeleteTicket(ticket.id);
+
+				DiscordMember user = null;
+				try
+				{
+					user = await command.Guild.GetMemberAsync(ticket.creatorID);
+				}
+				catch (NotFoundException) { }
+
+				Sheets.AddTicket(user, command.Channel, ticket.id.ToString(), null, null, ticket.createdTime);
+			}
 		}
 	}
 }

@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using DSharpPlus.Exceptions;
 
 namespace SupportBoi.Commands
 {
@@ -24,12 +23,12 @@ namespace SupportBoi.Commands
 					Description = "You do not have permission to use this command."
 				};
 				await command.RespondAsync("", false, error);
-				command.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", "User tried to use command but did not have permission.", DateTime.Now);
+				command.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", "User tried to use assign command but did not have permission.", DateTime.UtcNow);
 				return;
 			}
 
 			// Check if ticket exists in the database
-			if (!Database.IsTicket(command.Channel.Id))
+			if (!Database.TryGetTicket(command.Channel.Id, out Database.Ticket ticket))
 			{
 				DiscordEmbed error = new DiscordEmbedBuilder
 				{
@@ -40,46 +39,96 @@ namespace SupportBoi.Commands
 				return;
 			}
 
-			IReadOnlyList<DiscordUser> mentionedUsers = command.Message.MentionedUsers;
+			ulong staffID;
+			string strippedMessage = command.Message.Content.Replace(Config.prefix + "assign", "");
+			string[] parsedMessage = strippedMessage.Replace("<@", "").Replace(">", "").Trim().Split();
 
-			foreach (DiscordUser mentionedUser in mentionedUsers)
+			if (parsedMessage.Length < 1)
 			{
+				staffID = command.Member.Id;
+			}
+			else if (!ulong.TryParse(parsedMessage[0], out staffID))
+			{
+				DiscordEmbed error = new DiscordEmbedBuilder
+				{
+					Color = DiscordColor.Red,
+					Description = "Invalid ID/Mention. (Could not convert to numerical)"
+				};
+				await command.RespondAsync("", false, error);
+				return;
+			}
+
+			DiscordMember staffMember = null;
+			try
+			{
+				staffMember = await command.Guild.GetMemberAsync(staffID);
+			}
+			catch (NotFoundException) {  }
+
+			if (staffMember == null)
+			{
+				DiscordEmbed error = new DiscordEmbedBuilder
+				{
+					Color = DiscordColor.Red,
+					Description = "Error: Could not find user."
+				};
+				await command.RespondAsync("", false, error);
+				return;
+			}
+
+			if (!Database.IsStaff(staffMember.Id))
+			{
+				DiscordEmbed error = new DiscordEmbedBuilder
+				{
+					Color = DiscordColor.Red,
+					Description = "Error: User is not registered as staff."
+				};
+				await command.RespondAsync("", false, error);
+				return;
+			}
+
+			if (!Database.AssignStaff(ticket.id, staffID))
+			{
+				DiscordEmbed error = new DiscordEmbedBuilder
+				{
+					Color = DiscordColor.Red,
+					Description = "Error: Failed to assign " + staffMember.Mention + " to ticket."
+				};
+				await command.RespondAsync("", false, error);
+				return;
+			}
+
+			DiscordEmbed message = new DiscordEmbedBuilder
+			{
+				Color = DiscordColor.Green,
+				Description = "Assigned " + staffMember.Mention + " to ticket " + ticket.id + "."
+			};
+			await command.RespondAsync("", false, message);
+
+			// Log it if the log channel exists
+			DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
+			if (logChannel != null)
+			{
+				DiscordEmbed logMessage = new DiscordEmbedBuilder
+				{
+					Color = DiscordColor.Green,
+					Description = staffMember.Mention + " was was assigned to " + command.Channel.Mention + " by " + command.Member.Mention + "."
+				};
+				await logChannel.SendMessageAsync("", false, logMessage);
+			}
+
+			if (Config.sheetsEnabled)
+			{
+				Sheets.DeleteTicket(ticket.id);
+
+				DiscordMember user = null;
 				try
 				{
-					DiscordMember mentionedMember = await command.Guild.GetMemberAsync(mentionedUser.Id);
-
-
-					// TODO: Add ticket assigning to mysql database and implement google sheets api
-					DiscordEmbed message = new DiscordEmbedBuilder
-					{
-						Color = DiscordColor.Green,
-						Description = "Assigned " + mentionedMember.Mention + " to ticket."
-					};
-					await command.RespondAsync("", false, message);
-
-					// Log it if the log channel exists
-					DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
-					if (logChannel != null)
-					{
-						DiscordEmbed logMessage = new DiscordEmbedBuilder
-						{
-							Color = DiscordColor.Green,
-							Description = mentionedMember.Mention + " was assigned to " + command.Channel.Mention + " by " + command.Member.Mention + "."
-						};
-						await logChannel.SendMessageAsync("", false, logMessage);
-					}
+					user = await command.Guild.GetMemberAsync(ticket.creatorID);
 				}
-				catch (Exception)
-				{
-					DiscordEmbed message = new DiscordEmbedBuilder
-					{
-						Color = DiscordColor.Red,
-						Description = "Could not assign " + mentionedUser.Mention + " to ticket, they were not found on this server."
-					};
-					await command.RespondAsync("", false, message);
-					throw;
-				}
+				catch (NotFoundException) { }
 
+				Sheets.AddTicket(user, command.Channel, ticket.id.ToString(), staffMember.Id.ToString(), staffMember.DisplayName, ticket.createdTime);
 			}
 		}
 	}

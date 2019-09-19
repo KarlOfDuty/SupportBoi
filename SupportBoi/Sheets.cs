@@ -375,7 +375,7 @@ namespace SupportBoi
 			throw new ArgumentException("That ticket does not exist in the provided sheet. (" + sheet.Properties.Title + ")");
 		}
 
-		private static Tuple<Sheet, int> GetTicketRow(uint ticketID)
+		private static Tuple<Sheet, int> GetTicket(uint ticketID)
 		{
 			foreach (Sheet sheet in GetSpreadsheet().Sheets)
 			{
@@ -418,6 +418,7 @@ namespace SupportBoi
 
 		private static void AddMissingColumn()
 		{
+			//TODO: Implement this
 			throw new NotImplementedException();
 		}
 
@@ -461,7 +462,7 @@ namespace SupportBoi
 			}
 		}
 
-		public static void AddTicket(DiscordMember user, DiscordChannel channel, string ticketNumber, string staffID = null, string staffName = null)
+		public static void AddTicket(DiscordMember user, DiscordChannel channel, string ticketNumber, string staffID = null, string staffName = null, DateTime? createdTime = null, DateTime? lastMessage = null)
 		{
 			if (!Config.sheetsEnabled)
 			{
@@ -475,21 +476,21 @@ namespace SupportBoi
 			int nextRow = GetNextEmptyRow(sheet);
 
 			UpdateCell(sheet, columnLetters["ticketNumber"], nextRow, ticketNumber);
-			UpdateCell(sheet, columnLetters["channel"], nextRow, $"\"#{channel.Name}\"", $"\"https://discordapp.com/channels/{channel.GuildId}/{channel.Id}/\"");
-			UpdateCell(sheet, columnLetters["user"], nextRow, user.Nickname == null ? $"\"{user.Username}#{user.Discriminator}\"" : $"\"{user.DisplayName} ({user.Username}#{user.Discriminator})\"", $"\"https://discordapp.com/channels/@me/{user.Id}\"");
-			UpdateCell(sheet, columnLetters["timeCreated"], nextRow, DateTime.Now.ToString("yyyy-MM-dd HH:mm"));
-			UpdateCell(sheet, columnLetters["lastMessage"], nextRow, DateTime.Now.ToString("yyyy-MM-dd HH:mm"));
+			UpdateCell(sheet, columnLetters["channel"], nextRow, $"\"#{channel?.Name}\"", $"\"https://discordapp.com/channels/{channel?.GuildId}/{channel?.Id}/\"");
+			UpdateCell(sheet, columnLetters["user"], nextRow, user?.Nickname == null ? $"\"{user?.Username}#{user?.Discriminator}\"" : $"\"{user.DisplayName} ({user.Username}#{user.Discriminator})\"", $"\"https://discordapp.com/channels/@me/{user?.Id}\"");
+			UpdateCell(sheet, columnLetters["timeCreated"], nextRow,  createdTime?.ToString("yyyy-MM-dd HH:mm") ?? DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm"));
+			UpdateCell(sheet, columnLetters["lastMessage"], nextRow, lastMessage?.ToString("yyyy-MM-dd HH:mm") ?? DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm"));
 			UpdateCell(sheet, columnLetters["summary"], nextRow, "No summary yet. Use '" + Config.prefix + "setsummary' to edit it.");
 		}
 
-		public static void SetSummary(uint ticketID, ulong staffID, string summary)
+		public static void SetSummary(uint ticketID, string summary)
 		{
 			if (!Config.sheetsEnabled)
 			{
 				return;
 			}
 
-			Sheet sheet = GetOrCreateSheet(staffID.ToString());
+			Sheet sheet = GetTicket(ticketID).Item1;
 
 			Dictionary<string, string> columnLetters = GetTicketColumnLetters(sheet.Properties.SheetId ?? -1);
 			
@@ -498,12 +499,18 @@ namespace SupportBoi
 
 		public static void RefreshLastMessageSent()
 		{
+			//TODO: Implement this
 			throw new NotImplementedException();
 		}
 
 		public static void DeleteTicket(uint ticketID)
 		{
-			GetTicketRow(ticketID).Deconstruct(out Sheet sheet, out int ticketRow);
+			if (!Config.sheetsEnabled)
+			{
+				return;
+			}
+
+			GetTicket(ticketID).Deconstruct(out Sheet sheet, out int ticketRow);
 
 			BatchUpdateSpreadsheetRequest request = new BatchUpdateSpreadsheetRequest
 			{
@@ -525,11 +532,6 @@ namespace SupportBoi
 				}
 			};
 			service.Spreadsheets.BatchUpdate(request, Config.spreadsheetID).Execute();
-		}
-
-		public static void AssignTicket()
-		{
-			throw new NotImplementedException();
 		}
 	}
 }

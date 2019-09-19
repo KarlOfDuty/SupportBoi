@@ -16,82 +16,95 @@ namespace SupportBoi.Commands
 		[Cooldown(1, 5, CooldownBucketType.User)]
 		public async Task OnExecute(CommandContext command)
 		{
+			// Check if the user has permission to use this command.
+			if (!Config.HasPermission(command.Member, "removestaff"))
+			{
+				DiscordEmbed error = new DiscordEmbedBuilder
+				{
+					Color = DiscordColor.Red,
+					Description = "You do not have permission to use this command."
+				};
+				await command.RespondAsync("", false, error);
+				command.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi",
+					"User tried to use the removestaff command but did not have permission.", DateTime.UtcNow);
+				return;
+			}
+
+			string strippedMessage = command.Message.Content.Replace(Config.prefix, "");
+			string[] parsedMessage = strippedMessage.Replace("<@", "").Replace(">", "").Split();
+
+			if (parsedMessage.Length < 2)
+			{
+				DiscordEmbed error = new DiscordEmbedBuilder
+				{
+					Color = DiscordColor.Red,
+					Description = "You need to provide an ID/Mention."
+				};
+				await command.RespondAsync("", false, error);
+				return;
+			}
+
+			if (!ulong.TryParse(parsedMessage[1], out ulong userID))
+			{
+				DiscordEmbed error = new DiscordEmbedBuilder
+				{
+					Color = DiscordColor.Red,
+					Description = "Invalid ID/Mention. (Could not convert to numerical)"
+				};
+				await command.RespondAsync("", false, error);
+				return;
+			}
+
+			try
+			{
+				await command.Client.GetUserAsync(userID);
+			}
+			catch (Exception)
+			{
+				DiscordEmbed error = new DiscordEmbedBuilder
+				{
+					Color = DiscordColor.Red,
+					Description = "Invalid ID/Mention. (Could not find user on Discord)"
+				};
+				await command.RespondAsync("", false, error);
+				return;
+			}
+
+			if (!Database.IsStaff(userID))
+			{
+				DiscordEmbed error = new DiscordEmbedBuilder
+				{
+					Color = DiscordColor.Red,
+					Description = "User is already not registered as staff."
+				};
+				await command.RespondAsync("", false, error);
+				return;
+			}
+
 			using (MySqlConnection c = Database.GetConnection())
 			{
-				// Check if the user has permission to use this command.
-				if (!Config.HasPermission(command.Member, "removestaff"))
-				{
-					DiscordEmbed error = new DiscordEmbedBuilder
-					{
-						Color = DiscordColor.Red,
-						Description = "You do not have permission to use this command."
-					};
-					await command.RespondAsync("", false, error);
-					command.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", "User tried to use the removestaff command but did not have permission.", DateTime.Now);
-					return;
-				}
-
-				string[] parsedMessage = command.Message.Content.Remove(0, (Config.prefix + "removestaff ").Length).Replace("<@", "").Replace(">", "").Split();
-
-				if (parsedMessage.Length < 1)
-				{
-					DiscordEmbed error = new DiscordEmbedBuilder
-					{
-						Color = DiscordColor.Red,
-						Description = "You need to provide an ID/Mention."
-					};
-					await command.RespondAsync("", false, error);
-					return;
-				}
-
-				if (!ulong.TryParse(parsedMessage[0], out ulong userID))
-				{
-					DiscordEmbed error = new DiscordEmbedBuilder
-					{
-						Color = DiscordColor.Red,
-						Description = "Invalid ID/Mention. (Could not convert to numerical)"
-					};
-					await command.RespondAsync("", false, error);
-					return;
-				}
-
-				try
-				{
-					await command.Client.GetUserAsync(userID);
-				}
-				catch (Exception)
-				{
-					DiscordEmbed error = new DiscordEmbedBuilder
-					{
-						Color = DiscordColor.Red,
-						Description = "Invalid ID/Mention. (Could not find user on Discord)"
-					};
-					await command.RespondAsync("", false, error);
-					return;
-				}
-
 				c.Open();
-				MySqlCommand deletion = new MySqlCommand(@"DELETE FROM staff_list WHERE user_id=@user_id", c);
+				MySqlCommand deletion = new MySqlCommand(@"DELETE FROM staff WHERE user_id=@user_id", c);
 				deletion.Parameters.AddWithValue("@user_id", userID);
 				deletion.Prepare();
 
-				if (deletion.ExecuteNonQuery() > 0)
+				DiscordEmbed message = new DiscordEmbedBuilder
 				{
-					DiscordEmbed message = new DiscordEmbedBuilder
+					Color = DiscordColor.Green,
+					Description = "User was removed from staff."
+				};
+				await command.RespondAsync("", false, message);
+
+				// Log it if the log channel exists
+				DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
+				if (logChannel != null)
+				{
+					DiscordEmbed logMessage = new DiscordEmbedBuilder
 					{
 						Color = DiscordColor.Green,
-						Description = "User removed from staff list."
+						Description = "User was removed from staff.\n",
 					};
-					await command.RespondAsync("", false, message);
-				}
-				else
-				{
-					DiscordEmbed message = new DiscordEmbedBuilder
-					{
-						Color = DiscordColor.Red,
-						Description = "User did not exist in the staff list."
-					};
-					await command.RespondAsync("", false, message);
+					await logChannel.SendMessageAsync("", false, logMessage);
 				}
 			}
 		}
