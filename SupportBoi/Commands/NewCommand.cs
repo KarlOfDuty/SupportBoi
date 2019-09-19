@@ -112,7 +112,7 @@ namespace SupportBoi.Commands
 				}
 				
 				// Adds the ticket to the google sheets document if enabled
-				Sheets.AddTicket(command.Member, ticketChannel, id.ToString());
+				Sheets.AddTicketQueued(command.Member, ticketChannel, id.ToString());
 			}
 		}
 	}

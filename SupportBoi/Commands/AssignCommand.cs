@@ -119,8 +119,6 @@ namespace SupportBoi.Commands
 
 			if (Config.sheetsEnabled)
 			{
-				Sheets.DeleteTicket(ticket.id);
-
 				DiscordMember user = null;
 				try
 				{
@@ -128,7 +126,8 @@ namespace SupportBoi.Commands
 				}
 				catch (NotFoundException) { }
 
-				Sheets.AddTicket(user, command.Channel, ticket.id.ToString(), staffMember.Id.ToString(), staffMember.DisplayName, ticket.createdTime);
+				Sheets.DeleteTicketQueued(ticket.id);
+				Sheets.AddTicketQueued(user, command.Channel, ticket.id.ToString(), staffMember.Id.ToString(), staffMember.DisplayName, ticket.createdTime);
 			}
 		}
 	}

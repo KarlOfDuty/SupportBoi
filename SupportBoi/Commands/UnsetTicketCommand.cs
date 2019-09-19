@@ -66,7 +66,7 @@ namespace SupportBoi.Commands
 					await logChannel.SendMessageAsync("", false, logMessage);
 				}
 
-				Sheets.DeleteTicket(ticket.id);
+				Sheets.DeleteTicketQueued(ticket.id);
 			}
 		}
 	}

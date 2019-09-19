@@ -50,7 +50,7 @@ namespace SupportBoi.Commands
 				update.Prepare();
 				update.ExecuteNonQuery();
 
-				Sheets.SetSummary(ticket.id, summary);
+				Sheets.SetSummaryQueued(ticket.id, summary);
 
 				DiscordEmbed message = new DiscordEmbedBuilder
 				{

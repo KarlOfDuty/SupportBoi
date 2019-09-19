@@ -70,7 +70,7 @@ namespace SupportBoi.Commands
 					await logChannel.SendMessageAsync("", false, logMessage);
 				}
 
-				Sheets.AddTicket(command.Member, command.Channel, id.ToString(), command.Member.Id.ToString(), command.Member.DisplayName);
+				Sheets.AddTicketQueued(command.Member, command.Channel, id.ToString(), command.Member.Id.ToString(), command.Member.DisplayName);
 			}
 		}
 	}

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,6 +10,7 @@ using Google.Apis.Services;
 using Google.Apis.Sheets.v4;
 using Google.Apis.Sheets.v4.Data;
 using Google.Apis.Util.Store;
+using Tyrrrz.Extensions;
 
 namespace SupportBoi
 {
@@ -20,9 +22,14 @@ namespace SupportBoi
 
 		private static SheetsService service;
 
+		private static Timer timer;
+
+		private static ConcurrentQueue<Action> jobQueue = new ConcurrentQueue<Action>();
+
 		public static void Reload()
 		{
 			service?.Dispose();
+			timer?.Dispose();
 			credential = null;
 
 			if (!Config.sheetsEnabled)
@@ -51,6 +58,28 @@ namespace SupportBoi
 			{
 				Console.WriteLine();
 				throw new ArgumentException("ERROR: Could not find a Google Sheets Spreadsheet with provided ID.");
+			}
+
+			timer = new Timer(RunJobs, null, 1000, Timeout.Infinite);
+		}
+
+		private static void RunJobs(object _)
+		{
+
+			try
+			{
+				if (jobQueue.TryDequeue(out Action job))
+				{
+					job();
+				}
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine("Google Sheets job error: " + e);
+			}
+			finally
+			{
+				timer?.Change(1000, Timeout.Infinite);
 			}
 		}
 
@@ -391,7 +420,7 @@ namespace SupportBoi
 
 				for (int i = 0; i < response.Values.Count; i++)
 				{
-					if (uint.TryParse(response.Values[i][0].ToString(), out uint value) && value == ticketID)
+					if (!response.Values[i].IsNullOrEmpty() && uint.TryParse(response.Values[i]?[0].ToString(), out uint value) && value == ticketID)
 					{
 						return Tuple.Create(sheet, i + 1);
 					}
@@ -462,13 +491,18 @@ namespace SupportBoi
 			}
 		}
 
-		public static void AddTicket(DiscordMember user, DiscordChannel channel, string ticketNumber, string staffID = null, string staffName = null, DateTime? createdTime = null, DateTime? lastMessage = null)
+		public static void AddTicketQueued(DiscordMember user, DiscordChannel channel, string ticketNumber, string staffID = null, string staffName = null, DateTime? createdTime = null, DateTime? lastMessage = null)
 		{
 			if (!Config.sheetsEnabled)
 			{
 				return;
 			}
 
+			jobQueue.Enqueue(() => AddTicket(user, channel, ticketNumber, staffID, staffName, createdTime, lastMessage));
+		}
+
+		private static void AddTicket(DiscordMember user, DiscordChannel channel, string ticketNumber, string staffID = null, string staffName = null, DateTime? createdTime = null, DateTime? lastMessage = null)
+		{
 			Sheet sheet = GetOrCreateSheet(staffID, staffName);
 
 			Dictionary<string, string> columnLetters = GetTicketColumnLetters(sheet.Properties.SheetId ?? -1);
@@ -483,13 +517,18 @@ namespace SupportBoi
 			UpdateCell(sheet, columnLetters["summary"], nextRow, "No summary yet. Use '" + Config.prefix + "setsummary' to edit it.");
 		}
 
-		public static void SetSummary(uint ticketID, string summary)
+		public static void SetSummaryQueued(uint ticketID, string summary)
 		{
 			if (!Config.sheetsEnabled)
 			{
 				return;
 			}
 
+			jobQueue.Enqueue(() => SetSummary(ticketID, summary));
+		}
+
+		private static void SetSummary(uint ticketID, string summary)
+		{
 			Sheet sheet = GetTicket(ticketID).Item1;
 
 			Dictionary<string, string> columnLetters = GetTicketColumnLetters(sheet.Properties.SheetId ?? -1);
@@ -497,19 +536,29 @@ namespace SupportBoi
 			UpdateCell(sheet, columnLetters["summary"], GetTicketRow(sheet, ticketID), $"{summary}");
 		}
 
-		public static void RefreshLastMessageSent()
+		public static void RefreshLastMessageSentQueued(uint ticketID)
+		{
+			RefreshLastMessageSent(ticketID);
+		}
+
+		private static void RefreshLastMessageSent(uint ticketID)
 		{
 			//TODO: Implement this
 			throw new NotImplementedException();
 		}
 
-		public static void DeleteTicket(uint ticketID)
+		public static void DeleteTicketQueued(uint ticketID)
 		{
 			if (!Config.sheetsEnabled)
 			{
 				return;
 			}
 
+			jobQueue.Enqueue(() => DeleteTicket(ticketID));
+		}
+
+		private static void DeleteTicket(uint ticketID)
+		{
 			GetTicket(ticketID).Deconstruct(out Sheet sheet, out int ticketRow);
 
 			BatchUpdateSpreadsheetRequest request = new BatchUpdateSpreadsheetRequest

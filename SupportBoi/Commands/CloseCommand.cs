@@ -94,7 +94,7 @@ namespace SupportBoi.Commands
 				deletion.Prepare();
 				deletion.ExecuteNonQuery();
 
-				Sheets.DeleteTicket(ticket.id);
+				Sheets.DeleteTicketQueued(ticket.id);
 			}
 		}
 	}
