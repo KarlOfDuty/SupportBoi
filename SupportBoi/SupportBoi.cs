@@ -135,6 +135,7 @@ namespace SupportBoi
 			this.commands.RegisterCommands<BlacklistCommand>();
 			this.commands.RegisterCommands<CloseCommand>();
 			this.commands.RegisterCommands<NewCommand>();
+			this.commands.RegisterCommands<RandomAssignCommand>();
 			this.commands.RegisterCommands<ReloadCommand>();
 			this.commands.RegisterCommands<RemoveStaffCommand>();
 			this.commands.RegisterCommands<SetSummaryCommand>();

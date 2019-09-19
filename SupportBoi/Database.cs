@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.NetworkInformation;
 using System.Transactions;
 using MySql.Data.MySqlClient;
@@ -8,6 +9,8 @@ namespace SupportBoi
 	public static class Database
 	{
 		private static string connectionString = "";
+
+		private static Random random = new Random();
 
 		public static void SetConnectionString(string host, int port, string database, string username, string password)
 		{
@@ -258,6 +261,33 @@ namespace SupportBoi
 					return false;
 				}
 
+			}
+		}
+
+		public static StaffMember GetRandomActiveStaff()
+		{
+			using (MySqlConnection c = GetConnection())
+			{
+				c.Open();
+				MySqlCommand selection = new MySqlCommand(@"SELECT * FROM staff WHERE active = true", c);
+				MySqlDataReader results = selection.ExecuteReader();
+
+				// Check if ticket exists in the database
+				if (!results.Read())
+				{
+					return null;
+				}
+
+				List<StaffMember> staffMembers = new List<StaffMember> { new StaffMember(results) };
+				while (results.Read())
+				{
+					staffMembers.Add(new StaffMember(results));
+				}
+				results.Close();
+
+				int randomValue = random.Next(staffMembers.Count);
+				Console.WriteLine(randomValue + " " + staffMembers.Count);
+				return staffMembers[randomValue];
 			}
 		}
 

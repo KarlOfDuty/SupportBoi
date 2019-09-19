@@ -40,6 +40,7 @@ permissions:
     # Moderator commands
     add: []
     assign: []
+    rassign: []
     unassign: []
     blacklist: []
     unblacklist: []

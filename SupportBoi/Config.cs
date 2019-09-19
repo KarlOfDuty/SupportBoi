@@ -38,6 +38,7 @@ namespace SupportBoi
 			// Moderator commands
 			{ "add",						new ulong[]{ } },
 			{ "assign",						new ulong[]{ } },
+			{ "rassign",					new ulong[]{ } },
 			{ "unassign",					new ulong[]{ } },
 			{ "blacklist",					new ulong[]{ } },
 			{ "unblacklist",				new ulong[]{ } },
