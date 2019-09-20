@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net.NetworkInformation;
-using System.Transactions;
 using MySql.Data.MySqlClient;
 
 namespace SupportBoi
