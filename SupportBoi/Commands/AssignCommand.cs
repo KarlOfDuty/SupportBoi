@@ -101,7 +101,7 @@ namespace SupportBoi.Commands
 			DiscordEmbed message = new DiscordEmbedBuilder
 			{
 				Color = DiscordColor.Green,
-				Description = "Assigned " + staffMember.Mention + " to ticket " + ticket.id + "."
+				Description = "Assigned " + staffMember.Mention + " to ticket."
 			};
 			await command.RespondAsync("", false, message);
 

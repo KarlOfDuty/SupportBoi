@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -512,8 +512,8 @@ namespace SupportBoi
 			UpdateCell(sheet, columnLetters["ticketNumber"], nextRow, ticketNumber);
 			UpdateCell(sheet, columnLetters["channel"], nextRow, $"\"#{channel?.Name}\"", $"\"https://discordapp.com/channels/{channel?.GuildId}/{channel?.Id}/\"");
 			UpdateCell(sheet, columnLetters["user"], nextRow, user?.Nickname == null ? $"\"{user?.Username}#{user?.Discriminator}\"" : $"\"{user.DisplayName} ({user.Username}#{user.Discriminator})\"", $"\"https://discordapp.com/channels/@me/{user?.Id}\"");
-			UpdateCell(sheet, columnLetters["timeCreated"], nextRow,  createdTime?.ToString("yyyy-MM-dd HH:mm") ?? DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm"));
-			UpdateCell(sheet, columnLetters["lastMessage"], nextRow, lastMessage?.ToString("yyyy-MM-dd HH:mm") ?? DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm"));
+			UpdateCell(sheet, columnLetters["timeCreated"], nextRow,  createdTime?.ToString(Config.timestampFormat) ?? DateTime.UtcNow.ToString(Config.timestampFormat));
+			UpdateCell(sheet, columnLetters["lastMessage"], nextRow, lastMessage?.ToString(Config.timestampFormat) ?? DateTime.UtcNow.ToString(Config.timestampFormat));
 			UpdateCell(sheet, columnLetters["summary"], nextRow, "No summary yet. Use '" + Config.prefix + "setsummary' to edit it.");
 		}
 

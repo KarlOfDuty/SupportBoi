@@ -72,10 +72,16 @@ namespace SupportBoi.Commands
 					return;
 				}
 
+				ulong staffID = 0;
+				if (Config.randomAssignment)
+				{
+					staffID = Database.GetRandomActiveStaff(0).userID;
+				}
+
 				c.Open();
 				MySqlCommand cmd = new MySqlCommand(@"INSERT INTO tickets (created_time, creator_id, assigned_staff_id, summary, channel_id) VALUES (now(), @creator_id, @assigned_staff_id, @summary, @channel_id);", c);
 				cmd.Parameters.AddWithValue("@creator_id", command.User.Id);
-				cmd.Parameters.AddWithValue("@assigned_staff_id", 0);
+				cmd.Parameters.AddWithValue("@assigned_staff_id", staffID);
 				cmd.Parameters.AddWithValue("@summary", "");
 				cmd.Parameters.AddWithValue("@channel_id", ticketChannel.Id);
 				cmd.ExecuteNonQuery();
@@ -112,7 +118,7 @@ namespace SupportBoi.Commands
 				}
 				
 				// Adds the ticket to the google sheets document if enabled
-				Sheets.AddTicketQueued(command.Member, ticketChannel, id.ToString());
+				Sheets.AddTicketQueued(command.Member, ticketChannel, id.ToString(), staffID.ToString(), Database.TryGetStaff(staffID, out Database.StaffMember staffMember) ? staffMember.userID.ToString() : null);
 			}
 		}
 	}
