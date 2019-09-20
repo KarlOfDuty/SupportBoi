@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -529,22 +529,30 @@ namespace SupportBoi
 
 		private static void SetSummary(uint ticketID, string summary)
 		{
-			Sheet sheet = GetTicket(ticketID).Item1;
+			GetTicket(ticketID).Deconstruct(out Sheet sheet, out int ticketRow);
 
 			Dictionary<string, string> columnLetters = GetTicketColumnLetters(sheet.Properties.SheetId ?? -1);
 			
-			UpdateCell(sheet, columnLetters["summary"], GetTicketRow(sheet, ticketID), $"{summary}");
+			UpdateCell(sheet, columnLetters["summary"], ticketRow, $"{summary}");
 		}
 
 		public static void RefreshLastMessageSentQueued(uint ticketID)
 		{
-			RefreshLastMessageSent(ticketID);
+			if (!Config.sheetsEnabled)
+			{
+				return;
+			}
+
+			jobQueue.Enqueue(() => RefreshLastMessageSent(ticketID));
 		}
 
 		private static void RefreshLastMessageSent(uint ticketID)
 		{
-			//TODO: Implement this
-			throw new NotImplementedException();
+			GetTicket(ticketID).Deconstruct(out Sheet sheet, out int ticketRow);
+
+			Dictionary<string, string> columnLetters = GetTicketColumnLetters(sheet.Properties.SheetId ?? -1);
+
+			UpdateCell(sheet, columnLetters["lastMessage"], ticketRow, DateTime.UtcNow.ToString(Config.timestampFormat));
 		}
 
 		public static void DeleteTicketQueued(uint ticketID)
