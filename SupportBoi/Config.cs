@@ -35,6 +35,7 @@ namespace SupportBoi
             { "transcript",					new ulong[]{ } },
 			{ "status",						new ulong[]{ } },
 			{ "summary",					new ulong[]{ } },
+			{ "list",					    new ulong[]{ } },
 			// Moderator commands
 			{ "add",						new ulong[]{ } },
 			{ "assign",						new ulong[]{ } },
@@ -44,7 +45,8 @@ namespace SupportBoi
 			{ "unblacklist",				new ulong[]{ } },
 			{ "setsummary",					new ulong[]{ } },
 			{ "toggleactive",				new ulong[]{ } },
-			{ "updatestaff",				new ulong[]{ } },
+			{ "listassigned",				new ulong[]{ } },
+			{ "listunassigned",				new ulong[]{ } },
 			// Admin commands
 			{ "reload",						new ulong[]{ } },
 			{ "setticket",					new ulong[]{ } },

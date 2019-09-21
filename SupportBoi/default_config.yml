@@ -37,6 +37,7 @@ permissions:
     transcript: []
     status: []
     summary: []
+    list: []
     # Moderator commands
     add: []
     assign: []
@@ -46,6 +47,8 @@ permissions:
     unblacklist: []
     setsummary: []
     toggleactive: []
+    listassigned: []
+    listunassigned: []
     # Admin commands
     reload: []
     setticket: []

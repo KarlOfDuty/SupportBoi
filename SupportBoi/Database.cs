@@ -145,17 +145,79 @@ namespace SupportBoi
 				return true;
 			}
 		}
-		public static Ticket GetTicket(uint ticketID)
+		public static bool TryGetOpenTickets(ulong userID, out List<Ticket> tickets)
 		{
+			tickets = null;
 			using (MySqlConnection c = GetConnection())
 			{
 				c.Open();
-				MySqlCommand selection = new MySqlCommand(@"SELECT * FROM tickets WHERE id=@id", c);
-				selection.Parameters.AddWithValue("@id", ticketID);
+				MySqlCommand selection = new MySqlCommand(@"SELECT * FROM tickets WHERE creator_id=@creator_id", c);
+				selection.Parameters.AddWithValue("@creator_id", userID);
 				selection.Prepare();
 				MySqlDataReader results = selection.ExecuteReader();
 
-				return results.Read() ? new Ticket(results) : null;
+				if (!results.Read())
+				{
+					return false;
+				}
+
+				tickets = new List<Ticket> { new Ticket(results) };
+				while (results.Read())
+				{
+					tickets.Add(new Ticket(results));
+				}
+				results.Close();
+				return true;
+			}
+		}
+		public static bool TryGetClosedTickets(ulong userID, out List<Ticket> tickets)
+		{
+			tickets = null;
+			using (MySqlConnection c = GetConnection())
+			{
+				c.Open();
+				MySqlCommand selection = new MySqlCommand(@"SELECT * FROM ticket_history WHERE creator_id=@creator_id", c);
+				selection.Parameters.AddWithValue("@creator_id", userID);
+				selection.Prepare();
+				MySqlDataReader results = selection.ExecuteReader();
+
+				if (!results.Read())
+				{
+					return false;
+				}
+
+				tickets = new List<Ticket> { new Ticket(results) };
+				while (results.Read())
+				{
+					tickets.Add(new Ticket(results));
+				}
+				results.Close();
+				return true;
+			}
+		}
+		public static bool TryGetAssignedTickets(ulong staffID, out List<Ticket> tickets)
+		{
+			tickets = null;
+			using (MySqlConnection c = GetConnection())
+			{
+				c.Open();
+				MySqlCommand selection = new MySqlCommand(@"SELECT * FROM tickets WHERE assigned_staff_id=@assigned_staff_id", c);
+				selection.Parameters.AddWithValue("@assigned_staff_id", staffID);
+				selection.Prepare();
+				MySqlDataReader results = selection.ExecuteReader();
+
+				if (!results.Read())
+				{
+					return false;
+				}
+
+				tickets = new List<Ticket> { new Ticket(results) };
+				while (results.Read())
+				{
+					tickets.Add(new Ticket(results));
+				}
+				results.Close();
+				return true;
 			}
 		}
 		public static bool IsBlacklisted(ulong userID)
@@ -265,7 +327,7 @@ namespace SupportBoi
 				selection.Prepare();
 				MySqlDataReader results = selection.ExecuteReader();
 
-				// Check if ticket exists in the database
+				// Check if staff exists in the database
 				if (!results.Read())
 				{
 					return null;
