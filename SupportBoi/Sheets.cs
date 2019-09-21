@@ -496,17 +496,17 @@ namespace SupportBoi
 			}
 		}
 
-		public static void AddTicketQueued(DiscordMember user, DiscordChannel channel, string ticketNumber, string staffID = null, string staffName = null, DateTime? createdTime = null, DateTime? lastMessage = null)
+		public static void AddTicketQueued(DiscordMember user, DiscordChannel channel, string ticketNumber, string staffID = null, string staffName = null, DateTime? createdTime = null, DateTime? lastMessage = null, string summary = null)
 		{
 			if (!Config.sheetsEnabled)
 			{
 				return;
 			}
 
-			jobQueue.Enqueue(() => AddTicket(user, channel, ticketNumber, staffID, staffName, createdTime, lastMessage));
+			jobQueue.Enqueue(() => AddTicket(user, channel, ticketNumber, staffID, staffName, createdTime, lastMessage, summary));
 		}
 
-		private static void AddTicket(DiscordMember user, DiscordChannel channel, string ticketNumber, string staffID = null, string staffName = null, DateTime? createdTime = null, DateTime? lastMessage = null)
+		private static void AddTicket(DiscordMember user, DiscordChannel channel, string ticketNumber, string staffID = null, string staffName = null, DateTime? createdTime = null, DateTime? lastMessage = null, string summary = null)
 		{
 			Sheet sheet = GetOrCreateSheet(staffID, staffName);
 
@@ -519,7 +519,7 @@ namespace SupportBoi
 			UpdateCell(sheet, columnLetters["user"], nextRow, user?.Nickname == null ? $"\"{user?.Username}#{user?.Discriminator}\"" : $"\"{user.DisplayName} ({user.Username}#{user.Discriminator})\"", $"\"https://discordapp.com/channels/@me/{user?.Id}\"");
 			UpdateCell(sheet, columnLetters["timeCreated"], nextRow,  createdTime?.ToString(Config.timestampFormat) ?? DateTime.UtcNow.ToString(Config.timestampFormat));
 			UpdateCell(sheet, columnLetters["lastMessage"], nextRow, lastMessage?.ToString(Config.timestampFormat) ?? DateTime.UtcNow.ToString(Config.timestampFormat));
-			UpdateCell(sheet, columnLetters["summary"], nextRow, "No summary yet. Use '" + Config.prefix + "setsummary' to edit it.");
+			UpdateCell(sheet, columnLetters["summary"], nextRow, string.IsNullOrEmpty(summary) ? "No summary yet. Use '" + Config.prefix + "setsummary' to edit it." : summary);
 		}
 
 		public static void SetSummaryQueued(uint ticketID, string summary)

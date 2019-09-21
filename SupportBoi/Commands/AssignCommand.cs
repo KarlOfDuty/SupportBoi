@@ -127,7 +127,7 @@ namespace SupportBoi.Commands
 				catch (NotFoundException) { }
 
 				Sheets.DeleteTicketQueued(ticket.id);
-				Sheets.AddTicketQueued(user, command.Channel, ticket.id.ToString(), staffMember.Id.ToString(), staffMember.DisplayName, ticket.createdTime);
+				Sheets.AddTicketQueued(user, command.Channel, ticket.id.ToString(), staffMember.Id.ToString(), staffMember.DisplayName, ticket.createdTime, null, ticket.summary);
 			}
 		}
 	}

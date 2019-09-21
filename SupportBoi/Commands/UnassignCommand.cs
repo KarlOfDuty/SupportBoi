@@ -79,7 +79,7 @@ namespace SupportBoi.Commands
 				catch (NotFoundException) { }
 
 				Sheets.DeleteTicketQueued(ticket.id);
-				Sheets.AddTicketQueued(user, command.Channel, ticket.id.ToString(), null, null, ticket.createdTime);
+				Sheets.AddTicketQueued(user, command.Channel, ticket.id.ToString(), null, null, ticket.createdTime, null, ticket.summary);
 			}
 		}
 	}
