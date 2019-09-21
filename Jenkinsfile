@@ -1,36 +1,30 @@
 pipeline {
   agent any
   stages {
-	stage('Build') {
-	  parallel {
-		stage('Linux') {
-		  steps {
-			sh 'msbuild SupportBoi/SupportBoi.csproj -restore -t:Publish -p:PublishProfile=Linux64.pubxml -p:OutputPath=bin/linux/ -p:BaseIntermediateOutputPath=obj/linux/ -p:TargetFramework=netcoreapp2.2 -p:SelfContained=true -p:RuntimeIdentifier=linux-x64'
-		  }
-		}
-		stage('Windows') {
-		  steps {
-			sh 'msbuild SupportBoi/SupportBoi.csproj -restore -t:Publish -p:PublishProfile=Windows64.pubxml -p:OutputPath=bin/win/ -p:BaseIntermediateOutputPath=obj/win/ -p:TargetFramework=netcoreapp2.2 -p:SelfContained=true -p:RuntimeIdentifier=win-x64'
-		  }
-		}
-      }
-	}
-    stage('Zip') {
+    stage('Build') {
       parallel {
         stage('Linux') {
           steps {
-            dir(path: './SupportBoi/bin/linux/publish') {
-              sh 'zip -r SupportBoi_Linux-x64.zip *'
-            }
-
+            sh 'msbuild SupportBoi/SupportBoi.csproj -restore -t:Publish -p:PublishProfile=Linux64.pubxml -p:OutputPath=bin/linux/ -p:BaseIntermediateOutputPath=obj/linux/ -p:TargetFramework=netcoreapp2.2 -p:SelfContained=true -p:RuntimeIdentifier=linux-x64'
           }
         }
         stage('Windows') {
           steps {
-            dir(path: './SupportBoi/bin/win/publish') {
-              sh 'zip -r SupportBoi_Win-x64.zip *'
-            }
-
+            sh 'msbuild SupportBoi/SupportBoi.csproj -restore -t:Publish -p:PublishProfile=Windows64.pubxml -p:OutputPath=bin/win/ -p:BaseIntermediateOutputPath=obj/win/ -p:TargetFramework=netcoreapp2.2 -p:SelfContained=true -p:RuntimeIdentifier=win-x64'
+          }
+        }
+      }
+    }
+    stage('Package') {
+      parallel {
+        stage('Linux') {
+          steps {
+            sh 'warp-packer --arch linux-x64 --input_dir SupportBoi/bin/linux/publish --exec SupportBoi --output SupportBoi'
+          }
+        }
+        stage('Windows') {
+          steps {
+            sh 'warp-packer --arch windows-x64 --input_dir SupportBoi/bin/win/publish --exec SupportBoi.exe --output SupportBoi.exe'
           }
         }
       }
@@ -39,12 +33,12 @@ pipeline {
       parallel {
         stage('Linux') {
           steps {
-            archiveArtifacts(artifacts: 'SupportBoi/bin/linux/publish/SupportBoi_Linux-x64.zip', caseSensitive: true)
+            archiveArtifacts(artifacts: 'SupportBoi', caseSensitive: true)
           }
         }
         stage('Windows') {
           steps {
-            archiveArtifacts(artifacts: 'SupportBoi/bin/win/publish/SupportBoi_Win-x64.zip', caseSensitive: true)
+            archiveArtifacts(artifacts: 'SupportBoi.exe', caseSensitive: true)
           }
         }
       }
