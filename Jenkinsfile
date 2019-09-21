@@ -41,12 +41,12 @@ pipeline {
       parallel {
         stage('Linux') {
           steps {
-            archiveArtifacts(artifacts: 'SupportBoi/SupportBoi', caseSensitive: true)
+            archiveArtifacts(artifacts: 'Linux-x64/SupportBoi', caseSensitive: true)
           }
         }
         stage('Windows') {
           steps {
-            archiveArtifacts(artifacts: 'SupportBoi/SupportBoi.exe', caseSensitive: true)
+            archiveArtifacts(artifacts: 'Windows-x64/SupportBoi.exe', caseSensitive: true)
           }
         }
       }
