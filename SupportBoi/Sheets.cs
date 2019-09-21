@@ -557,6 +557,7 @@ namespace SupportBoi
 				UpdateCell(sheet, columnLetters["lastMessage"], ticketRow, DateTime.UtcNow.ToString(Config.timestampFormat));
 			}
 			catch (NullReferenceException) { }
+			catch (ArgumentException) { }
 		}
 
 		public static void DeleteTicketQueued(uint ticketID)
