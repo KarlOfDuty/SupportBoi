@@ -10,9 +10,10 @@ A support ticket Discord bot. Uses a MySQL database for storage of ticket inform
 |--- |---- |
 | `new` | Opens a new ticket channel. |
 | `close` | Closes a ticket channel and posts a ticket transcript in the log channel. |
-| `transcript` | Generates a ticket transcript as an html file. |
+| `transcript (ticket number) ` | Generates a ticket transcript as an html file. |
 | `status` | Shows a status message about the bot with info such as number of tickets and which version is running. If ran in a ticket channel it also shows ticket information. |
 | `summary` | Shows a ticket's summary if set. |
+| `list (id/mention)` | Lists all of a user's open and closed tickets. |
 | `add <ids/mentions>` | Add users to the ticket. |
 | `assign (id/mention)` | Assigns a ricket to a staff member, themself if no mention or id is provided. |
 | `rassign` | Randomly assigns a ticket to an active staff member. |
@@ -21,6 +22,8 @@ A support ticket Discord bot. Uses a MySQL database for storage of ticket inform
 | `unblacklist <ids/mentions>` | Un-blacklists users from opening tickets. |
 | `setsummary <summary>` | Sets a summary for a ticket which can be viewed using the `summary` and `status` commands. |
 | `toogleactive/ta` | Toggles whether a staff member counts as active or not. |
+| `listassigned (id/mention)` | Lists all of a staff member's assigned tickets tickets. |
+| `listunassigned` | Lists all unassigned tickets. |
 | `reload` | Reloads the config. |
 | `setticket` | Makes the current channel a ticket. |
 | `unsetticket` | Removes a ticket without deleting the channel. |
