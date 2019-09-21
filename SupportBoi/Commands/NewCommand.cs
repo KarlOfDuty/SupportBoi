@@ -59,8 +59,7 @@ namespace SupportBoi.Commands
 					await command.RespondAsync("", false, error);
 					return;
 				}
-
-
+				
 				if (ticketChannel == null)
 				{
 					DiscordEmbed error = new DiscordEmbedBuilder
@@ -101,12 +100,9 @@ namespace SupportBoi.Commands
 					};
 					await ticketChannel.SendMessageAsync("", false, assignmentMessage);
 				}
-
-
+				
 				// Refreshes the channel as changes were made to it above
 				ticketChannel = command.Guild.GetChannel(ticketChannel.Id);
-
-
 
 				DiscordEmbed response = new DiscordEmbedBuilder
 				{
