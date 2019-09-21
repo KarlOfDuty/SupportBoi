@@ -361,7 +361,7 @@ namespace SupportBoi
 
 			Dictionary<string, string> columnNames = new Dictionary<string, string>();
 
-			foreach (MatchedDeveloperMetadata metadata in response.MatchedDeveloperMetadata)
+			foreach (MatchedDeveloperMetadata metadata in response?.MatchedDeveloperMetadata ?? new List<MatchedDeveloperMetadata>())
 			{
 				bool isColumn = metadata.DeveloperMetadata.Location.DimensionRange.Dimension == "COLUMNS";
 				bool isCorrectSheet = metadata.DeveloperMetadata.Location.DimensionRange.SheetId == sheetID;
@@ -404,7 +404,7 @@ namespace SupportBoi
 			throw new ArgumentException("That ticket does not exist in the provided sheet. (" + sheet.Properties.Title + ")");
 		}
 
-		private static Tuple<Sheet, int> GetTicket(uint ticketID)
+		private static Tuple<Sheet, int> GetTicketLocation(uint ticketID)
 		{
 			foreach (Sheet sheet in GetSpreadsheet().Sheets)
 			{
@@ -529,7 +529,7 @@ namespace SupportBoi
 
 		private static void SetSummary(uint ticketID, string summary)
 		{
-			GetTicket(ticketID).Deconstruct(out Sheet sheet, out int ticketRow);
+			GetTicketLocation(ticketID).Deconstruct(out Sheet sheet, out int ticketRow);
 
 			Dictionary<string, string> columnLetters = GetTicketColumnLetters(sheet.Properties.SheetId ?? -1);
 			
@@ -548,11 +548,15 @@ namespace SupportBoi
 
 		private static void RefreshLastMessageSent(uint ticketID)
 		{
-			GetTicket(ticketID).Deconstruct(out Sheet sheet, out int ticketRow);
+			try
+			{
+				GetTicketLocation(ticketID).Deconstruct(out Sheet sheet, out int ticketRow);
 
-			Dictionary<string, string> columnLetters = GetTicketColumnLetters(sheet.Properties.SheetId ?? -1);
+				Dictionary<string, string> columnLetters = GetTicketColumnLetters(sheet.Properties.SheetId ?? -1);
 
-			UpdateCell(sheet, columnLetters["lastMessage"], ticketRow, DateTime.UtcNow.ToString(Config.timestampFormat));
+				UpdateCell(sheet, columnLetters["lastMessage"], ticketRow, DateTime.UtcNow.ToString(Config.timestampFormat));
+			}
+			catch (NullReferenceException) { }
 		}
 
 		public static void DeleteTicketQueued(uint ticketID)
@@ -567,7 +571,7 @@ namespace SupportBoi
 
 		private static void DeleteTicket(uint ticketID)
 		{
-			GetTicket(ticketID).Deconstruct(out Sheet sheet, out int ticketRow);
+			GetTicketLocation(ticketID).Deconstruct(out Sheet sheet, out int ticketRow);
 
 			BatchUpdateSpreadsheetRequest request = new BatchUpdateSpreadsheetRequest
 			{
