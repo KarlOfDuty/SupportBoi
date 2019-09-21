@@ -44,6 +44,7 @@ namespace SupportBoi.Commands
 
 				string summary = command.Message.Content.Replace(Config.prefix + "setsummary", "").Trim();
 
+				c.Open();
 				MySqlCommand update = new MySqlCommand(@"UPDATE tickets SET summary = @summary WHERE channel_id = @channel_id", c);
 				update.Parameters.AddWithValue("@summary", summary);
 				update.Parameters.AddWithValue("@channel_id", channelID);
