@@ -53,7 +53,7 @@ namespace SupportBoi.Commands
 			DiscordEmbed message = new DiscordEmbedBuilder
 			{
 				Color = DiscordColor.Green,
-				Description = "Unassigned staff from ticket " + ticket.id + "."
+				Description = "Unassigned staff from ticket."
 			};
 			await command.RespondAsync("", false, message);
 
