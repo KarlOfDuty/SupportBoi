@@ -2,19 +2,30 @@
 
 A support ticket Discord bot. Uses a MySQL database for storage of active tickets and also saves closed tickets as flatfile HTML documents.
 
+#### Thanks to [DiscordChatExporter](https://github.com/Tyrrrz/DiscordChatExporter) for the library used in the transcript function.
+
 ## Commands
 
-| Command | Role | Description |
-|--- |--- |---- |
-| `new` | Everyone | Opens a new ticket channel. |
-| `close` | Everyone | Closes a ticket channel and posts a ticket transcript in the log channel. |
-| `transcript` | Everyone | Generates a ticket transcript as an html file. |
-| `add` | Moderator | Adds a user to the ticket. |
-| `blacklist` | Moderator | Blacklists a player from opening tickets. |
-| `unblacklist` | Moderator | Un-blacklists a player from opening tickets. |
-| `reload` | Admin | Reloads the config. |
-| `setticket` | Admin | Sets an existing channel as a ticket. |
-| `unsetticket` | Admin | Removes a ticket without deleting the channel. |
+| Command | Description |
+|--- |---- |
+| `new` | Opens a new ticket channel. |
+| `close` | Closes a ticket channel and posts a ticket transcript in the log channel. |
+| `transcript` | Generates a ticket transcript as an html file. |
+| `status` | Shows a status message about the bot with info such as number of tickets and which version is running. If ran in a ticket channel it also shows ticket information. |
+| `summary` | Shows a ticket's summary if set. |
+| `add <ids/mentions>` | Add users to the ticket. |
+| `assign (id/mention)` | Assigns a ricket to a staff member, themself if no mention or id is provided. |
+| `rassign` | Randomly assigns a ticket to an active staff member. |
+| `unassign` | Unassigns a ticket from the currently assigned staff member. |
+| `blacklist <ids/mentions>` | Blacklists users from opening tickets. |
+| `unblacklist <ids/mentions>` | Un-blacklists users from opening tickets. |
+| `setsummary <summary>` | Sets a summary for a ticket which can be viewed using the `summary` and `status` commands. |
+| `toogleactive/ta` | Toggles whether a staff member counts as active or not. |
+| `reload` | Reloads the config. |
+| `setticket` | Makes the current channel a ticket. |
+| `unsetticket` | Removes a ticket without deleting the channel. |
+| `addstaff <id/mention>` | Registers a user as a staff member for ticket assignment. |
+| `removestaff <id/mention>` | Removes a user from staff. |
 
 ## Setup
 
@@ -22,11 +33,11 @@ A support ticket Discord bot. Uses a MySQL database for storage of active ticket
 
  2. [Install .NET Core 2.2](https://dotnet.microsoft.com/download/dotnet-core/2.2).
 
- 3. Download the bot for your operating system and extract it somewhere on your computer.
+ 3. Download the bot for your operating system, either a [release version](https://github.com/KarlOfDuty/SupportBoi/releases) or a [dev build](http://95.217.45.17:8080/blue/organizations/jenkins/SupportBoi/activity).
 
- 4. Set up the config (`config.yml`) to your specifications, follow the instructions inside of the config.
+ 4. Run `./SupportBoi` on Linux or `./SupportBoi.exe` on Windows.
 
- 5. Run `./SupportBoi` on Linux or `SupportBoi.exe` on Windows.
+ 5. Set up the config (`config.yml`) to your specifications, there are instructions inside and also further down on this page. If you need more help either contact me in Discord or through an issue here.
 
 ## Default Config
 
@@ -96,5 +107,3 @@ sheets:
     # In the above link you would use <SpreadSheetID> and not <SheetID>
     id: "ID here"
 ```
-
-#### Thanks to [DiscordChatExporter](https://github.com/Tyrrrz/DiscordChatExporter) for the library used in the transcript function.
