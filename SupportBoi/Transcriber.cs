@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Threading.Tasks;
 using DiscordChatExporter.Core.Models;
 using DiscordChatExporter.Core.Services;
 using StyletIoC;
@@ -7,7 +8,7 @@ namespace SupportBoi
 {
 	internal static class Transcriber
 	{
-		internal static async void ExecuteAsync(string channelID, uint ticketID)
+		internal static async Task ExecuteAsync(string channelID, uint ticketID)
 		{
 			// Get services
 			var settingsService = TranscriberServices.Instance.Get<SettingsService>();
@@ -25,15 +26,9 @@ namespace SupportBoi
 			{
 				Directory.CreateDirectory("./transcripts");
 			}
-			
-			string path = GetPath(ticketID);
-			if (File.Exists(path))
-			{
-				File.Delete(path);
-			}
 
 			// Export
-			await exportService.ExportChatLogAsync(chatLog, path, ExportFormat.HtmlDark, 2000);
+			await exportService.ExportChatLogAsync(chatLog, GetPath(ticketID), ExportFormat.HtmlDark, 2000);
 		}
 
 		internal static string GetPath(uint ticketNumber)

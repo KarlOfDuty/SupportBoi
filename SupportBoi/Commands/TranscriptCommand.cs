@@ -36,7 +36,24 @@ namespace SupportBoi.Commands
 			// If there are no arguments use current channel
 			if (parsedMessage.Length < 2)
 			{
-				if (!Database.TryGetOpenTicket(command.Channel.Id, out ticket))
+				if (Database.TryGetOpenTicket(command.Channel.Id, out ticket))
+				{
+					try
+					{
+						await Transcriber.ExecuteAsync(ticket.channelID.ToString(), ticket.id);
+					}
+					catch (Exception)
+					{
+						DiscordEmbed error = new DiscordEmbedBuilder
+						{
+							Color = DiscordColor.Red,
+							Description = "ERROR: Could not save transcript file. Aborting..."
+						};
+						await command.RespondAsync("", false, error);
+						throw;
+					}
+				}
+				else
 				{
 					DiscordEmbed error = new DiscordEmbedBuilder
 					{
@@ -66,7 +83,7 @@ namespace SupportBoi.Commands
 				{
 					try
 					{
-						Transcriber.ExecuteAsync(ticket.channelID.ToString(), ticket.id);
+						await Transcriber.ExecuteAsync(ticket.channelID.ToString(), ticket.id);
 					}
 					catch (Exception)
 					{
@@ -86,7 +103,7 @@ namespace SupportBoi.Commands
 					DiscordEmbed error = new DiscordEmbedBuilder
 					{
 						Color = DiscordColor.Red,
-						Description = "Could not find a ticket which you have opened with that number. (Try using the " + Config.prefix + "list command)"
+						Description = "Could not find a ticket which you have opened with that number." + (Config.HasPermission(command.Member, "list") ? "\n(Use the " + Config.prefix + "list command to see all your tickets)" : "")
 					};
 					await command.RespondAsync("", false, error);
 					return;

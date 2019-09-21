@@ -45,7 +45,7 @@ namespace SupportBoi.Commands
 			// Build transcript
 			try
 			{
-				Transcriber.ExecuteAsync(command.Channel.Id.ToString(), ticket.id);
+				await Transcriber.ExecuteAsync(command.Channel.Id.ToString(), ticket.id);
 			}
 			catch (Exception)
 			{
