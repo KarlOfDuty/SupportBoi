@@ -55,7 +55,8 @@ permissions:
     removestaff: []
 
 sheets:
-    # Whether or not to use the google sheets integration
+    # Whether or not to use the google sheets integration. 
+    # You will have to generate a credentials.json file by clicking "Enable the Google Sheets API" here: https://developers.google.com/sheets/api/quickstart/dotnet 
     enabled: false
     # The spreadsheet ID of the sheet, you can find it in the sheet's URL:
     # https://docs.google.com/spreadsheets/d/<SpreadSheetID>/edit#gid=<SheetID>
