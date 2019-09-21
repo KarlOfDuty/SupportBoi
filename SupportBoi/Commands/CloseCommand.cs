@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
@@ -43,11 +43,9 @@ namespace SupportBoi.Commands
 			}
 
 			// Build transcript
-			string ticketNumber = ticket.id.ToString("00000");
-			string filePath = "";
 			try
 			{
-				filePath = await Transcriber.ExecuteAsync(command.Channel.Id.ToString(), ticketNumber);
+				Transcriber.ExecuteAsync(command.Channel.Id.ToString(), ticket.id);
 			}
 			catch (Exception)
 			{
@@ -59,6 +57,7 @@ namespace SupportBoi.Commands
 				await command.RespondAsync("", false, error);
 				throw;
 			}
+			string filePath = Transcriber.GetPath(ticket.id);
 
 			// Log it if the log channel exists
 			DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
@@ -67,7 +66,7 @@ namespace SupportBoi.Commands
 				DiscordEmbed message = new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Green,
-					Description = "Ticket " + ticketNumber + " closed by " + command.Member.Mention + ".\n",
+					Description = "Ticket " + ticket.id.ToString("00000") + " closed by " + command.Member.Mention + ".\n",
 					Footer = new DiscordEmbedBuilder.EmbedFooter { Text = '#' + channelName }
 				};
 				await logChannel.SendFileAsync(filePath, "", false, message);
