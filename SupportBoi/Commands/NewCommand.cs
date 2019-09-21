@@ -75,7 +75,7 @@ namespace SupportBoi.Commands
 				ulong staffID = 0;
 				if (Config.randomAssignment)
 				{
-					staffID = Database.GetRandomActiveStaff(0).userID;
+					staffID = Database.GetRandomActiveStaff(0)?.userID ?? 0;
 				}
 
 				c.Open();
@@ -92,17 +92,28 @@ namespace SupportBoi.Commands
 
 				await ticketChannel.SendMessageAsync("Hello, " + command.Member.Mention + "!\n" + Config.welcomeMessage);
 
+				if (staffID != 0)
+				{
+					DiscordEmbed assignmentMessage = new DiscordEmbedBuilder
+					{
+						Color = DiscordColor.Green,
+						Description = "Ticket was randomly assigned to <@" + staffID + ">."
+					};
+					await ticketChannel.SendMessageAsync("", false, assignmentMessage);
+				}
+
+
 				// Refreshes the channel as changes were made to it above
 				ticketChannel = command.Guild.GetChannel(ticketChannel.Id);
 
 
 
-				DiscordEmbed message = new DiscordEmbedBuilder
+				DiscordEmbed response = new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Green,
 					Description = "Ticket opened, " + command.Member.Mention + "!\n" + ticketChannel.Mention
 				};
-				await command.RespondAsync("", false, message);
+				await command.RespondAsync("", false, response);
 
 				// Log it if the log channel exists
 				DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
