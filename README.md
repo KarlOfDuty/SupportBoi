@@ -32,21 +32,22 @@ A support ticket Discord bot. Uses a MySQL database for storage of active ticket
 
 ```yaml
 bot:
-    # Bot token
+    # Bot token.
     token: "<add-token-here>"
-    # Command prefix
+    # Command prefix.
     prefix: "+"
-    # Channel where ticket logs are posted
+    # Channel where ticket logs are posted.
     log-channel: 000000000000000000
-    # Category where the ticket will be created, it will have the same permissions of that ticket plus read permissions for the user opening the ticket
+    # Category where the ticket will be created, it will have the same permissions of that ticket plus read permissions for the user opening the ticket.
     ticket-category: 000000000000000000
-    # Message posted when a ticket is opened
+    # Message posted when a ticket is opened.
     welcome-message: "Please describe your issue below, and include all information needed for us to take action, such as coordinates, in-game names and screenshots/chat logs."
-    # Decides what messages are shown in console, possible values are: Critical, Error, Warning, Info, Debug
+    # Decides what messages are shown in console, possible values are: Critical, Error, Warning, Info, Debug.
     console-log-level: "Info"
-
-transcripts:
+    # Format for timestamps in transcripts and google sheets if used
     timestamp-format: "yyyy-MM-dd HH:mm"
+    # Whether or not staff members should be randomly assigned tickets when they are made. Individual staff members can opt out using the toggleactive command.
+    random-assignment: true
 
 database:
     # Address and port of the mysql server
@@ -58,11 +59,42 @@ database:
     user: ""
     password: ""
 
+# Set up which roles are allowed to use different commands.
+# Example:
+#   new: [ 000000000000000000, 111111111111111111 ]
+# They are grouped into suggested command groups below for first time setup.
 permissions:
-    # ID of the role allowed to use admin and moderator commands
-    admin-role: 000000000000000000
-    # ID of the role allowed to use moderator commands
-    moderator-role: 000000000000000000
+    # Public commands
+    new: []
+    close: []
+    transcript: []
+    status: []
+    summary: []
+    # Moderator commands
+    add: []
+    assign: []
+    rassign: []
+    unassign: []
+    blacklist: []
+    unblacklist: []
+    setsummary: []
+    updatestaff: []
+    toggleactive: []
+    # Admin commands
+    reload: []
+    setticket: []
+    unsetticket: []
+    addstaff: []
+    removestaff: []
+
+sheets:
+    # Whether or not to use the google sheets integration. 
+    # You will have to generate a credentials.json file by clicking "Enable the Google Sheets API" here: https://developers.google.com/sheets/api/quickstart/dotnet 
+    enabled: false
+    # The spreadsheet ID of the sheet, you can find it in the sheet's URL:
+    # https://docs.google.com/spreadsheets/d/<SpreadSheetID>/edit#gid=<SheetID>
+    # In the above link you would use <SpreadSheetID> and not <SheetID>
+    id: "ID here"
 ```
 
 #### Thanks to [DiscordChatExporter](https://github.com/Tyrrrz/DiscordChatExporter) for the library used in the transcript function.
