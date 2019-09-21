@@ -86,7 +86,7 @@ namespace SupportBoi.Commands
 					DiscordEmbed error = new DiscordEmbedBuilder
 					{
 						Color = DiscordColor.Red,
-						Description = "Could not find a ticket which you have opened with that number."
+						Description = "Could not find a ticket which you have opened with that number. (Try using the " + Config.prefix + "list command)"
 					};
 					await command.RespondAsync("", false, error);
 					return;
