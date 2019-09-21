@@ -120,7 +120,7 @@ namespace SupportBoi
 		/// <returns></returns>
 		public static bool HasPermission(DiscordMember member, string permission)
 		{
-			return member.Roles.Any(role => permissions[permission].Contains(role.Id) || permissions[permission].Contains(member.Guild.Id));
+			return member.Roles.Any(role => permissions[permission].Contains(role.Id)) || permissions[permission].Contains(member.Guild.Id);
 		}
 	}
 }
