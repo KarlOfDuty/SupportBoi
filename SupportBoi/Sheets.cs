@@ -404,7 +404,7 @@ namespace SupportBoi
 			throw new ArgumentException("That ticket does not exist in the provided sheet. (" + sheet.Properties.Title + ")");
 		}
 
-		private static Tuple<Sheet, int> GetTicketLocation(uint ticketID)
+		private static bool TryGetTicketLocation(uint ticketID, out Sheet ticketSheet, out int ticketRow)
 		{
 			foreach (Sheet sheet in GetSpreadsheet().Sheets)
 			{
@@ -422,11 +422,16 @@ namespace SupportBoi
 				{
 					if (!response.Values[i].IsNullOrEmpty() && uint.TryParse(response.Values[i]?[0].ToString(), out uint value) && value == ticketID)
 					{
-						return Tuple.Create(sheet, i + 1);
+						ticketSheet = sheet;
+						ticketRow = i + 1;
+						return true;
 					}
 				}
 			}
-			throw new ArgumentException("That ticket does not exist in the spreadsheet.");
+
+			ticketSheet = null;
+			ticketRow = 0;
+			return false;
 		}
 
 		private static void UpdateCell(Sheet sheet, string columnLetter, int rowNumber, string data, string url = null)
@@ -529,7 +534,10 @@ namespace SupportBoi
 
 		private static void SetSummary(uint ticketID, string summary)
 		{
-			GetTicketLocation(ticketID).Deconstruct(out Sheet sheet, out int ticketRow);
+			if (!TryGetTicketLocation(ticketID, out Sheet sheet, out int ticketRow))
+			{
+				throw new ArgumentException("Could not find ticket in spreadsheet.");
+			}
 
 			Dictionary<string, string> columnLetters = GetTicketColumnLetters(sheet.Properties.SheetId ?? -1);
 			
@@ -548,16 +556,14 @@ namespace SupportBoi
 
 		private static void RefreshLastMessageSent(uint ticketID)
 		{
-			try
+			if (!TryGetTicketLocation(ticketID, out Sheet sheet, out int ticketRow))
 			{
-				GetTicketLocation(ticketID).Deconstruct(out Sheet sheet, out int ticketRow);
-
-				Dictionary<string, string> columnLetters = GetTicketColumnLetters(sheet.Properties.SheetId ?? -1);
-
-				UpdateCell(sheet, columnLetters["lastMessage"], ticketRow, DateTime.UtcNow.ToString(Config.timestampFormat));
+				return;
 			}
-			catch (NullReferenceException) { }
-			catch (ArgumentException) { }
+
+			Dictionary<string, string> columnLetters = GetTicketColumnLetters(sheet.Properties.SheetId ?? -1);
+
+			UpdateCell(sheet, columnLetters["lastMessage"], ticketRow, DateTime.UtcNow.ToString(Config.timestampFormat));
 		}
 
 		public static void DeleteTicketQueued(uint ticketID)
@@ -572,7 +578,10 @@ namespace SupportBoi
 
 		private static void DeleteTicket(uint ticketID)
 		{
-			GetTicketLocation(ticketID).Deconstruct(out Sheet sheet, out int ticketRow);
+			if (!TryGetTicketLocation(ticketID, out Sheet sheet, out int ticketRow))
+			{
+				throw new ArgumentException("Could not find ticket in spreadsheet.");
+			}
 
 			BatchUpdateSpreadsheetRequest request = new BatchUpdateSpreadsheetRequest
 			{
