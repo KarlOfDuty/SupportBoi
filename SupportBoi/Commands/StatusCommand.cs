@@ -41,7 +41,7 @@ namespace SupportBoi.Commands
 					.AddField("Closed tickets (1.1.0+ tickets only):", closedTickets + " ", true);
 				await command.RespondAsync("", false, botInfo);
 
-				if (Database.TryGetTicket(command.Channel.Id, out Database.Ticket ticket))
+				if (Database.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
 				{
 					DiscordEmbed channelInfo = new DiscordEmbedBuilder()
 						.WithAuthor("SupportBoi", "https://github.com/KarlofDuty/SupportBoi", "https://karlofduty.com/img/tardisIcon.jpg")

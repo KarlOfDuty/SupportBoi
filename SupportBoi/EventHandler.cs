@@ -48,7 +48,7 @@ namespace SupportBoi
 		internal Task OnMessageCreated(MessageCreateEventArgs e)
 		{
 			// Check if ticket exists in the database
-			if (Database.TryGetTicket(e.Channel.Id, out Database.Ticket ticket))
+			if (Database.TryGetOpenTicket(e.Channel.Id, out Database.Ticket ticket))
 			{
 				Sheets.RefreshLastMessageSentQueued(ticket.id);
 			}

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
@@ -31,7 +31,7 @@ namespace SupportBoi.Commands
 			string channelName = command.Channel.Name;
 
 			// Check if ticket exists in the database
-			if (!Database.TryGetTicket(channelID, out Database.Ticket ticket))
+			if (!Database.TryGetOpenTicket(channelID, out Database.Ticket ticket))
 			{
 				DiscordEmbed error = new DiscordEmbedBuilder
 				{

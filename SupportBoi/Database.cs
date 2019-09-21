@@ -104,7 +104,7 @@ namespace SupportBoi
 				createStaffList.ExecuteNonQuery();
 			}
 		}
-		public static bool IsTicket(ulong channelID)
+		public static bool IsOpenTicket(ulong channelID)
 		{
 			using (MySqlConnection c = GetConnection())
 			{
@@ -123,7 +123,7 @@ namespace SupportBoi
 			}
 			return true;
 		}
-		public static bool TryGetTicket(ulong channelID, out Ticket ticket)
+		public static bool TryGetOpenTicket(ulong channelID, out Ticket ticket)
 		{
 			using (MySqlConnection c = GetConnection())
 			{
@@ -143,6 +143,48 @@ namespace SupportBoi
 				ticket = new Ticket(results);
 				results.Close();
 				return true;
+			}
+		}
+		public static bool TryGetOpenTicketByID(uint id, out Ticket ticket)
+		{
+			using (MySqlConnection c = GetConnection())
+			{
+				c.Open();
+				MySqlCommand selection = new MySqlCommand(@"SELECT * FROM tickets WHERE id=@id", c);
+				selection.Parameters.AddWithValue("@id", id);
+				selection.Prepare();
+				MySqlDataReader results = selection.ExecuteReader();
+
+				// Check if open ticket exists in the database
+				if (results.Read())
+				{
+					ticket = new Ticket(results);
+					return true;
+				}
+
+				ticket = null;
+				return false;
+			}
+		}
+		public static bool TryGetClosedTicket(uint id, out Ticket ticket)
+		{
+			using (MySqlConnection c = GetConnection())
+			{
+				c.Open();
+				MySqlCommand selection = new MySqlCommand(@"SELECT * FROM ticket_history WHERE id=@id", c);
+				selection.Parameters.AddWithValue("@id", id);
+				selection.Prepare();
+				MySqlDataReader results = selection.ExecuteReader();
+
+				// Check if closed ticket exists in the database
+				if (results.Read())
+				{
+					ticket = new Ticket(results);
+					return true;
+				}
+
+				ticket = null;
+				return false;
 			}
 		}
 		public static bool TryGetOpenTickets(ulong userID, out List<Ticket> tickets)

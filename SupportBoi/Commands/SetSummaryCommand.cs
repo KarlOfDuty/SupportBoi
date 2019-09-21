@@ -31,7 +31,7 @@ namespace SupportBoi.Commands
 
 				ulong channelID = command.Channel.Id;
 				// Check if ticket exists in the database
-				if (!Database.TryGetTicket(command.Channel.Id, out Database.Ticket ticket))
+				if (!Database.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
 				{
 					DiscordEmbed error = new DiscordEmbedBuilder
 					{
