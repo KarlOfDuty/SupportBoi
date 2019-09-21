@@ -44,7 +44,6 @@ namespace SupportBoi.Commands
 				if (Database.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
 				{
 					DiscordEmbed channelInfo = new DiscordEmbedBuilder()
-						.WithAuthor("SupportBoi", "https://github.com/KarlofDuty/SupportBoi", "https://karlofduty.com/img/tardisIcon.jpg")
 						.WithTitle("Channel information")
 						.WithColor(DiscordColor.Cyan)
 						.AddField("Channel info", "This channel is a ticket.", false)
