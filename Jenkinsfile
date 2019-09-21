@@ -21,7 +21,7 @@ pipeline {
           steps {
             sh 'mkdir Linux-x64'
             dir(path: './Linux-x64') {
-              sh 'warp-packer --arch linux-x64 --input_dir ../SupportBot/bin/linux/publish --exec SupportBoi --output SupportBoi'
+              sh 'warp-packer --arch linux-x64 --input_dir ../SupportBoi/bin/linux/publish --exec SupportBoi --output SupportBoi'
             }
 
           }
