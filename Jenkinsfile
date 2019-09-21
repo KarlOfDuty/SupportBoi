@@ -19,12 +19,18 @@ pipeline {
       parallel {
         stage('Linux') {
           steps {
-            sh 'warp-packer --arch linux-x64 --input_dir SupportBoi/bin/linux/publish --exec SupportBoi --output SupportBoi'
+            dir(path: './SupportBoi') {
+              sh 'warp-packer --arch linux-x64 --input_dir bin/linux/publish --exec SupportBoi --output SupportBoi'
+            }
+
           }
         }
         stage('Windows') {
           steps {
-            sh 'warp-packer --arch windows-x64 --input_dir SupportBoi/bin/win/publish --exec SupportBoi.exe --output SupportBoi.exe'
+            dir(path: './SupportBoi') {
+              sh 'warp-packer --arch windows-x64 --input_dir bin/win/publish --exec SupportBoi.exe --output SupportBoi.exe'
+            }
+
           }
         }
       }
@@ -33,12 +39,12 @@ pipeline {
       parallel {
         stage('Linux') {
           steps {
-            archiveArtifacts(artifacts: 'SupportBoi', caseSensitive: true)
+            archiveArtifacts(artifacts: 'SupportBoi/SupportBoi', caseSensitive: true)
           }
         }
         stage('Windows') {
           steps {
-            archiveArtifacts(artifacts: 'SupportBoi.exe', caseSensitive: true)
+            archiveArtifacts(artifacts: 'SupportBoi/SupportBoi.exe', caseSensitive: true)
           }
         }
       }
