@@ -79,7 +79,7 @@ namespace SupportBoi
 			}
 			finally
 			{
-				timer?.Change(1000, Timeout.Infinite);
+				timer?.Change(2000, Timeout.Infinite);
 			}
 		}
 
@@ -487,7 +487,7 @@ namespace SupportBoi
 			catch (Exception)
 			{
 				// Creates a new sheet if the target one does not exist
-				return CreateSheet(staffID, staffID == null ? "Unassigned" : staffName);
+				return CreateSheet(staffID, staffID == null || staffID == "0" ? "Unassigned" : staffName);
 			}
 		}
 
