@@ -29,15 +29,27 @@ A support ticket Discord bot. Uses a MySQL database for storage of ticket inform
 
 ## Setup
 
- 1. [Create a new bot application](https://discordapp.com/developers/applications/).
+1. [Create a new bot application](https://discordapp.com/developers/applications/).
 
- 2. [Install .NET Core 2.2](https://dotnet.microsoft.com/download/dotnet-core/2.2).
+2. [Install .NET Core 2.2](https://dotnet.microsoft.com/download/dotnet-core/2.2).
 
- 3. Download the bot for your operating system, either a [release version](https://github.com/KarlOfDuty/SupportBoi/releases) or a [dev build](http://95.217.45.17:8080/blue/organizations/jenkins/SupportBoi/activity).
+3. Download the bot for your operating system, either a [release version](https://github.com/KarlOfDuty/SupportBoi/releases) or a [dev build](http://95.217.45.17:8080/blue/organizations/jenkins/SupportBoi/activity).
 
- 4. Run `./SupportBoi` on Linux or `./SupportBoi.exe` on Windows.
+4. Run `./SupportBoi` on Linux or `./SupportBoi.exe` on Windows.
 
- 5. Set up the config (`config.yml`) to your specifications, there are instructions inside and also further down on this page. If you need more help either contact me in Discord or through an issue here.
+5. Set up the config (`config.yml`) to your specifications, there are instructions inside and also further down on this page. If you need more help either contact me in Discord or through an issue here.
+ 
+#### Google Sheets integration (Optional): 
+ 
+If you are using Google Sheets you will have to do some additional setup:
+
+1. Generate a credentials.json file by clicking "Enable the Google Sheets API" [here](https://developers.google.com/sheets/api/quickstart/dotnet), and following the instructions.
+
+2. Place this file in the same directory as the bot.
+
+3. You now need to generate a token. On a desktop PC the bot will open a browser window for you to log into your Google account and generate an API token, which is then automatically saved as "token.json" in the bot directory. I have no idea how to generate it from a terminal environment so I recommend you run the bot with the Sheets API set up once on your normal PC first and then just transfer the token it creates to your server.
+
+4. If you did step 3 in a desktop environment you do not have to do anything else, if you did it in a terminal environment you likely have to restart the application after adding the token.
 
 ## Default Config
 
