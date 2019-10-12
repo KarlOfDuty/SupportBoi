@@ -40,20 +40,6 @@ namespace SupportBoi.Commands
 					.AddField("Open tickets:", openTickets + "", true)
 					.AddField("Closed tickets (1.1.0+ tickets only):", closedTickets + " ", true);
 				await command.RespondAsync("", false, botInfo);
-
-				if (Database.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
-				{
-					DiscordEmbed channelInfo = new DiscordEmbedBuilder()
-						.WithTitle("Channel information")
-						.WithColor(DiscordColor.Cyan)
-						.AddField("Channel info", "This channel is a ticket.", false)
-						.AddField("Ticket number:", ticket.id.ToString(), true)
-						.AddField("Ticket creator:", $"<@{ticket.creatorID}>", true)
-						.AddField("Assigned staff:", ticket.assignedStaffID == 0 ? "Unassigned." : $"<@{ticket.assignedStaffID}>", true)
-						.AddField("Creation time:", ticket.createdTime.ToString(Config.timestampFormat), true)
-						.AddField("Summary:", string.IsNullOrEmpty(ticket.summary) ? "No summary." : ticket.summary, false);
-					await command.RespondAsync("", false, channelInfo);
-				}
 			}
 		}
 	}
