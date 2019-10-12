@@ -27,21 +27,15 @@ namespace SupportBoi.Commands
 				return;
 			}
 
+			ulong userID;
 			string strippedMessage = command.Message.Content.Replace(Config.prefix, "");
 			string[] parsedMessage = strippedMessage.Replace("<@", "").Replace(">", "").Split();
 
 			if (parsedMessage.Length < 2)
 			{
-				DiscordEmbed error = new DiscordEmbedBuilder
-				{
-					Color = DiscordColor.Red,
-					Description = "You need to provide an ID/Mention."
-				};
-				await command.RespondAsync("", false, error);
-				return;
+				userID = command.Member.Id;
 			}
-
-			if (!ulong.TryParse(parsedMessage[1], out ulong userID))
+			else if (!ulong.TryParse(parsedMessage[1], out userID))
 			{
 				DiscordEmbed error = new DiscordEmbedBuilder
 				{
