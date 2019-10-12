@@ -29,16 +29,19 @@ namespace SupportBoi.Commands
 					return;
 				}
 
-				ulong channelID = command.Channel.Id;
-				string channelName = command.Channel.Name;
-				c.Open();
-				MySqlCommand selection = new MySqlCommand(@"SELECT * FROM tickets WHERE channel_id=@channel_id", c);
-				selection.Parameters.AddWithValue("@channel_id", channelID);
-				selection.Prepare();
-				MySqlDataReader results = selection.ExecuteReader();
-
-				// Check if ticket exists in the database
-				if (!results.Read())
+				if (Database.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
+				{
+					DiscordEmbed channelInfo = new DiscordEmbedBuilder()
+						.WithTitle("Channel information")
+						.WithColor(DiscordColor.Cyan)
+						.AddField("Ticket number:", ticket.id.ToString(), true)
+						.AddField("Ticket creator:", $"<@{ticket.creatorID}>", true)
+						.AddField("Assigned staff:", ticket.assignedStaffID == 0 ? "Unassigned." : $"<@{ticket.assignedStaffID}>", true)
+						.AddField("Creation time:", ticket.createdTime.ToString(Config.timestampFormat), true)
+						.AddField("Summary:", string.IsNullOrEmpty(ticket.summary) ? "No summary." : ticket.summary, false);
+					await command.RespondAsync("", false, channelInfo);
+				}
+				else
 				{
 					DiscordEmbed error = new DiscordEmbedBuilder
 					{
@@ -46,22 +49,7 @@ namespace SupportBoi.Commands
 						Description = "This channel is not a ticket."
 					};
 					await command.RespondAsync("", false, error);
-					return;
 				}
-
-
-				int id = results.GetInt32("id");
-				string createdTime = results.GetString("created_time");
-				ulong creatorID = results.GetUInt64("creator_id");
-				ulong assignedStaffID = results.GetUInt64("assigned_staff_id");
-				string summary = results.GetString("summary");
-
-				DiscordEmbed message = new DiscordEmbedBuilder()
-					.WithColor(DiscordColor.Green)
-					.AddField("Time opened", createdTime, true)
-					.AddField("Opened by", "<@" + creatorID + ">", true)
-					.AddField("Summary", summary, false);
-				await command.RespondAsync("", false, message);
 			}
 		}
 	}
