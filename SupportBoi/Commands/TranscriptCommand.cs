@@ -5,8 +5,6 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Exceptions;
-using MySql.Data.MySqlClient;
-using Org.BouncyCastle.Bcpg;
 
 namespace SupportBoi.Commands
 {

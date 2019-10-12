@@ -14,7 +14,6 @@ namespace SupportBoi.Commands
 		[Cooldown(1, 5, CooldownBucketType.User)]
 		public async Task OnExecute(CommandContext command)
 		{
-
 			// Check if the user has permission to use this command.
 			if (!Config.HasPermission(command.Member, "setsummary"))
 			{

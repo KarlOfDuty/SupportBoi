@@ -14,77 +14,69 @@ namespace SupportBoi.Commands
 		[Cooldown(1, 5, CooldownBucketType.User)]
 		public async Task OnExecute(CommandContext command)
 		{
+			// Check if the user has permission to use this command.
+			if (!Config.HasPermission(command.Member, "addstaff"))
+			{
+				DiscordEmbed error = new DiscordEmbedBuilder
+				{
+					Color = DiscordColor.Red,
+					Description = "You do not have permission to use this command."
+				};
+				await command.RespondAsync("", false, error);
+				command.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", "User tried to use the addstaff command but did not have permission.", DateTime.UtcNow);
+				return;
+			}
+
+			string strippedMessage = command.Message.Content.Replace(Config.prefix, "");
+			string[] parsedMessage = strippedMessage.Replace("<@", "").Replace(">", "").Split();
+
+			if (parsedMessage.Length < 2)
+			{
+				DiscordEmbed error = new DiscordEmbedBuilder
+				{
+					Color = DiscordColor.Red,
+					Description = "You need to provide an ID/Mention."
+				};
+				await command.RespondAsync("", false, error);
+				return;
+			}
+
+			if (!ulong.TryParse(parsedMessage[1], out ulong userID))
+			{
+				DiscordEmbed error = new DiscordEmbedBuilder
+				{
+					Color = DiscordColor.Red,
+					Description = "Invalid ID/Mention. (Could not convert to numerical)"
+				};
+				await command.RespondAsync("", false, error);
+				return;
+			}
+
+			DiscordMember member;
+			try
+			{
+				member = await command.Guild.GetMemberAsync(userID);
+			}
+			catch (Exception)
+			{
+				DiscordEmbed error = new DiscordEmbedBuilder
+				{
+					Color = DiscordColor.Red,
+					Description = "Invalid ID/Mention. (Could not find user on Discord)"
+				};
+				await command.RespondAsync("", false, error);
+				return;
+			}
+
 			using (MySqlConnection c = Database.GetConnection())
 			{
-				// Check if the user has permission to use this command.
-				if (!Config.HasPermission(command.Member, "addstaff"))
-				{
-					DiscordEmbed error = new DiscordEmbedBuilder
-					{
-						Color = DiscordColor.Red,
-						Description = "You do not have permission to use this command."
-					};
-					await command.RespondAsync("", false, error);
-					command.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", "User tried to use the addstaff command but did not have permission.", DateTime.UtcNow);
-					return;
-				}
-
-				string strippedMessage = command.Message.Content.Replace(Config.prefix, "");
-				string[] parsedMessage = strippedMessage.Replace("<@", "").Replace(">", "").Split();
-
-				if (parsedMessage.Length < 2)
-				{
-					DiscordEmbed error = new DiscordEmbedBuilder
-					{
-						Color = DiscordColor.Red,
-						Description = "You need to provide an ID/Mention."
-					};
-					await command.RespondAsync("", false, error);
-					return;
-				}
-
-				if (!ulong.TryParse(parsedMessage[1], out ulong userID))
-				{
-					DiscordEmbed error = new DiscordEmbedBuilder
-					{
-						Color = DiscordColor.Red,
-						Description = "Invalid ID/Mention. (Could not convert to numerical)"
-					};
-					await command.RespondAsync("", false, error);
-					return;
-				}
-
-				DiscordMember member;
-				try
-				{
-					member = await command.Guild.GetMemberAsync(userID);
-				}
-				catch (Exception)
-				{
-					DiscordEmbed error = new DiscordEmbedBuilder
-					{
-						Color = DiscordColor.Red,
-						Description = "Invalid ID/Mention. (Could not find user on Discord)"
-					};
-					await command.RespondAsync("", false, error);
-					return;
-				}
-
-
-				MySqlCommand cmd;
-				if (Database.IsStaff(userID))
-				{
-					cmd = new MySqlCommand(@"UPDATE staff SET name = @name WHERE user_id = @user_id", c);
-				}
-				else
-				{
-					cmd = new MySqlCommand(@"INSERT INTO staff (user_id, name) VALUES (@user_id, @name);", c);
-				}
+				MySqlCommand cmd = Database.IsStaff(userID) ? new MySqlCommand(@"UPDATE staff SET name = @name WHERE user_id = @user_id", c) : new MySqlCommand(@"INSERT INTO staff (user_id, name) VALUES (@user_id, @name);", c);
 
 				c.Open();
 				cmd.Parameters.AddWithValue("@user_id", userID);
 				cmd.Parameters.AddWithValue("@name", member.DisplayName);
 				cmd.ExecuteNonQuery();
+				cmd.Dispose();
 
 				DiscordEmbed message = new DiscordEmbedBuilder
 				{
