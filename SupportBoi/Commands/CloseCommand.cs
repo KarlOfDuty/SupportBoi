@@ -4,6 +4,7 @@ using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using DSharpPlus.Exceptions;
 using MySql.Data.MySqlClient;
 
 namespace SupportBoi.Commands
@@ -63,13 +64,31 @@ namespace SupportBoi.Commands
 			DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
 			if (logChannel != null)
 			{
-				DiscordEmbed message = new DiscordEmbedBuilder
+				DiscordEmbed logMessage = new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Green,
 					Description = "Ticket " + ticket.id.ToString("00000") + " closed by " + command.Member.Mention + ".\n",
 					Footer = new DiscordEmbedBuilder.EmbedFooter { Text = '#' + channelName }
 				};
-				await logChannel.SendFileAsync(filePath, "", false, message);
+				await logChannel.SendFileAsync(filePath, "", false, logMessage);
+			}
+
+			if (ticket.assignedStaffID != 0)
+			{
+				DiscordEmbed message = new DiscordEmbedBuilder
+				{
+					Color = DiscordColor.Green,
+					Description = "Ticket " + ticket.id.ToString("00000") + " which you opened has now been closed, check the transcript for more info.\n",
+					Footer = new DiscordEmbedBuilder.EmbedFooter { Text = '#' + channelName }
+				};
+
+				try
+				{
+					DiscordMember staffMember = await command.Guild.GetMemberAsync(ticket.assignedStaffID);
+					await staffMember.SendFileAsync(filePath, "", false, message);
+				}
+				catch (NotFoundException) { }
+				catch (UnauthorizedException) { }
 			}
 
 			using (MySqlConnection c = Database.GetConnection())
