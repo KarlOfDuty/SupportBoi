@@ -103,7 +103,7 @@ namespace SupportBoi.Commands
 					DiscordEmbed error = new DiscordEmbedBuilder
 					{
 						Color = DiscordColor.Red,
-						Description = "Could not find a ticket which you have opened with that number." + (Config.HasPermission(command.Member, "list") ? "\n(Use the " + Config.prefix + "list command to see all your tickets)" : "")
+						Description = "Could not find a closed ticket with that number which you opened." + (Config.HasPermission(command.Member, "list") ? "\n(Use the " + Config.prefix + "list command to see all your tickets)" : "")
 					};
 					await command.RespondAsync("", false, error);
 					return;
