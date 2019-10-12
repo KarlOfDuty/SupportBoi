@@ -515,7 +515,7 @@ namespace SupportBoi
 
 			UpdateCell(sheet, columnLetters["ticketNumber"], nextRow, ticketNumber);
 			UpdateCell(sheet, columnLetters["channel"], nextRow, $"\"#{channel?.Name}\"", $"\"https://discordapp.com/channels/{channel?.GuildId}/{channel?.Id}/\"");
-			UpdateCell(sheet, columnLetters["user"], nextRow, user?.Nickname == null ? $"\"{user?.Username}#{user?.Discriminator}\"" : $"\"{user.DisplayName} ({user.Username}#{user.Discriminator})\"", $"\"https://discordapp.com/channels/@me/{user?.Id}\"");
+			UpdateCell(sheet, columnLetters["user"], nextRow, user?.Nickname == null ? $"\"{user?.Username ?? "Invalid User"}#{user?.Discriminator ?? "----"}\"" : $"\"{user.DisplayName} ({user.Username}#{user.Discriminator})\"", $"\"https://discordapp.com/channels/@me/{user?.Id ?? 0}\"");
 			UpdateCell(sheet, columnLetters["timeCreated"], nextRow,  createdTime?.ToString(Config.timestampFormat) ?? DateTime.UtcNow.ToString(Config.timestampFormat));
 			UpdateCell(sheet, columnLetters["lastMessage"], nextRow, lastMessage?.ToString(Config.timestampFormat) ?? DateTime.UtcNow.ToString(Config.timestampFormat));
 			UpdateCell(sheet, columnLetters["summary"], nextRow, string.IsNullOrEmpty(summary) ? "No summary yet. Use '" + Config.prefix + "setsummary' to edit it." : summary);
