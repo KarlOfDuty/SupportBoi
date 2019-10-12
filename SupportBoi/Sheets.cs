@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -18,8 +18,6 @@ namespace SupportBoi
 	{
 		private static readonly string[] scopes = { SheetsService.Scope.Spreadsheets };
 
-		private static UserCredential credential;
-
 		private static SheetsService service;
 
 		private static Timer timer;
@@ -30,13 +28,13 @@ namespace SupportBoi
 		{
 			service?.Dispose();
 			timer?.Dispose();
-			credential = null;
 
 			if (!Config.sheetsEnabled)
 			{
 				return;
 			}
 
+			UserCredential credential;
 			using (FileStream stream = new FileStream("credentials.json", FileMode.Open, FileAccess.Read))
 			{
 				credential = GoogleWebAuthorizationBroker.AuthorizeAsync(GoogleClientSecrets.Load(stream).Secrets, scopes, "SupportBoi", CancellationToken.None, new FileDataStore("token.json", true)).Result;
@@ -508,6 +506,7 @@ namespace SupportBoi
 
 		private static void AddTicket(DiscordMember user, DiscordChannel channel, string ticketNumber, string staffID = null, string staffName = null, DateTime? createdTime = null, DateTime? lastMessage = null, string summary = null)
 		{
+			// TODO: Update this to use fewer API calls.
 			Sheet sheet = GetOrCreateSheet(staffID, staffName);
 
 			Dictionary<string, string> columnLetters = GetTicketColumnLetters(sheet.Properties.SheetId ?? -1);
