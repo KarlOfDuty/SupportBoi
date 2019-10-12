@@ -4,6 +4,7 @@ using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using DSharpPlus.Exceptions;
 using MySql.Data.MySqlClient;
 
 namespace SupportBoi.Commands
@@ -99,6 +100,20 @@ namespace SupportBoi.Commands
 						Description = "Ticket was randomly assigned to <@" + staffID + ">."
 					};
 					await ticketChannel.SendMessageAsync("", false, assignmentMessage);
+
+					DiscordEmbed message = new DiscordEmbedBuilder
+					{
+						Color = DiscordColor.Green,
+						Description = "You have been randomly assigned to a newly opened support ticket: " + command.Channel.Mention
+					};
+
+					try
+					{
+						DiscordMember staffMember = await command.Guild.GetMemberAsync(staffID);
+						await staffMember.SendMessageAsync("", false, message);
+					}
+					catch (NotFoundException) { }
+					catch (UnauthorizedException) { }
 				}
 				
 				// Refreshes the channel as changes were made to it above
@@ -125,7 +140,7 @@ namespace SupportBoi.Commands
 				}
 				
 				// Adds the ticket to the google sheets document if enabled
-				Sheets.AddTicketQueued(command.Member, ticketChannel, id.ToString(), staffID.ToString(), Database.TryGetStaff(staffID, out Database.StaffMember staffMember) ? staffMember.userID.ToString() : null);
+				Sheets.AddTicketQueued(command.Member, ticketChannel, id.ToString(), staffID.ToString(), Database.TryGetStaff(staffID, out Database.StaffMember staffMemberEntry) ? staffMemberEntry.userID.ToString() : null);
 			}
 		}
 	}
