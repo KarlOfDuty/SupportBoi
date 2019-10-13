@@ -92,6 +92,9 @@ namespace SupportBoi.Commands
 
 				await ticketChannel.SendMessageAsync("Hello, " + command.Member.Mention + "!\n" + Config.welcomeMessage);
 
+				// Refreshes the channel as changes were made to it above
+				ticketChannel = command.Guild.GetChannel(ticketChannel.Id);
+
 				if (staffID != 0)
 				{
 					DiscordEmbed assignmentMessage = new DiscordEmbedBuilder
@@ -106,7 +109,7 @@ namespace SupportBoi.Commands
 						DiscordEmbed message = new DiscordEmbedBuilder
 						{
 							Color = DiscordColor.Green,
-							Description = "You have been randomly assigned to a newly opened support ticket: " + command.Channel.Mention
+							Description = "You have been randomly assigned to a newly opened support ticket: " + ticketChannel.Mention
 						};
 
 						try
@@ -118,9 +121,6 @@ namespace SupportBoi.Commands
 						catch (UnauthorizedException) { }
 					}
 				}
-				
-				// Refreshes the channel as changes were made to it above
-				ticketChannel = command.Guild.GetChannel(ticketChannel.Id);
 
 				DiscordEmbed response = new DiscordEmbedBuilder
 				{
