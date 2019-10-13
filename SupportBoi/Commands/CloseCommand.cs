@@ -73,7 +73,7 @@ namespace SupportBoi.Commands
 				await logChannel.SendFileAsync(filePath, "", false, logMessage);
 			}
 
-			if (ticket.assignedStaffID != 0)
+			if (Config.closingNotifications)
 			{
 				DiscordEmbed message = new DiscordEmbedBuilder
 				{
@@ -84,7 +84,7 @@ namespace SupportBoi.Commands
 
 				try
 				{
-					DiscordMember staffMember = await command.Guild.GetMemberAsync(ticket.assignedStaffID);
+					DiscordMember staffMember = await command.Guild.GetMemberAsync(ticket.creatorID);
 					await staffMember.SendFileAsync(filePath, "", false, message);
 				}
 				catch (NotFoundException) { }

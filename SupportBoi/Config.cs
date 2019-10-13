@@ -20,6 +20,10 @@ namespace SupportBoi
 		internal static string logLevel = "Info";
 		internal static string timestampFormat = "yyyy-MMM-dd HH:mm";
 		internal static bool randomAssignment = false;
+		internal static bool ticketUpdatedNotifications = false;
+		internal static double ticketUpdatedNotificationDelay = 0.0;
+		internal static bool assignmentNotifications = false;
+		internal static bool closingNotifications = false;
 
 		internal static string hostName = "127.0.0.1";
 		internal static int port = 3306;
@@ -86,6 +90,10 @@ namespace SupportBoi
 			logLevel = json.SelectToken("bot.console-log-level").Value<string>() ?? "";
 			timestampFormat = json.SelectToken("bot.timestamp-format").Value<string>() ?? "yyyy-MM-dd HH:mm";
 			randomAssignment = json.SelectToken("bot.random-assignment").Value<bool>();
+			ticketUpdatedNotifications = json.SelectToken("notifications.ticket-updated").Value<bool>();
+			ticketUpdatedNotificationDelay = json.SelectToken("notifications.ticket-updated-delay").Value<double>();
+			assignmentNotifications = json.SelectToken("notifications.assignment").Value<bool>();
+			closingNotifications = json.SelectToken("notifications.closing").Value<bool>();
 
 			// Reads database info
 			hostName = json.SelectToken("database.address").Value<string>() ?? "";

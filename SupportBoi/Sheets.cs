@@ -136,7 +136,7 @@ namespace SupportBoi
 										{
 											UserEnteredValue = new ExtendedValue
 											{
-												StringValue = "Ticket Number"
+												StringValue = "Ticket number"
 											}
 										},
 										new CellData
@@ -164,7 +164,7 @@ namespace SupportBoi
 										{
 											UserEnteredValue = new ExtendedValue
 											{
-												StringValue = "Last Message"
+												StringValue = "Last staff message"
 											}
 										},
 										new CellData
@@ -543,17 +543,17 @@ namespace SupportBoi
 			UpdateCell(sheet, columnLetters["summary"], ticketRow, $"{summary}");
 		}
 
-		public static void RefreshLastMessageSentQueued(uint ticketID)
+		public static void RefreshLastStaffMessageSentQueued(uint ticketID)
 		{
 			if (!Config.sheetsEnabled)
 			{
 				return;
 			}
 
-			jobQueue.Enqueue(() => RefreshLastMessageSent(ticketID));
+			jobQueue.Enqueue(() => RefreshLastStaffMessageSent(ticketID));
 		}
 
-		private static void RefreshLastMessageSent(uint ticketID)
+		private static void RefreshLastStaffMessageSent(uint ticketID)
 		{
 			if (!TryGetTicketLocation(ticketID, out Sheet sheet, out int ticketRow))
 			{

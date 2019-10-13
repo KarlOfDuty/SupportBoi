@@ -7,6 +7,7 @@ using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.CommandsNext.Exceptions;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
+using DSharpPlus.Exceptions;
 
 namespace SupportBoi
 {
@@ -45,14 +46,49 @@ namespace SupportBoi
 			return Task.CompletedTask;
 		}
 
-		internal Task OnMessageCreated(MessageCreateEventArgs e)
+		internal async Task OnMessageCreated(MessageCreateEventArgs e)
 		{
-			// Check if ticket exists in the database
-			if (Database.TryGetOpenTicket(e.Channel.Id, out Database.Ticket ticket))
+			if (e.Author.IsBot)
 			{
-				Sheets.RefreshLastMessageSentQueued(ticket.id);
+				return;
 			}
-			return Task.CompletedTask;
+
+
+			// Check if ticket exists in the database
+			if (!Database.TryGetOpenTicket(e.Channel.Id, out Database.Ticket ticket))
+			{
+				return;
+			}
+
+			// Updates last staff message sent field in the google sheet
+			if (Database.IsStaff(e.Author.Id) && Config.sheetsEnabled)
+			{
+				Sheets.RefreshLastStaffMessageSentQueued(ticket.id);
+			}
+
+			if (!Config.ticketUpdatedNotifications)
+			{
+				return;
+			}
+
+			// Sends a DM to the assigned staff member if at least a day has gone by since the last message and the user sending the message isn't staff
+			IReadOnlyList<DiscordMessage> messages = await e.Channel.GetMessagesAsync(2);
+			if (messages.Count > 1 && messages[1].Timestamp < DateTimeOffset.UtcNow.AddDays(Config.ticketUpdatedNotificationDelay * -1) && !Database.IsStaff(e.Author.Id))
+			{
+				try
+				{
+					DiscordEmbed message = new DiscordEmbedBuilder
+					{
+						Color = DiscordColor.Green,
+						Description = "A ticket you are assigned to has been updated: " + e.Channel.Mention
+					};
+
+					DiscordMember staffMember = await e.Guild.GetMemberAsync(ticket.assignedStaffID);
+					await staffMember.SendMessageAsync("", false, message);
+				}
+				catch (NotFoundException) { }
+				catch (UnauthorizedException) { }
+			}
 		}
 
 		internal Task OnCommandError(CommandErrorEventArgs e)

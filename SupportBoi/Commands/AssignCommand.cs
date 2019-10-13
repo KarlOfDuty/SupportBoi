@@ -105,12 +105,15 @@ namespace SupportBoi.Commands
 			};
 			await command.RespondAsync("", false, feedback);
 
-			DiscordEmbed message = new DiscordEmbedBuilder
+			if (Config.assignmentNotifications)
 			{
-				Color = DiscordColor.Green,
-				Description = "You have been assigned to a support ticket: " + command.Channel.Mention
-			};
-			await staffMember.SendMessageAsync("", false, message);
+				DiscordEmbed message = new DiscordEmbedBuilder
+				{
+					Color = DiscordColor.Green,
+					Description = "You have been assigned to a support ticket: " + command.Channel.Mention
+				};
+				await staffMember.SendMessageAsync("", false, message);
+			}
 
 			// Log it if the log channel exists
 			DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
