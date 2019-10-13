@@ -78,6 +78,7 @@ namespace SupportBoi.Commands
 				MySqlCommand deletion = new MySqlCommand(@"DELETE FROM staff WHERE user_id=@user_id", c);
 				deletion.Parameters.AddWithValue("@user_id", userID);
 				deletion.Prepare();
+				deletion.ExecuteNonQuery();
 
 				DiscordEmbed message = new DiscordEmbedBuilder
 				{
