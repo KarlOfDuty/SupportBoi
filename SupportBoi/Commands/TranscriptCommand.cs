@@ -96,7 +96,7 @@ namespace SupportBoi.Commands
 
 				}
 				// If there is no open or closed ticket, send an error. If there is a closed ticket we will simply use the old transcript from when the ticket was closed.
-				else if (!Database.TryGetClosedTicket(ticketID, out ticket) || ticket?.creatorID != command.Member.Id)
+				else if (!Database.TryGetClosedTicket(ticketID, out ticket) || (ticket?.creatorID != command.Member.Id && !Database.IsStaff(command.Member.Id)))
 				{
 					DiscordEmbed error = new DiscordEmbedBuilder
 					{
