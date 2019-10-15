@@ -31,8 +31,8 @@ namespace SupportBoi.Commands
 
 				ulong staffID;
 				string strippedMessage = command.Message.Content.Replace(Config.prefix, "");
-				string[] parsedMessage = strippedMessage.Replace("<@", "").Replace(">", "").Split();
-				
+				string[] parsedMessage = strippedMessage.Replace("<@!", "").Replace("<@", "").Replace(">", "").Split();
+
 				if (parsedMessage.Length < 2)
 				{
 					staffID = command.Member.Id;

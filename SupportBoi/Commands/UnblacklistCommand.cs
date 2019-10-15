@@ -27,7 +27,7 @@ namespace SupportBoi.Commands
 				return;
 			}
 
-			string[] words = command.Message.Content.Replace("<@", "").Replace(">", "").Split();
+			string[] words = command.Message.Content.Replace("<@!", "").Replace("<@", "").Replace(">", "").Split();
 			foreach (string word in words)
 			{
 				if (ulong.TryParse(word, out ulong userId))
