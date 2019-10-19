@@ -107,12 +107,17 @@ namespace SupportBoi.Commands
 
 			if (Config.assignmentNotifications)
 			{
-				DiscordEmbed message = new DiscordEmbedBuilder
+				try
 				{
-					Color = DiscordColor.Green,
-					Description = "You have been assigned to a support ticket: " + command.Channel.Mention
-				};
-				await staffMember.SendMessageAsync("", false, message);
+					DiscordEmbed message = new DiscordEmbedBuilder
+					{
+						Color = DiscordColor.Green,
+						Description = "You have been assigned to a support ticket: " + command.Channel.Mention
+					};
+					await staffMember.SendMessageAsync("", false, message);
+				}
+				catch (UnauthorizedException) {}
+
 			}
 
 			// Log it if the log channel exists

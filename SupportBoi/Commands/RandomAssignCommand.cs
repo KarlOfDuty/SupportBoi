@@ -88,12 +88,19 @@ namespace SupportBoi.Commands
 			};
 			await command.RespondAsync("", false, feedback);
 
-			DiscordEmbed message = new DiscordEmbedBuilder
+			if (Config.assignmentNotifications)
 			{
-				Color = DiscordColor.Green,
-				Description = "You have been randomly assigned to a support ticket: " + command.Channel.Mention
-			};
-			await staffMember.SendMessageAsync("", false, message);
+				try
+				{
+					DiscordEmbed message = new DiscordEmbedBuilder
+					{
+						Color = DiscordColor.Green,
+						Description = "You have been randomly assigned to a support ticket: " + command.Channel.Mention
+					};
+					await staffMember.SendMessageAsync("", false, message);
+				}
+				catch (UnauthorizedException) {}
+			}
 
 			// Log it if the log channel exists
 			DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
