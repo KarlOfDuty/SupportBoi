@@ -6,13 +6,13 @@ pipeline {
         stage('Linux') {
           steps {
             sh 'msbuild SupportBoi/SupportBoi.csproj -restore -t:Publish -p:PublishProfile=Linux64.pubxml -p:OutputPath=bin/linux/ -p:BaseIntermediateOutputPath=obj/linux/ -p:TargetFramework=netcoreapp2.2 -p:SelfContained=true -p:RuntimeIdentifier=linux-x64'
-            sh 'rm -r bin/Linux/*.pdb'
+            sh 'rm -r SupportBoi/bin/Linux/*.pdb'
           }
         }
         stage('Windows') {
           steps {
             sh 'msbuild SupportBoi/SupportBoi.csproj -restore -t:Publish -p:PublishProfile=Windows64.pubxml -p:OutputPath=bin/win/ -p:BaseIntermediateOutputPath=obj/win/ -p:TargetFramework=netcoreapp2.2 -p:SelfContained=true -p:RuntimeIdentifier=win-x64'
-            sh 'rm -r bin/Windows/*.pdb'
+            sh 'rm -r SupportBoi/bin/Windows/*.pdb'
           }
         }
       }
