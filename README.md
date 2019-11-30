@@ -41,7 +41,9 @@ A support ticket Discord bot. Uses a MySQL database for storage of ticket inform
 4. Run `./SupportBoi` on Linux or `./SupportBoi.exe` on Windows.
 
 5. Set up the config (`config.yml`) to your specifications, there are instructions inside and also further down on this page. If you need more help either contact me in Discord or through an issue here.
- 
+
+* You may have an issue where the bot crashes as it tries to set up the database tables with an error that one of the timestamps has an invalid default value. This is an issue in newer mysql versions as they start in strict mode by default, using this query on the bot's database should fix it: `SET global sql_mode=''`. This will probably be fixed in the future by moving to a DATETIME type instead of a TIMESTAMP but it's a quick fix you can use until then.
+
 #### Google Sheets integration (Optional): 
  
 If you are using Google Sheets you will have to do some additional setup:
