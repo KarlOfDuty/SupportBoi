@@ -2,6 +2,8 @@
 
 A support ticket Discord bot. Uses a MySQL database for storage of ticket information. Creates amazingly formatted HTML ticket transcripts when tickets are closed. Has the ability to output ticket information to a google sheet which can be customized in a number of ways.
 
+There appears to be an issue where CentOS 7 may not be compatible with some element of this bot causing it to not start.
+
 #### Thanks to [DiscordChatExporter](https://github.com/Tyrrrz/DiscordChatExporter) for the great library used in the transcript function.
 
 ## Commands
@@ -43,8 +45,6 @@ A support ticket Discord bot. Uses a MySQL database for storage of ticket inform
 5. Set up the config (`config.yml`) to your specifications, there are instructions inside and also further down on this page. If you need more help either contact me in Discord or through an issue here.
 
 * You may have an issue where the bot crashes as it tries to set up the database tables with an error that one of the timestamps has an invalid default value. This is an issue in newer mysql versions as they start in strict mode by default, using this query on the bot's database should fix it: `SET global sql_mode=''`. This will probably be fixed in the future by moving to a DATETIME type instead of a TIMESTAMP but it's a quick fix you can use until then.
-
-* There appears to be an issue where CentOS 7 may not be compatible with some element of this bot causing it to not start.
 
 #### Google Sheets integration (Optional): 
  
