@@ -12,6 +12,7 @@ namespace SupportBoi.Commands
 	public class ListAssignedCommand
 	{
 		[Command("listassigned")]
+		[Aliases("la")]
 		[Cooldown(1, 5, CooldownBucketType.User)]
 		public async Task OnExecute(CommandContext command)
 		{

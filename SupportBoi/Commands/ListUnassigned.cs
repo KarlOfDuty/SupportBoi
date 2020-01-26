@@ -13,6 +13,7 @@ namespace SupportBoi.Commands
 	public class ListUnassigned
 	{
 		[Command("listunassigned")]
+		[Aliases("lu")]
 		[Cooldown(1, 5, CooldownBucketType.User)]
 		public async Task OnExecute(CommandContext command)
 		{
