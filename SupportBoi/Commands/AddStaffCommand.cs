@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
@@ -28,14 +29,13 @@ namespace SupportBoi.Commands
 			}
 
 			ulong userID;
-			string strippedMessage = command.Message.Content.Replace(Config.prefix, "");
-			string[] parsedMessage = strippedMessage.Replace("<@!", "").Replace("<@", "").Replace(">", "").Split();
+			string[] parsedArgs = Utilities.ParseIDs(command.RawArgumentString);
 
-			if (parsedMessage.Length < 2)
+			if (!parsedArgs.Any())
 			{
 				userID = command.Member.Id;
 			}
-			else if (!ulong.TryParse(parsedMessage[1], out userID))
+			else if (!ulong.TryParse(parsedArgs[0], out userID))
 			{
 				DiscordEmbed error = new DiscordEmbedBuilder
 				{
@@ -56,7 +56,7 @@ namespace SupportBoi.Commands
 				DiscordEmbed error = new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Red,
-					Description = "Invalid ID/Mention. (Could not find user on Discord)"
+					Description = "Invalid ID/Mention. (Could not find user on this server)"
 				};
 				await command.RespondAsync("", false, error);
 				return;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
@@ -28,14 +29,13 @@ namespace SupportBoi.Commands
 			}
 
 			ulong userID;
-			string strippedMessage = command.Message.Content.Replace(Config.prefix, "");
-			string[] parsedMessage = strippedMessage.Replace("<@!", "").Replace("<@", "").Replace(">", "").Split();
+			string[] parsedMessage = Utilities.ParseIDs(command.RawArgumentString);
 
-			if (parsedMessage.Length < 2)
+			if (!parsedMessage.Any())
 			{
 				userID = command.Member.Id;
 			}
-			else if (!ulong.TryParse(parsedMessage[1], out userID))
+			else if (!ulong.TryParse(parsedMessage[0], out userID))
 			{
 				DiscordEmbed error = new DiscordEmbedBuilder
 				{

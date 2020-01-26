@@ -5,6 +5,7 @@ using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using DSharpPlus.Exceptions;
 
 namespace SupportBoi.Commands
 {
@@ -39,13 +40,38 @@ namespace SupportBoi.Commands
 				return;
 			}
 
-			IReadOnlyList<DiscordUser> mentionedUsers = command.Message.MentionedUsers;
-
-			foreach (DiscordUser mentionedUser in mentionedUsers)
+			string[] parsedArgs = Utilities.ParseIDs(command.RawArgumentString);
+			foreach (string parsedArg in parsedArgs)
 			{
+				if (!ulong.TryParse(parsedArg, out ulong userID))
+				{
+					DiscordEmbed error = new DiscordEmbedBuilder
+					{
+						Color = DiscordColor.Red,
+						Description = "Invalid ID/Mention. (Could not convert to numerical)"
+					};
+					await command.RespondAsync("", false, error);
+					continue;
+				}
+
+				DiscordMember mentionedMember;
 				try
 				{
-					DiscordMember mentionedMember = await command.Guild.GetMemberAsync(mentionedUser.Id);
+					mentionedMember = await command.Guild.GetMemberAsync(userID);
+				}
+				catch (Exception)
+				{
+					DiscordEmbed error = new DiscordEmbedBuilder
+					{
+						Color = DiscordColor.Red,
+						Description = "Invalid ID/Mention. (Could not find user on this server)"
+					};
+					await command.RespondAsync("", false, error);
+					continue;
+				}
+
+				try
+				{
 					await command.Channel.AddOverwriteAsync(mentionedMember, Permissions.AccessChannels, Permissions.None);
 					DiscordEmbed message = new DiscordEmbedBuilder
 					{
@@ -61,7 +87,8 @@ namespace SupportBoi.Commands
 						DiscordEmbed logMessage = new DiscordEmbedBuilder
 						{
 							Color = DiscordColor.Green,
-							Description = mentionedMember.Mention + " was added to " + command.Channel.Mention + " by " + command.Member.Mention + "."
+							Description = mentionedMember.Mention + " was added to " + command.Channel.Mention +
+							              " by " + command.Member.Mention + "."
 						};
 						await logChannel.SendMessageAsync("", false, logMessage);
 					}
@@ -71,10 +98,9 @@ namespace SupportBoi.Commands
 					DiscordEmbed message = new DiscordEmbedBuilder
 					{
 						Color = DiscordColor.Red,
-						Description = "Could not add " + mentionedUser.Mention + " to ticket, they were not found on this server."
+						Description = "Could not add <@" + parsedArg + "> to ticket, unknown error occured."
 					};
 					await command.RespondAsync("", false, message);
-					throw;
 				}
 			}
 		}

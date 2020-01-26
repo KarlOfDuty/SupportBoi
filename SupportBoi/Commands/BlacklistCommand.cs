@@ -27,10 +27,10 @@ namespace SupportBoi.Commands
 				return;
 			}
 
-			string[] words = command.Message.Content.Replace("<@!", "").Replace("<@", "").Replace(">", "").Split();
-			foreach (string word in words)
+			string[] parsedArgs = Utilities.ParseIDs(command.RawArgumentString);
+			foreach (string parsedArg in parsedArgs)
 			{
-				if (ulong.TryParse(word, out ulong userId))
+				if (ulong.TryParse(parsedArg, out ulong userId))
 				{
 					DiscordUser blacklistedUser = null;
 					try

@@ -30,14 +30,13 @@ namespace SupportBoi.Commands
 			}
 
 			ulong staffID;
-			string strippedMessage = command.Message.Content.Replace(Config.prefix, "");
-			string[] parsedMessage = strippedMessage.Replace("<@!", "").Replace("<@", "").Replace(">", "").Split();
+			string[] parsedMessage = Utilities.ParseIDs(command.RawArgumentString);
 
-			if (parsedMessage.Length < 2)
+			if (!parsedMessage.Any())
 			{
 				staffID = command.Member.Id;
 			}
-			else if (!ulong.TryParse(parsedMessage[1], out staffID))
+			else if (!ulong.TryParse(parsedMessage[0], out staffID))
 			{
 				DiscordEmbed error = new DiscordEmbedBuilder
 				{
