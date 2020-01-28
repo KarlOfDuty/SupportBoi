@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
+using DSharpPlus.Entities;
 using SupportBoi.Commands;
 
 namespace SupportBoi
@@ -39,6 +40,11 @@ namespace SupportBoi
 				Console.WriteLine(e);
 				Console.ReadLine();
 			}
+		}
+
+		public static DiscordClient GetClient()
+		{
+			return instance.discordClient;
 		}
 
 		public static string GetVersion()
@@ -123,7 +129,8 @@ namespace SupportBoi
 			this.discordClient.GuildAvailable += this.eventHandler.OnGuildAvailable;
 			this.discordClient.ClientErrored += this.eventHandler.OnClientError;
 			this.discordClient.MessageCreated += this.eventHandler.OnMessageCreated;
-
+			this.discordClient.MessageReactionAdded += this.eventHandler.OnReactionAdded;
+			
 			Console.WriteLine("Registering commands...");
 			commands = discordClient.UseCommandsNext(new CommandsNextConfiguration
 			{

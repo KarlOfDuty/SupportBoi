@@ -212,7 +212,6 @@ namespace SupportBoi
 				return true;
 			}
 		}
-
 		public static bool TryGetOldestTickets(ulong userID, out List<Ticket> tickets)
 		{
 			tickets = null;
@@ -286,6 +285,22 @@ namespace SupportBoi
 				}
 				results.Close();
 				return true;
+			}
+		}
+		public static long NewTicket(ulong memberID, ulong staffID, ulong ticketID)
+		{
+			using (MySqlConnection c = GetConnection())
+			{
+				c.Open();
+				MySqlCommand cmd = new MySqlCommand(
+					@"INSERT INTO tickets (created_time, creator_id, assigned_staff_id, summary, channel_id) VALUES (now(), @creator_id, @assigned_staff_id, @summary, @channel_id);",
+					c);
+				cmd.Parameters.AddWithValue("@creator_id", memberID);
+				cmd.Parameters.AddWithValue("@assigned_staff_id", staffID);
+				cmd.Parameters.AddWithValue("@summary", "");
+				cmd.Parameters.AddWithValue("@channel_id", ticketID);
+				cmd.ExecuteNonQuery();
+				return cmd.LastInsertedId;
 			}
 		}
 		public static bool IsBlacklisted(ulong userID)

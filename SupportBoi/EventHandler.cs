@@ -8,6 +8,7 @@ using DSharpPlus.CommandsNext.Exceptions;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using DSharpPlus.Exceptions;
+using MySql.Data.MySqlClient;
 
 namespace SupportBoi
 {
@@ -123,6 +124,89 @@ namespace SupportBoi
 						return Task.CompletedTask;
 					}
 			}
+		}
+
+		internal async Task OnReactionAdded(MessageReactionAddEventArgs e)
+		{
+			if (e.Message.Id != Config.reactionMessage) return;
+
+			DiscordGuild guild = e.Message.Channel.Guild;
+			DiscordMember member = await guild.GetMemberAsync(e.User.Id);
+
+			if (!Config.HasPermission(member, "new") || Database.IsBlacklisted(member.Id)) return;
+
+			DiscordChannel category = guild.GetChannel(Config.ticketCategory);
+			DiscordChannel ticketChannel = await guild.CreateChannelAsync("ticket", ChannelType.Text, category);
+
+			if (ticketChannel == null) return;
+
+			ulong staffID = 0;
+			if (Config.randomAssignment)
+			{
+				staffID = Database.GetRandomActiveStaff(0)?.userID ?? 0;
+			}
+
+			long id = Database.NewTicket(member.Id, staffID, ticketChannel.Id);
+			string ticketID = id.ToString("00000");
+			await ticketChannel.ModifyAsync("ticket-" + ticketID);
+			await ticketChannel.AddOverwriteAsync(member, Permissions.AccessChannels, Permissions.None);
+
+			await ticketChannel.SendMessageAsync("Hello, " + member.Mention + "!\n" +
+			                                     Config.welcomeMessage);
+
+			// Refreshes the channel as changes were made to it above
+			ticketChannel = guild.GetChannel(ticketChannel.Id);
+
+			if (staffID != 0)
+			{
+				DiscordEmbed assignmentMessage = new DiscordEmbedBuilder
+				{
+					Color = DiscordColor.Green,
+					Description = "Ticket was randomly assigned to <@" + staffID + ">."
+				};
+				await ticketChannel.SendMessageAsync("", false, assignmentMessage);
+
+				if (Config.assignmentNotifications)
+				{
+					DiscordEmbed message = new DiscordEmbedBuilder
+					{
+						Color = DiscordColor.Green,
+						Description = "You have been randomly assigned to a newly opened support ticket: " +
+						              ticketChannel.Mention
+					};
+
+					try
+					{
+						DiscordMember staffMember = await guild.GetMemberAsync(staffID);
+						await staffMember.SendMessageAsync("", false, message);
+					}
+					catch (NotFoundException)
+					{
+					}
+					catch (UnauthorizedException)
+					{
+					}
+				}
+			}
+			
+			// Log it if the log channel exists
+			DiscordChannel logChannel = guild.GetChannel(Config.logChannel);
+			if (logChannel != null)
+			{
+				DiscordEmbed logMessage = new DiscordEmbedBuilder
+				{
+					Color = DiscordColor.Green,
+					Description = "Ticket " + ticketChannel.Mention + " opened by " + member.Mention + ".\n",
+					Footer = new DiscordEmbedBuilder.EmbedFooter {Text = "Ticket " + ticketID}
+				};
+				await logChannel.SendMessageAsync("", false, logMessage);
+			}
+
+			// Adds the ticket to the google sheets document if enabled
+			Sheets.AddTicketQueued(member, ticketChannel, id.ToString(), staffID.ToString(),
+				Database.TryGetStaff(staffID, out Database.StaffMember staffMemberEntry)
+					? staffMemberEntry.userID.ToString()
+					: null);
 		}
 
 		private string ParseFailedCheck(CheckBaseAttribute attr)
