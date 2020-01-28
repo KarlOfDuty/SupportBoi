@@ -51,6 +51,7 @@ namespace SupportBoi
 			{ "toggleactive",				new ulong[]{ } },
 			{ "listassigned",				new ulong[]{ } },
 			{ "listunassigned",				new ulong[]{ } },
+			{ "listoldest",					new ulong[]{ } },
 			// Admin commands
 			{ "reload",						new ulong[]{ } },
 			{ "setticket",					new ulong[]{ } },

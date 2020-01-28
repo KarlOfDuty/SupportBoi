@@ -60,6 +60,7 @@ permissions:
     toggleactive: []
     listassigned: []
     listunassigned: []
+    listoldest: []
     # Admin commands
     reload: []
     setticket: []

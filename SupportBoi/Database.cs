@@ -212,6 +212,32 @@ namespace SupportBoi
 				return true;
 			}
 		}
+
+		public static bool TryGetOldestTickets(ulong userID, out List<Ticket> tickets)
+		{
+			tickets = null;
+			using (MySqlConnection c = GetConnection())
+			{
+				c.Open();
+				MySqlCommand selection = new MySqlCommand(@"SELECT * FROM tickets ORDER BY created_time ASC LIMIT 20", c);
+				selection.Parameters.AddWithValue("@creator_id", userID);
+				selection.Prepare();
+				MySqlDataReader results = selection.ExecuteReader();
+
+				if (!results.Read())
+				{
+					return false;
+				}
+
+				tickets = new List<Ticket> { new Ticket(results) };
+				while (results.Read())
+				{
+					tickets.Add(new Ticket(results));
+				}
+				results.Close();
+				return true;
+			}
+		}
 		public static bool TryGetClosedTickets(ulong userID, out List<Ticket> tickets)
 		{
 			tickets = null;
