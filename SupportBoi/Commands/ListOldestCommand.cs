@@ -32,9 +32,9 @@ namespace SupportBoi.Commands
 			if (Database.TryGetOldestTickets(command.Member.Id, out List<Database.Ticket> openTickets))
 			{
 				DiscordEmbed channelInfo = new DiscordEmbedBuilder()
-					.WithTitle("The oldest open tickets: ")
+					.WithTitle("The 20 oldest open tickets: ")
 					.WithColor(DiscordColor.Green)
-					.WithDescription(string.Join(", ", openTickets.Select(x => "<#" + x.channelID + ">")));
+					.WithDescription(string.Join('\n', openTickets.Select(x => "**" + x.createdTime.ToString(Config.timestampFormat) + ":** <#" + x.channelID + ">")));
 				await command.RespondAsync("", false, channelInfo);
 			}
 			else
