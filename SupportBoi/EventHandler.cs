@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using DSharpPlus;
@@ -155,7 +155,7 @@ namespace SupportBoi
 			                                     Config.welcomeMessage);
 
 			// Refreshes the channel as changes were made to it above
-			ticketChannel = guild.GetChannel(ticketChannel.Id);
+			ticketChannel = await SupportBoi.GetClient().GetChannelAsync(ticketChannel.Id);
 
 			if (staffID != 0)
 			{
