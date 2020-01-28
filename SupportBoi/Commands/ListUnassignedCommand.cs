@@ -10,7 +10,7 @@ using MySql.Data.MySqlClient;
 
 namespace SupportBoi.Commands
 {
-	public class ListUnassigned
+	public class ListUnassignedCommand
 	{
 		[Command("listunassigned")]
 		[Aliases("lu")]
