@@ -8,7 +8,6 @@ using DSharpPlus.CommandsNext.Exceptions;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using DSharpPlus.Exceptions;
-using MySql.Data.MySqlClient;
 
 namespace SupportBoi
 {

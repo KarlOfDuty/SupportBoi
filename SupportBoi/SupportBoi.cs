@@ -129,8 +129,11 @@ namespace SupportBoi
 			this.discordClient.GuildAvailable += this.eventHandler.OnGuildAvailable;
 			this.discordClient.ClientErrored += this.eventHandler.OnClientError;
 			this.discordClient.MessageCreated += this.eventHandler.OnMessageCreated;
-			this.discordClient.MessageReactionAdded += this.eventHandler.OnReactionAdded;
-			
+			if (Config.reactionMessage != 0)
+			{
+				this.discordClient.MessageReactionAdded += this.eventHandler.OnReactionAdded;
+			}
+
 			Console.WriteLine("Registering commands...");
 			commands = discordClient.UseCommandsNext(new CommandsNextConfiguration
 			{

@@ -10,7 +10,7 @@
     # A message which will open new tickets when users react to it (optional)
     reaction-message: 000000000000000000
     # Message posted when a ticket is opened.
-    welcome-message: "Please describe your issue below, and include all information needed for us to take action, such as coordinates, in-game names and screenshots/chat logs."
+    welcome-message: "Please describe your issue below, and include all information needed for us to take action. This is an example ticket message and can be changed in the config."
     # Decides what messages are shown in console, possible values are: Critical, Error, Warning, Info, Debug.
     console-log-level: "Info"
     # Format for timestamps in transcripts and google sheets if used
