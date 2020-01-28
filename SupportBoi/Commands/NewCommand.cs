@@ -15,136 +15,137 @@ namespace SupportBoi.Commands
 		[Cooldown(1, 5, CooldownBucketType.User)]
 		public async Task OnExecute(CommandContext command)
 		{
-			using (MySqlConnection c = Database.GetConnection())
+			// Check if the user has permission to use this command.
+			if (!Config.HasPermission(command.Member, "new"))
 			{
-				// Check if the user has permission to use this command.
-				if (!Config.HasPermission(command.Member, "new"))
+				DiscordEmbed error = new DiscordEmbedBuilder
 				{
-					DiscordEmbed error = new DiscordEmbedBuilder
-					{
-						Color = DiscordColor.Red,
-						Description = "You do not have permission to use this command."
-					};
-					await command.RespondAsync("", false, error);
-					command.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", "User tried to use the new command but did not have permission.", DateTime.UtcNow);
-					return;
-				}
+					Color = DiscordColor.Red,
+					Description = "You do not have permission to use this command."
+				};
+				await command.RespondAsync("", false, error);
+				command.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi",
+					"User tried to use the new command but did not have permission.", DateTime.UtcNow);
+				return;
+			}
 
-				// Check if user is blacklisted
-				if (Database.IsBlacklisted(command.User.Id))
+			// Check if user is blacklisted
+			if (Database.IsBlacklisted(command.User.Id))
+			{
+				DiscordEmbed error = new DiscordEmbedBuilder
 				{
-					DiscordEmbed error = new DiscordEmbedBuilder
-					{
-						Color = DiscordColor.Red,
-						Description = "You are banned from opening tickets."
-					};
-					await command.RespondAsync("", false, error);
-					return;
-				}
+					Color = DiscordColor.Red,
+					Description = "You are banned from opening tickets."
+				};
+				await command.RespondAsync("", false, error);
+				return;
+			}
 
-				DiscordChannel category = command.Guild.GetChannel(Config.ticketCategory);
-				DiscordChannel ticketChannel;
+			DiscordChannel category = command.Guild.GetChannel(Config.ticketCategory);
+			DiscordChannel ticketChannel;
 
-				try
+			try
+			{
+				ticketChannel = await command.Guild.CreateChannelAsync("ticket", ChannelType.Text, category);
+
+			}
+			catch (Exception)
+			{
+				DiscordEmbed error = new DiscordEmbedBuilder
 				{
-					ticketChannel = await command.Guild.CreateChannelAsync("ticket", ChannelType.Text, category);
+					Color = DiscordColor.Red,
+					Description = "Error occured while creating ticket, " + command.Member.Mention +
+					              "!\nIs the channel limit reached in the server or ticket category?"
+				};
+				await command.RespondAsync("", false, error);
+				return;
+			}
 
-				}
-				catch (Exception)
+			if (ticketChannel == null)
+			{
+				DiscordEmbed error = new DiscordEmbedBuilder
 				{
-					DiscordEmbed error = new DiscordEmbedBuilder
-					{
-						Color = DiscordColor.Red,
-						Description = "Error occured while creating ticket, " + command.Member.Mention + "!\nIs the channel limit reached in the server or ticket category?"
-					};
-					await command.RespondAsync("", false, error);
-					return;
-				}
-				
-				if (ticketChannel == null)
-				{
-					DiscordEmbed error = new DiscordEmbedBuilder
-					{
-						Color = DiscordColor.Red,
-						Description = "Error occured while creating ticket, " + command.Member.Mention + "!\nIs the channel limit reached in the server or ticket category?"
-					};
-					await command.RespondAsync("", false, error);
-					return;
-				}
+					Color = DiscordColor.Red,
+					Description = "Error occured while creating ticket, " + command.Member.Mention +
+					              "!\nIs the channel limit reached in the server or ticket category?"
+				};
+				await command.RespondAsync("", false, error);
+				return;
+			}
 
-				ulong staffID = 0;
-				if (Config.randomAssignment)
-				{
-					staffID = Database.GetRandomActiveStaff(0)?.userID ?? 0;
-				}
+			ulong staffID = 0;
+			if (Config.randomAssignment)
+			{
+				staffID = Database.GetRandomActiveStaff(0)?.userID ?? 0;
+			}
 
-				c.Open();
-				MySqlCommand cmd = new MySqlCommand(@"INSERT INTO tickets (created_time, creator_id, assigned_staff_id, summary, channel_id) VALUES (now(), @creator_id, @assigned_staff_id, @summary, @channel_id);", c);
-				cmd.Parameters.AddWithValue("@creator_id", command.User.Id);
-				cmd.Parameters.AddWithValue("@assigned_staff_id", staffID);
-				cmd.Parameters.AddWithValue("@summary", "");
-				cmd.Parameters.AddWithValue("@channel_id", ticketChannel.Id);
-				cmd.ExecuteNonQuery();
-				long id = cmd.LastInsertedId;
-				string ticketID = id.ToString("00000");
-				await ticketChannel.ModifyAsync("ticket-" + ticketID);
-				await ticketChannel.AddOverwriteAsync(command.Member, Permissions.AccessChannels, Permissions.None);
+			long id = Database.NewTicket(command.Member.Id, staffID, ticketChannel.Id);
+			string ticketID = id.ToString("00000");
+			await ticketChannel.ModifyAsync("ticket-" + ticketID);
+			await ticketChannel.AddOverwriteAsync(command.Member, Permissions.AccessChannels, Permissions.None);
 
-				await ticketChannel.SendMessageAsync("Hello, " + command.Member.Mention + "!\n" + Config.welcomeMessage);
+			await ticketChannel.SendMessageAsync("Hello, " + command.Member.Mention + "!\n" + Config.welcomeMessage);
 
-				// Refreshes the channel as changes were made to it above
-				ticketChannel = command.Guild.GetChannel(ticketChannel.Id);
+			// Refreshes the channel as changes were made to it above
+			ticketChannel = command.Guild.GetChannel(ticketChannel.Id);
 
-				if (staffID != 0)
-				{
-					DiscordEmbed assignmentMessage = new DiscordEmbedBuilder
-					{
-						Color = DiscordColor.Green,
-						Description = "Ticket was randomly assigned to <@" + staffID + ">."
-					};
-					await ticketChannel.SendMessageAsync("", false, assignmentMessage);
-
-					if (Config.assignmentNotifications)
-					{
-						DiscordEmbed message = new DiscordEmbedBuilder
-						{
-							Color = DiscordColor.Green,
-							Description = "You have been randomly assigned to a newly opened support ticket: " + ticketChannel.Mention
-						};
-
-						try
-						{
-							DiscordMember staffMember = await command.Guild.GetMemberAsync(staffID);
-							await staffMember.SendMessageAsync("", false, message);
-						}
-						catch (NotFoundException) { }
-						catch (UnauthorizedException) { }
-					}
-				}
-
-				DiscordEmbed response = new DiscordEmbedBuilder
+			if (staffID != 0)
+			{
+				DiscordEmbed assignmentMessage = new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Green,
-					Description = "Ticket opened, " + command.Member.Mention + "!\n" + ticketChannel.Mention
+					Description = "Ticket was randomly assigned to <@" + staffID + ">."
 				};
-				await command.RespondAsync("", false, response);
+				await ticketChannel.SendMessageAsync("", false, assignmentMessage);
 
-				// Log it if the log channel exists
-				DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
-				if (logChannel != null)
+				if (Config.assignmentNotifications)
 				{
-					DiscordEmbed logMessage = new DiscordEmbedBuilder
+					DiscordEmbed message = new DiscordEmbedBuilder
 					{
 						Color = DiscordColor.Green,
-						Description = "Ticket " + ticketChannel.Mention + " opened by " + command.Member.Mention + ".\n",
-						Footer = new DiscordEmbedBuilder.EmbedFooter { Text = "Ticket " + ticketID }
+						Description = "You have been randomly assigned to a newly opened support ticket: " +
+						              ticketChannel.Mention
 					};
-					await logChannel.SendMessageAsync("", false, logMessage);
+
+					try
+					{
+						DiscordMember staffMember = await command.Guild.GetMemberAsync(staffID);
+						await staffMember.SendMessageAsync("", false, message);
+					}
+					catch (NotFoundException)
+					{
+					}
+					catch (UnauthorizedException)
+					{
+					}
 				}
-				
-				// Adds the ticket to the google sheets document if enabled
-				Sheets.AddTicketQueued(command.Member, ticketChannel, id.ToString(), staffID.ToString(), Database.TryGetStaff(staffID, out Database.StaffMember staffMemberEntry) ? staffMemberEntry.userID.ToString() : null);
 			}
+
+			DiscordEmbed response = new DiscordEmbedBuilder
+			{
+				Color = DiscordColor.Green,
+				Description = "Ticket opened, " + command.Member.Mention + "!\n" + ticketChannel.Mention
+			};
+			await command.RespondAsync("", false, response);
+
+			// Log it if the log channel exists
+			DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
+			if (logChannel != null)
+			{
+				DiscordEmbed logMessage = new DiscordEmbedBuilder
+				{
+					Color = DiscordColor.Green,
+					Description = "Ticket " + ticketChannel.Mention + " opened by " + command.Member.Mention + ".\n",
+					Footer = new DiscordEmbedBuilder.EmbedFooter {Text = "Ticket " + ticketID}
+				};
+				await logChannel.SendMessageAsync("", false, logMessage);
+			}
+
+			// Adds the ticket to the google sheets document if enabled
+			Sheets.AddTicketQueued(command.Member, ticketChannel, id.ToString(), staffID.ToString(),
+				Database.TryGetStaff(staffID, out Database.StaffMember staffMemberEntry)
+					? staffMemberEntry.userID.ToString()
+					: null);
 		}
 	}
 }
