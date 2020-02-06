@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
@@ -41,14 +42,38 @@ namespace SupportBoi.Commands
 					return;
 				}
 
-				c.Open();
-				MySqlCommand cmd = new MySqlCommand(@"INSERT INTO tickets (created_time, creator_id, assigned_staff_id, summary, channel_id) VALUES (now(), @creator_id, @assigned_staff_id, @summary, @channel_id);", c);
-				cmd.Parameters.AddWithValue("@creator_id", command.User.Id);
-				cmd.Parameters.AddWithValue("@assigned_staff_id", 0);
-				cmd.Parameters.AddWithValue("@summary", "");
-				cmd.Parameters.AddWithValue("@channel_id", command.Channel.Id);
-				cmd.ExecuteNonQuery();
-				long id = cmd.LastInsertedId;
+				ulong userID;
+				string[] parsedMessage = Utilities.ParseIDs(command.RawArgumentString);
+
+				if (!parsedMessage.Any())
+				{
+					userID = command.Member.Id;
+				}
+				else if (!ulong.TryParse(parsedMessage[0], out userID))
+				{
+					DiscordEmbed error = new DiscordEmbedBuilder
+					{
+						Color = DiscordColor.Red,
+						Description = "Invalid ID/Mention. (Could not convert to numerical)"
+					};
+					await command.RespondAsync("", false, error);
+					return;
+				}
+
+				DiscordUser user = await command.Client.GetUserAsync(userID);
+
+				if (user == null)
+				{
+					DiscordEmbed error = new DiscordEmbedBuilder
+					{
+						Color = DiscordColor.Red,
+						Description = "Invalid ID/Mention."
+					};
+					await command.RespondAsync("", false, error);
+					return;
+				}
+
+				long id = Database.NewTicket(userID, 0, command.Channel.Id);
 				string ticketID = id.ToString("00000");
 				DiscordEmbed message = new DiscordEmbedBuilder
 				{
