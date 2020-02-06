@@ -54,6 +54,7 @@ namespace SupportBoi
 			{ "listassigned",				new ulong[]{ } },
 			{ "listunassigned",				new ulong[]{ } },
 			{ "listoldest",					new ulong[]{ } },
+			{ "move",						new ulong[]{ } },
 			// Admin commands
 			{ "reload",						new ulong[]{ } },
 			{ "setticket",					new ulong[]{ } },

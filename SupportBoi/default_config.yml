@@ -63,6 +63,7 @@ permissions:
     listassigned: []
     listunassigned: []
     listoldest: []
+    move: []
     # Admin commands
     reload: []
     setticket: []
