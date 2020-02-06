@@ -361,16 +361,17 @@ namespace SupportBoi
 
 			}
 		}
-		public static bool AssignStaff(uint ticketID, ulong staffID)
+		public static bool AssignStaff(Ticket ticket, ulong staffID)
 		{
 			using (MySqlConnection c = GetConnection())
 			{
 				try
 				{
 					c.Open();
-					MySqlCommand update = new MySqlCommand(@"UPDATE tickets SET assigned_staff_id = @assigned_staff_id WHERE id = @id", c);
+					MySqlCommand update = new MySqlCommand(@"UPDATE tickets SET assigned_staff_id = @assigned_staff_id, created_time = @created_time WHERE id = @id", c);
 					update.Parameters.AddWithValue("@assigned_staff_id", staffID);
-					update.Parameters.AddWithValue("@id", ticketID);
+					update.Parameters.AddWithValue("@created_time", ticket.createdTime);
+					update.Parameters.AddWithValue("@id", ticket.id);
 					update.Prepare();
 					return update.ExecuteNonQuery() > 0;
 				}
@@ -381,24 +382,9 @@ namespace SupportBoi
 
 			}
 		}
-		public static bool UnassignStaff(ulong ticketID)
+		public static bool UnassignStaff(Ticket ticket)
 		{
-			using (MySqlConnection c = GetConnection())
-			{
-				try
-				{
-					c.Open();
-					MySqlCommand update = new MySqlCommand(@"UPDATE tickets SET assigned_staff_id = 0 WHERE id = @id", c);
-					update.Parameters.AddWithValue("@id", ticketID);
-					update.Prepare();
-					return update.ExecuteNonQuery() > 0;
-				}
-				catch (MySqlException)
-				{
-					return false;
-				}
-
-			}
+			return AssignStaff(ticket, 0);
 		}
 		public static StaffMember GetRandomActiveStaff(ulong currentStaffID)
 		{

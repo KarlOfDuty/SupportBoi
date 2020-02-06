@@ -70,7 +70,7 @@ namespace SupportBoi.Commands
 				return;
 			}
 
-			if (!Database.AssignStaff(ticket.id, staffEntry.userID))
+			if (!Database.AssignStaff(ticket, staffEntry.userID))
 			{
 				DiscordEmbed error = new DiscordEmbedBuilder
 				{

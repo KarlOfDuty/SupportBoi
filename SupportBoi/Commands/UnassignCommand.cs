@@ -39,7 +39,7 @@ namespace SupportBoi.Commands
 				return;
 			}
 
-			if (!Database.UnassignStaff(ticket.id))
+			if (!Database.UnassignStaff(ticket))
 			{
 				DiscordEmbed error = new DiscordEmbedBuilder
 				{

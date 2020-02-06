@@ -87,7 +87,7 @@ namespace SupportBoi.Commands
 				return;
 			}
 
-			if (!Database.AssignStaff(ticket.id, staffID))
+			if (!Database.AssignStaff(ticket, staffID))
 			{
 				DiscordEmbed error = new DiscordEmbedBuilder
 				{
