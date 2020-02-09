@@ -29,19 +29,44 @@ namespace SupportBoi.Commands
 				return;
 			}
 
-			if (Database.TryGetOldestTickets(command.Member.Id, out List<Database.Ticket> openTickets))
+			int listLimit;
+			if (string.IsNullOrEmpty(command.RawArgumentString?.Trim() ?? ""))
 			{
-				DiscordEmbed channelInfo = new DiscordEmbedBuilder()
-					.WithTitle("The 20 oldest open tickets: ")
-					.WithColor(DiscordColor.Green)
-					.WithDescription(string.Join('\n', openTickets.Select(x => "**" + x.createdTime.ToString(Config.timestampFormat) + ":** <#" + x.channelID + ">")));
-				await command.RespondAsync("", false, channelInfo);
+				listLimit = 20;
 			}
-			else
+			else if (!int.TryParse(command.RawArgumentString?.Trim(), out listLimit) || listLimit < 5 || listLimit > 100)
+			{
+				DiscordEmbed error = new DiscordEmbedBuilder
+				{
+					Color = DiscordColor.Red,
+					Description = "Invalid list amount. (Must be integer between 5 and 100)"
+				};
+				await command.RespondAsync("", false, error);
+				return;
+			}
+
+			if (!Database.TryGetOldestTickets(command.Member.Id, out List<Database.Ticket> openTickets))
 			{
 				DiscordEmbed channelInfo = new DiscordEmbedBuilder()
 					.WithColor(DiscordColor.Red)
 					.WithDescription("Could not fetch any open tickets.");
+				await command.RespondAsync("", false, channelInfo);
+				return;
+			}
+
+			List<string> listItems = new List<string>();
+			foreach (Database.Ticket ticket in openTickets)
+			{
+				listItems.Add("**" + ticket.FormattedCreatedTime() + ":** <#" + ticket.channelID + "> by <@" + ticket.creatorID + ">\n");
+			}
+
+			LinkedList<string> messages = Utilities.ParseListIntoMessages(listItems);
+			foreach (string message in messages)
+			{
+				DiscordEmbed channelInfo = new DiscordEmbedBuilder()
+					.WithTitle("The " + openTickets.Count + " oldest open tickets: ")
+					.WithColor(DiscordColor.Green)
+					.WithDescription(message);
 				await command.RespondAsync("", false, channelInfo);
 			}
 		}
