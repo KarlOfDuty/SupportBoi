@@ -212,14 +212,15 @@ namespace SupportBoi
 				return true;
 			}
 		}
-		public static bool TryGetOldestTickets(ulong userID, out List<Ticket> tickets)
+		public static bool TryGetOldestTickets(ulong userID, out List<Ticket> tickets, int listLimit)
 		{
 			tickets = null;
 			using (MySqlConnection c = GetConnection())
 			{
 				c.Open();
-				MySqlCommand selection = new MySqlCommand(@"SELECT * FROM tickets ORDER BY created_time ASC LIMIT 20", c);
+				MySqlCommand selection = new MySqlCommand(@"SELECT * FROM tickets ORDER BY created_time ASC LIMIT @limit", c);
 				selection.Parameters.AddWithValue("@creator_id", userID);
+				selection.Parameters.AddWithValue("@limit", listLimit);
 				selection.Prepare();
 				MySqlDataReader results = selection.ExecuteReader();
 

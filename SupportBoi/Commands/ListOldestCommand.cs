@@ -29,23 +29,22 @@ namespace SupportBoi.Commands
 				return;
 			}
 
-			int listLimit;
-			if (string.IsNullOrEmpty(command.RawArgumentString?.Trim() ?? ""))
+			int listLimit = 20;
+			if (!string.IsNullOrEmpty(command.RawArgumentString?.Trim() ?? ""))
 			{
-				listLimit = 20;
-			}
-			else if (!int.TryParse(command.RawArgumentString?.Trim(), out listLimit) || listLimit < 5 || listLimit > 100)
-			{
-				DiscordEmbed error = new DiscordEmbedBuilder
+				if (!int.TryParse(command.RawArgumentString?.Trim(), out listLimit) || listLimit < 5 || listLimit > 100)
 				{
-					Color = DiscordColor.Red,
-					Description = "Invalid list amount. (Must be integer between 5 and 100)"
-				};
-				await command.RespondAsync("", false, error);
-				return;
+					DiscordEmbed error = new DiscordEmbedBuilder
+					{
+						Color = DiscordColor.Red,
+						Description = "Invalid list amount. (Must be integer between 5 and 100)"
+					};
+					await command.RespondAsync("", false, error);
+					return;
+				}
 			}
 
-			if (!Database.TryGetOldestTickets(command.Member.Id, out List<Database.Ticket> openTickets))
+			if (!Database.TryGetOldestTickets(command.Member.Id, out List<Database.Ticket> openTickets, listLimit))
 			{
 				DiscordEmbed channelInfo = new DiscordEmbedBuilder()
 					.WithColor(DiscordColor.Red)
@@ -66,7 +65,7 @@ namespace SupportBoi.Commands
 				DiscordEmbed channelInfo = new DiscordEmbedBuilder()
 					.WithTitle("The " + openTickets.Count + " oldest open tickets: ")
 					.WithColor(DiscordColor.Green)
-					.WithDescription(message);
+					.WithDescription(message?.Trim());
 				await command.RespondAsync("", false, channelInfo);
 			}
 		}
