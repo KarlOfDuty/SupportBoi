@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
-using MySql.Data.MySqlClient;
 
 namespace SupportBoi.Commands
 {
@@ -30,19 +28,27 @@ namespace SupportBoi.Commands
 				return;
 			}
 
-			if (Database.TryGetAssignedTickets(0, out List<Database.Ticket> unassignedTickets))
+			if (!Database.TryGetAssignedTickets(0, out List<Database.Ticket> unassignedTickets))
+			{
+				DiscordEmbed response = new DiscordEmbedBuilder()
+					.WithColor(DiscordColor.Green)
+					.WithDescription("There are no unassigned tickets.");
+				await command.RespondAsync("", false, response);
+			}
+
+			List<string> listItems = new List<string>();
+			foreach (Database.Ticket ticket in unassignedTickets)
+			{
+				listItems.Add("**" + ticket.FormattedCreatedTime() + ":** <#" + ticket.channelID + "> by <@" + ticket.creatorID + ">\n");
+			}
+
+			LinkedList<string> messages = Utilities.ParseListIntoMessages(listItems);
+			foreach (string message in messages)
 			{
 				DiscordEmbed channelInfo = new DiscordEmbedBuilder()
 					.WithTitle("Unassigned tickets: ")
 					.WithColor(DiscordColor.Green)
-					.WithDescription(string.Join(", ", unassignedTickets.Select(x => "<#" + x.channelID + ">")));
-				await command.RespondAsync("", false, channelInfo);
-			}
-			else
-			{
-				DiscordEmbed channelInfo = new DiscordEmbedBuilder()
-					.WithColor(DiscordColor.Red)
-					.WithDescription("There are no unassigned tickets.");
+					.WithDescription(message?.Trim());
 				await command.RespondAsync("", false, channelInfo);
 			}
 		}
