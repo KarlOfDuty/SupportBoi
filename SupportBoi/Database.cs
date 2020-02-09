@@ -470,6 +470,11 @@ namespace SupportBoi
 				this.summary = reader.GetString("summary");
 				this.channelID = reader.GetUInt64("channel_id");
 			}
+
+			public string FormattedCreatedTime()
+			{
+				return this.createdTime.ToString(Config.timestampFormat);
+			}
 		}
 		public class StaffMember
 		{

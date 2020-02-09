@@ -30,13 +30,13 @@ namespace SupportBoi.Commands
 			}
 
 			ulong staffID;
-			string[] parsedMessage = Utilities.ParseIDs(command.RawArgumentString);
+			string[] parsedIDs = Utilities.ParseIDs(command.RawArgumentString);
 
-			if (!parsedMessage.Any())
+			if (!parsedIDs.Any())
 			{
 				staffID = command.Member.Id;
 			}
-			else if (!ulong.TryParse(parsedMessage[0], out staffID))
+			else if (!ulong.TryParse(parsedIDs[0], out staffID))
 			{
 				DiscordEmbed error = new DiscordEmbedBuilder
 				{
@@ -47,21 +47,31 @@ namespace SupportBoi.Commands
 				return;
 			}
 
-			if (Database.TryGetAssignedTickets(staffID, out List<Database.Ticket> assignedTickets))
+			if (!Database.TryGetAssignedTickets(staffID, out List<Database.Ticket> assignedTickets))
+			{
+				DiscordEmbed error = new DiscordEmbedBuilder()
+					.WithColor(DiscordColor.Red)
+					.WithDescription("User does not have any assigned tickets.");
+				await command.RespondAsync("", false, error);
+				return;
+			}
+
+			List<string> listItems = new List<string>();
+			foreach (Database.Ticket ticket in assignedTickets)
+			{
+				listItems.Add("**" + ticket.FormattedCreatedTime() + ":** <#" + ticket.channelID + "> by <@" + ticket.creatorID + ">\n");
+			}
+
+			LinkedList<string> messages = Utilities.ParseListIntoMessages(listItems);
+			foreach (string message in messages)
 			{
 				DiscordEmbed channelInfo = new DiscordEmbedBuilder()
 					.WithTitle("Assigned tickets: ")
 					.WithColor(DiscordColor.Green)
-					.WithDescription(string.Join(", ", assignedTickets.Select(x => "<#" + x.channelID + ">")));
+					.WithDescription(message);
 				await command.RespondAsync("", false, channelInfo);
 			}
-			else
-			{
-				DiscordEmbed channelInfo = new DiscordEmbedBuilder()
-					.WithColor(DiscordColor.Red)
-					.WithDescription("User does not have any assigned tickets.");
-				await command.RespondAsync("", false, channelInfo);
-			}
+
 		}
 	}
 }
