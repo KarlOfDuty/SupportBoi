@@ -48,11 +48,21 @@ namespace SupportBoi.Commands
 
 			if (Database.TryGetOpenTickets(userID, out List<Database.Ticket> openTickets))
 			{
-				DiscordEmbed channelInfo = new DiscordEmbedBuilder()
-					.WithTitle("Open tickets: ")
-					.WithColor(DiscordColor.Green)
-					.WithDescription(string.Join(", ", openTickets.Select(x => "<#" + x.channelID + ">")));
-				await command.RespondAsync("", false, channelInfo);
+				List<string> listItems = new List<string>();
+				foreach (Database.Ticket ticket in openTickets)
+				{
+					listItems.Add("**" + ticket.FormattedCreatedTime() + ":** <#" + ticket.channelID + ">\n");
+				}
+
+				LinkedList<string> messages = Utilities.ParseListIntoMessages(listItems);
+				foreach (string message in messages)
+				{
+					DiscordEmbed channelInfo = new DiscordEmbedBuilder()
+						.WithTitle("Open tickets: ")
+						.WithColor(DiscordColor.Green)
+						.WithDescription(message);
+					await command.RespondAsync("", false, channelInfo);
+				}
 			}
 			else
 			{
@@ -64,11 +74,21 @@ namespace SupportBoi.Commands
 
 			if (Database.TryGetClosedTickets(userID, out List<Database.Ticket> closedTickets))
 			{
-				DiscordEmbed channelInfo = new DiscordEmbedBuilder()
-					.WithTitle("Closed tickets: ")
-					.WithColor(DiscordColor.Red)
-					.WithDescription(string.Join(", ", closedTickets.Select(x => x.id.ToString("00000"))));
-				await command.RespondAsync("", false, channelInfo);
+				List<string> listItems = new List<string>();
+				foreach (Database.Ticket ticket in closedTickets)
+				{
+					listItems.Add("**" + ticket.FormattedCreatedTime() + ":** Ticket " + ticket.id.ToString("00000") + "\n");
+				}
+
+				LinkedList<string> messages = Utilities.ParseListIntoMessages(listItems);
+				foreach (string message in messages)
+				{
+					DiscordEmbed channelInfo = new DiscordEmbedBuilder()
+						.WithTitle("Closed tickets: ")
+						.WithColor(DiscordColor.Red)
+						.WithDescription(message);
+					await command.RespondAsync("", false, channelInfo);
+				}
 			}
 			else
 			{
