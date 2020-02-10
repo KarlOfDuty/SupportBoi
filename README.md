@@ -13,8 +13,8 @@ There appears to be an issue where CentOS 7 may not be compatible with some elem
 | `new` | Opens a new ticket channel. |
 | `close` | Closes a ticket channel and posts a ticket transcript in the log channel. |
 | `transcript (ticket number) ` | Generates a ticket transcript as an html file. |
-| `status` | Shows a status message about the bot with info such as number of tickets and which version is running. If ran in a ticket channel it also shows ticket information. |
-| `summary` | Shows a ticket's summary if set. |
+| `status` | Shows a status message about the bot with info such as number of tickets and which version is running. |
+| `summary` | Shows some information about a ticket and it's summary if set. |
 | `list (id/mention)` | Lists all of a user's open and closed tickets. |
 | `add <ids/mentions>` | Add users to the ticket. |
 | `assign (id/mention)` | Assigns a ricket to a staff member, themself if no mention or id is provided. |
@@ -22,12 +22,14 @@ There appears to be an issue where CentOS 7 may not be compatible with some elem
 | `unassign` | Unassigns a ticket from the currently assigned staff member. |
 | `blacklist <ids/mentions>` | Blacklists users from opening tickets. |
 | `unblacklist <ids/mentions>` | Un-blacklists users from opening tickets. |
-| `setsummary <summary>` | Sets a summary for a ticket which can be viewed using the `summary` and `status` commands. |
-| `toogleactive/ta` | Toggles whether a staff member counts as active or not. |
-| `listassigned (id/mention)` | Lists all of a staff member's assigned tickets tickets. |
-| `listunassigned` | Lists all unassigned tickets. |
+| `setsummary <summary>` | Sets a summary for a ticket which can be viewed using the `summary` command. |
+| `toogleactive/ta (id/mention)` | Toggles whether a staff member counts as active or not. |
+| `listassigned/la (id/mention)` | Lists all of a staff member's assigned tickets. |
+| `listunassigned/lu` | Lists all unassigned tickets. |
+| `listoldest/lo (limit)` | Lists a number of the oldest still open tickets, default is 20. |
+| `move <category>` | Moves a ticket to a specific category by partial name. |
 | `reload` | Reloads the config. |
-| `setticket` | Makes the current channel a ticket. |
+| `setticket (id/mention)` | Makes the current channel a ticket. |
 | `unsetticket` | Removes a ticket without deleting the channel. |
 | `addstaff <id/mention>` | Registers a user as a staff member for ticket assignment. |
 | `removestaff <id/mention>` | Removes a user from staff. |
@@ -66,18 +68,31 @@ bot:
     token: "<add-token-here>"
     # Command prefix.
     prefix: "+"
-    # Channel where ticket logs are posted.
+    # Channel where ticket logs are posted (recommended)
     log-channel: 000000000000000000
-    # Category where the ticket will be created, it will have the same permissions of that ticket plus read permissions for the user opening the ticket.
+    # Category where the ticket will be created, it will have the same permissions of that ticket plus read permissions for the user opening the ticket (recommended)
     ticket-category: 000000000000000000
+    # A message which will open new tickets when users react to it (optional)
+    reaction-message: 000000000000000000
     # Message posted when a ticket is opened.
-    welcome-message: "Please describe your issue below, and include all information needed for us to take action, such as coordinates, in-game names and screenshots/chat logs."
+    welcome-message: "Please describe your issue below, and include all information needed for us to take action. This is an example ticket message and can be changed in the config."
     # Decides what messages are shown in console, possible values are: Critical, Error, Warning, Info, Debug.
     console-log-level: "Info"
     # Format for timestamps in transcripts and google sheets if used
     timestamp-format: "yyyy-MM-dd HH:mm"
     # Whether or not staff members should be randomly assigned tickets when they are made. Individual staff members can opt out using the toggleactive command.
     random-assignment: true
+
+notifications:
+    # Notifiers the assigned staff member when a new message is posted in a ticket if the ticket has been silent for a configurable amount of time
+    # Other staff members and bots do not trigger this.
+    ticket-updated: true
+    # The above notification will only be sent if the ticket has been silent for more than this amount of days. Default is 0.5 days.
+    ticket-updated-delay: 0.5
+    # Notifies staff when they are assigned to tickets
+    assignment: true
+    # Notifies the user opening the ticket that their ticket was closed and includes the transcript
+    closing: true
 
 database:
     # Address and port of the mysql server
@@ -100,6 +115,7 @@ permissions:
     transcript: []
     status: []
     summary: []
+    list: []
     # Moderator commands
     add: []
     assign: []
@@ -108,8 +124,11 @@ permissions:
     blacklist: []
     unblacklist: []
     setsummary: []
-    updatestaff: []
     toggleactive: []
+    listassigned: []
+    listunassigned: []
+    listoldest: []
+    move: []
     # Admin commands
     reload: []
     setticket: []
