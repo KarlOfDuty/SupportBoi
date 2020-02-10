@@ -64,8 +64,8 @@ namespace SupportBoi
 			{
 				MySqlCommand createTickets = new MySqlCommand(
 					"CREATE TABLE IF NOT EXISTS tickets(" +
-					"id INT UNSIGNED NOT NULL UNIQUE PRIMARY KEY AUTO_INCREMENT," +
-					"created_time TIMESTAMP NOT NULL," +
+					"id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT," +
+					"created_time DATETIME NOT NULL," +
 					"creator_id BIGINT UNSIGNED NOT NULL," +
 					"assigned_staff_id BIGINT UNSIGNED NOT NULL DEFAULT 0," +
 					"summary VARCHAR(5000) NOT NULL," +
@@ -74,9 +74,9 @@ namespace SupportBoi
 					c);
 				MySqlCommand createTicketHistory = new MySqlCommand(
 					"CREATE TABLE IF NOT EXISTS ticket_history(" +
-					"id INT UNSIGNED NOT NULL UNIQUE PRIMARY KEY," +
-					"created_time TIMESTAMP NOT NULL," +
-					"closed_time TIMESTAMP NOT NULL," +
+					"id INT UNSIGNED NOT NULL PRIMARY KEY," +
+					"created_time DATETIME NOT NULL," +
+					"closed_time DATETIME NOT NULL," +
 					"creator_id BIGINT UNSIGNED NOT NULL," +
 					"assigned_staff_id BIGINT UNSIGNED NOT NULL DEFAULT 0," +
 					"summary VARCHAR(5000) NOT NULL," +
@@ -85,17 +85,16 @@ namespace SupportBoi
 					c);
 				MySqlCommand createBlacklisted = new MySqlCommand(
 					"CREATE TABLE IF NOT EXISTS blacklisted_users(" +
-					"user_id BIGINT UNSIGNED NOT NULL UNIQUE PRIMARY KEY," +
-					"time TIMESTAMP NOT NULL," +
+					"user_id BIGINT UNSIGNED NOT NULL PRIMARY KEY," +
+					"time DATETIME NOT NULL," +
 					"moderator_id BIGINT UNSIGNED NOT NULL," +
 					"INDEX(user_id, time))",
 					c);
 				MySqlCommand createStaffList = new MySqlCommand(
 					"CREATE TABLE IF NOT EXISTS staff(" +
-					"user_id BIGINT UNSIGNED NOT NULL UNIQUE PRIMARY KEY," +
-					"name VARCHAR(256) NOT NULL UNIQUE," +
-					"active BOOLEAN NOT NULL DEFAULT true," +
-					"INDEX(user_id, name))",
+					"user_id BIGINT UNSIGNED NOT NULL PRIMARY KEY," +
+					"name VARCHAR(256) NOT NULL," +
+					"active BOOLEAN NOT NULL DEFAULT true)",
 					c);
 				c.Open();
 				createTickets.ExecuteNonQuery();
@@ -369,9 +368,8 @@ namespace SupportBoi
 				try
 				{
 					c.Open();
-					MySqlCommand update = new MySqlCommand(@"UPDATE tickets SET assigned_staff_id = @assigned_staff_id, created_time = @created_time WHERE id = @id", c);
+					MySqlCommand update = new MySqlCommand(@"UPDATE tickets SET assigned_staff_id = @assigned_staff_id WHERE id = @id", c);
 					update.Parameters.AddWithValue("@assigned_staff_id", staffID);
-					update.Parameters.AddWithValue("@created_time", ticket.createdTime);
 					update.Parameters.AddWithValue("@id", ticket.id);
 					update.Prepare();
 					return update.ExecuteNonQuery() > 0;
