@@ -21,6 +21,7 @@ namespace SupportBoi
 		internal static string logLevel = "Info";
 		internal static string timestampFormat = "yyyy-MMM-dd HH:mm";
 		internal static bool randomAssignment = false;
+		internal static string presenceGame = "";
 
 		internal static bool ticketUpdatedNotifications = false;
 		internal static double ticketUpdatedNotificationDelay = 0.0;
@@ -95,6 +96,7 @@ namespace SupportBoi
 			logLevel = json.SelectToken("bot.console-log-level").Value<string>() ?? "";
 			timestampFormat = json.SelectToken("bot.timestamp-format").Value<string>() ?? "yyyy-MM-dd HH:mm";
 			randomAssignment = json.SelectToken("bot.random-assignment").Value<bool>();
+			presenceGame = json.SelectToken("bot.presence-game").Value<string>();
 
 			ticketUpdatedNotifications = json.SelectToken("notifications.ticket-updated").Value<bool>();
 			ticketUpdatedNotificationDelay = json.SelectToken("notifications.ticket-updated-delay").Value<double>();
