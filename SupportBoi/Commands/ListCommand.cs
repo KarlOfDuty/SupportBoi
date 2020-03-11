@@ -77,7 +77,9 @@ namespace SupportBoi.Commands
 				List<string> listItems = new List<string>();
 				foreach (Database.Ticket ticket in closedTickets)
 				{
-					listItems.Add("**" + ticket.FormattedCreatedTime() + ":** Ticket " + ticket.id.ToString("00000") + "\n");
+					string rating = ticket.rating.ToString() ?? "N/A";
+
+					listItems.Add("**" + ticket.FormattedCreatedTime() + ":** Ticket " + ticket.id.ToString("00000") + " - Rating: " + rating +  "\n");
 				}
 
 				LinkedList<string> messages = Utilities.ParseListIntoMessages(listItems);

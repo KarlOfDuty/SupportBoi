@@ -70,6 +70,7 @@ namespace SupportBoi
 					"assigned_staff_id BIGINT UNSIGNED NOT NULL DEFAULT 0," +
 					"summary VARCHAR(5000) NOT NULL," +
 					"channel_id BIGINT UNSIGNED NOT NULL UNIQUE," +
+					"rating INT DEFAULT NULL," +
 					"INDEX(created_time, assigned_staff_id, channel_id))",
 					c);
 				MySqlCommand createTicketHistory = new MySqlCommand(
@@ -294,7 +295,7 @@ namespace SupportBoi
 			{
 				c.Open();
 				MySqlCommand cmd = new MySqlCommand(
-					@"INSERT INTO tickets (created_time, creator_id, assigned_staff_id, summary, channel_id) VALUES (now(), @creator_id, @assigned_staff_id, @summary, @channel_id);",
+					@"INSERT INTO tickets (created_time, creator_id, assigned_staff_id, summary, channel_id, rating) VALUES (now(), @creator_id, @assigned_staff_id, @summary, @channel_id, 0);",
 					c);
 				cmd.Parameters.AddWithValue("@creator_id", memberID);
 				cmd.Parameters.AddWithValue("@assigned_staff_id", staffID);
@@ -481,6 +482,7 @@ namespace SupportBoi
 			public ulong assignedStaffID;
 			public string summary;
 			public ulong channelID;
+			public uint rating;
 
 			public Ticket(MySqlDataReader reader)
 			{
@@ -490,6 +492,7 @@ namespace SupportBoi
 				this.assignedStaffID = reader.GetUInt64("assigned_staff_id");
 				this.summary = reader.GetString("summary");
 				this.channelID = reader.GetUInt64("channel_id");
+				this.rating = reader.GetUInt32("rating");
 			}
 
 			public string FormattedCreatedTime()
