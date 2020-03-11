@@ -80,15 +80,22 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Green,
 					Description = "Ticket " + ticket.id.ToString("00000") + " which you opened has now been closed, check the transcript for more info.\n",
 					Footer = new DiscordEmbedBuilder.EmbedFooter { Text = '#' + channelName }
+					
 				};
 
 				try
 				{
 					DiscordMember staffMember = await command.Guild.GetMemberAsync(ticket.creatorID);
-					await staffMember.SendFileAsync(filePath, "", false, message);
+					DiscordMessage dm = await staffMember.SendFileAsync(filePath, "", false, message);
+					await dm.CreateReactionAsync(DiscordEmoji.FromName(command.Client, ":one:"));
+					await dm.CreateReactionAsync(DiscordEmoji.FromName(command.Client, ":two:"));
+					await dm.CreateReactionAsync(DiscordEmoji.FromName(command.Client, ":three:"));
+					await dm.CreateReactionAsync(DiscordEmoji.FromName(command.Client, ":four:"));
+					await dm.CreateReactionAsync(DiscordEmoji.FromName(command.Client, ":five:"));
 				}
 				catch (NotFoundException) { }
 				catch (UnauthorizedException) { }
+				
 			}
 
 			using (MySqlConnection c = Database.GetConnection())

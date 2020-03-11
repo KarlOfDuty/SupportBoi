@@ -81,6 +81,7 @@ namespace SupportBoi
 					"assigned_staff_id BIGINT UNSIGNED NOT NULL DEFAULT 0," +
 					"summary VARCHAR(5000) NOT NULL," +
 					"channel_id BIGINT UNSIGNED NOT NULL UNIQUE," +
+					"rating INT DEFAULT NULL," + 
 					"INDEX(created_time, closed_time, channel_id))",
 					c);
 				MySqlCommand createBlacklisted = new MySqlCommand(
@@ -361,6 +362,27 @@ namespace SupportBoi
 
 			}
 		}
+		public static bool RateTicket(int ticketId, int rating)
+		{
+
+			using (MySqlConnection c = GetConnection())
+			{
+				try
+				{
+					c.Open();
+					MySqlCommand update = new MySqlCommand(@"UPDATE ticket_history SET rating = @rating WHERE id = @ticketID", c);
+					update.Parameters.AddWithValue("@rating", rating);
+					update.Parameters.AddWithValue("@ticketID", ticketId);
+					update.Prepare();
+					return update.ExecuteNonQuery() > 0;
+				}
+				catch (MySqlException)
+				{
+					return false;
+				}
+			}
+		}
+
 		public static bool AssignStaff(Ticket ticket, ulong staffID)
 		{
 			using (MySqlConnection c = GetConnection())

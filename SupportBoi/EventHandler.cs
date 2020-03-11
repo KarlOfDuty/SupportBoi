@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
@@ -14,6 +16,7 @@ namespace SupportBoi
 	internal class EventHandler
 	{
 		private DiscordClient discordClient;
+		private int rating;
 		public EventHandler(DiscordClient client)
 		{
 			this.discordClient = client;
@@ -123,6 +126,62 @@ namespace SupportBoi
 						return Task.CompletedTask;
 					}
 			}
+		}
+		internal Task OnMessageReacionAdded(MessageReactionAddEventArgs e)
+		{
+			string reaction = e.Emoji.GetDiscordName();
+			switch (reaction)
+			{
+				//case ":1??:":
+				//	rating = 1;
+				//	break;
+				//case ":2??:":
+				//	rating = 2;
+				//	break;
+				//case ":3??:":
+				//	rating = 3;
+				//	break;
+				//case ":4??:":
+				//	rating = 4;
+				//	break;
+				//case ":5??:":
+				//	rating = 5;
+				//	break;
+				case ":one:":
+					rating = 1;
+					break;
+				case ":two:":
+					rating = 2;
+					break;
+				case ":three:":
+					rating = 3;
+					break;
+				case ":four:":
+					rating = 4;
+					break;
+				case ":five:":
+					rating = 5;
+					break;
+				default:
+					rating = -1;
+					break;
+			}
+
+			if (!e.User.IsCurrent || !e.User.IsBot && e.Message.Embeds.Count == 1 && rating != -1)
+			{
+				try
+				{
+					int ticketId = Convert.ToInt32(e.Message.Embeds[0].Footer.Text.Split('-').Last());
+					Database.RateTicket(ticketId, rating);
+				}
+				catch(Exception ex)
+				{
+					Console.WriteLine(ex.Message);	
+				}
+			}
+
+			return Task.CompletedTask;
+
 		}
 
 		internal async Task OnReactionAdded(MessageReactionAddEventArgs e)

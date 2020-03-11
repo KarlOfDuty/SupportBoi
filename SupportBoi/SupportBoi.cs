@@ -129,6 +129,7 @@ namespace SupportBoi
 			this.discordClient.GuildAvailable += this.eventHandler.OnGuildAvailable;
 			this.discordClient.ClientErrored += this.eventHandler.OnClientError;
 			this.discordClient.MessageCreated += this.eventHandler.OnMessageCreated;
+			this.discordClient.MessageReactionAdded += this.eventHandler.OnMessageReacionAdded;
 			if (Config.reactionMessage != 0)
 			{
 				this.discordClient.MessageReactionAdded += this.eventHandler.OnReactionAdded;
