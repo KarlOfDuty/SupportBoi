@@ -77,7 +77,9 @@ namespace SupportBoi.Commands
 				List<string> listItems = new List<string>();
 				foreach (Database.Ticket ticket in closedTickets)
 				{
-					string rating = ticket.rating.ToString() ?? "N/A";
+					//string rating = ticket.rating.ToString() ?? "N/A";
+
+					string rating = ticket.rating.Equals(0) ? "N/A" : ticket.rating.ToString();
 
 					listItems.Add("**" + ticket.FormattedCreatedTime() + ":** Ticket " + ticket.id.ToString("00000") + " - Rating: " + rating +  "\n");
 				}
