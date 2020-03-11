@@ -22,7 +22,7 @@ namespace SupportBoi
 		internal Task OnReady(ReadyEventArgs e)
 		{
 			e.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", "Client is ready to process events.", DateTime.UtcNow);
-			this.discordClient.UpdateStatusAsync(new DiscordGame(Config.prefix + "new"), UserStatus.Online);
+			this.discordClient.UpdateStatusAsync(new DiscordGame(Config.presenceGame), UserStatus.Online);
 			return Task.CompletedTask;
 		}
 

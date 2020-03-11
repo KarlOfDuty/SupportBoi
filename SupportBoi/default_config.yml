@@ -16,7 +16,9 @@
     # Format for timestamps in transcripts and google sheets if used
     timestamp-format: "yyyy-MM-dd HH:mm"
     # Whether or not staff members should be randomly assigned tickets when they are made. Individual staff members can opt out using the toggleactive command.
-    random-assignment: true
+    random-assignment: true    
+    # Sets the game, that the bot is currently playing.
+    presence-game: "SupportBoi"
 
 notifications:
     # Notifiers the assigned staff member when a new message is posted in a ticket if the ticket has been silent for a configurable amount of time
