@@ -134,7 +134,10 @@ namespace SupportBoi
             DiscordGuild guild = e.Message.Channel.Guild;
             DiscordMember member = await guild.GetMemberAsync(e.User.Id);
 
-            if (!Config.HasPermission(member, "new") || Database.UserLinked.IsBlocked(member.Id)) return;
+            if (!Config.HasPermission(member, "new") || Database.UserLinked.IsBlocked(member.Id))
+            {
+                return;
+            }
 
             DiscordChannel category = guild.GetChannel(Config.ticketCategory);
             DiscordChannel ticketChannel = await guild.CreateChannelAsync("ticket", ChannelType.Text, category);

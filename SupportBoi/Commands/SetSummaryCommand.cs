@@ -39,7 +39,6 @@ namespace SupportBoi.Commands
 				return;
 			}
 
-			// command.Message.Content.Replace(Config.prefix + "setsummary", "").Trim();
 			string summary = command.Message.Content.Substring(Config.prefix.Length + 10).Trim();
 			Database.TicketLinked.UpdateTicketSummary(channelID, summary);
 			Sheets.SetSummaryQueued(ticket.id, summary);
