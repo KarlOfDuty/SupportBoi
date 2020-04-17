@@ -1,11 +1,10 @@
-﻿using System;
-using System.Threading.Tasks;
-using DSharpPlus;
+﻿using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Exceptions;
-using MySql.Data.MySqlClient;
+using System;
+using System.Threading.Tasks;
 
 namespace SupportBoi.Commands
 {
@@ -55,7 +54,7 @@ namespace SupportBoi.Commands
 				{
 					Color = DiscordColor.Red,
 					Description = "Error occured while creating ticket, " + command.Member.Mention +
-					              "!\nIs the channel limit reached in the server or ticket category?"
+								  "!\nIs the channel limit reached in the server or ticket category?"
 				};
 				await command.RespondAsync("", false, error);
 				return;
@@ -67,7 +66,7 @@ namespace SupportBoi.Commands
 				{
 					Color = DiscordColor.Red,
 					Description = "Error occured while creating ticket, " + command.Member.Mention +
-					              "!\nIs the channel limit reached in the server or ticket category?"
+								  "!\nIs the channel limit reached in the server or ticket category?"
 				};
 				await command.RespondAsync("", false, error);
 				return;
@@ -104,7 +103,7 @@ namespace SupportBoi.Commands
 					{
 						Color = DiscordColor.Green,
 						Description = "You have been randomly assigned to a newly opened support ticket: " +
-						              ticketChannel.Mention
+									  ticketChannel.Mention
 					};
 
 					try
@@ -136,7 +135,7 @@ namespace SupportBoi.Commands
 				{
 					Color = DiscordColor.Green,
 					Description = "Ticket " + ticketChannel.Mention + " opened by " + command.Member.Mention + ".\n",
-					Footer = new DiscordEmbedBuilder.EmbedFooter {Text = "Ticket " + ticketID}
+					Footer = new DiscordEmbedBuilder.EmbedFooter { Text = "Ticket " + ticketID }
 				};
 				await logChannel.SendMessageAsync("", false, logMessage);
 			}

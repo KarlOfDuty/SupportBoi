@@ -1,11 +1,10 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using DSharpPlus;
+﻿using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
-using MySql.Data.MySqlClient;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace SupportBoi.Commands
 {
@@ -72,32 +71,24 @@ namespace SupportBoi.Commands
 				return;
 			}
 
-			using (MySqlConnection c = Database.GetConnection())
+			Database.RemoveStaffMember(userID);
+			DiscordEmbed message = new DiscordEmbedBuilder
 			{
-				c.Open();
-				MySqlCommand deletion = new MySqlCommand(@"DELETE FROM staff WHERE user_id=@user_id", c);
-				deletion.Parameters.AddWithValue("@user_id", userID);
-				deletion.Prepare();
-				deletion.ExecuteNonQuery();
+				Color = DiscordColor.Green,
+				Description = "User was removed from staff."
+			};
+			await command.RespondAsync("", false, message);
 
-				DiscordEmbed message = new DiscordEmbedBuilder
+			// Log it if the log channel exists
+			DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
+			if (logChannel != null)
+			{
+				DiscordEmbed logMessage = new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Green,
-					Description = "User was removed from staff."
+					Description = "User was removed from staff.\n",
 				};
-				await command.RespondAsync("", false, message);
-
-				// Log it if the log channel exists
-				DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
-				if (logChannel != null)
-				{
-					DiscordEmbed logMessage = new DiscordEmbedBuilder
-					{
-						Color = DiscordColor.Green,
-						Description = "User was removed from staff.\n",
-					};
-					await logChannel.SendMessageAsync("", false, logMessage);
-				}
+				await logChannel.SendMessageAsync("", false, logMessage);
 			}
 		}
 	}

@@ -1,6 +1,6 @@
-﻿using System;
+﻿using MySql.Data.MySqlClient;
+using System;
 using System.Collections.Generic;
-using MySql.Data.MySqlClient;
 
 namespace SupportBoi
 {
@@ -12,11 +12,11 @@ namespace SupportBoi
 
 		public static void SetConnectionString(string host, int port, string database, string username, string password)
 		{
-			connectionString = "server=" + host + 
-			                   ";database=" + database + 
-			                   ";port=" + port + 
-			                   ";userid=" + username + 
-			                   ";password=" + password;
+			connectionString = "server=" + host +
+							   ";database=" + database +
+							   ";port=" + port +
+							   ";userid=" + username +
+							   ";password=" + password;
 		}
 		public static MySqlConnection GetConnection()
 		{
@@ -451,6 +451,150 @@ namespace SupportBoi
 				return true;
 			}
 		}
+
+		/// <summary>
+		///		Inserts the ticket in the ticket history.
+		/// </summary>
+		public static bool InsertToTicketHistory(Ticket ticket)
+		{
+			using (MySqlConnection connection = GetConnection())
+			{
+				try
+				{
+					// Create an entry in the ticket history database
+					MySqlCommand archiveTicket = new MySqlCommand(@"INSERT INTO ticket_history (id, created_time, closed_time, creator_id, assigned_staff_id, summary, channel_id) VALUES (@id, @created_time, now(), @creator_id, @assigned_staff_id, @summary, @channel_id);", connection);
+					archiveTicket.Parameters.AddWithValue("@id", ticket.id);
+					archiveTicket.Parameters.AddWithValue("@created_time", ticket.createdTime);
+					archiveTicket.Parameters.AddWithValue("@creator_id", ticket.creatorID);
+					archiveTicket.Parameters.AddWithValue("@assigned_staff_id", ticket.assignedStaffID);
+					archiveTicket.Parameters.AddWithValue("@summary", ticket.summary);
+					// The ticket is obtained thanks to a channel with a ticket, so the channelID is identical to the ticket.channelID
+					archiveTicket.Parameters.AddWithValue("@channel_id", ticket.channelID);
+
+					connection.Open();
+					return archiveTicket.ExecuteNonQuery() > 0;
+				}
+				catch (MySqlException)
+				{
+					return false;
+				}
+			}
+
+		}
+
+		/// <summary>
+		///		Removes the ticket from the active tickets.
+		/// </summary>
+		public static bool DeleteActiveTicket(Ticket ticket)
+		{
+			using (MySqlConnection connection = GetConnection())
+			{
+				try
+				{
+					MySqlCommand deletion = new MySqlCommand(@"DELETE FROM tickets WHERE channel_id=@channel_id", connection);
+					deletion.Parameters.AddWithValue("@channel_id", ticket.channelID);
+					deletion.Prepare();
+					return deletion.ExecuteNonQuery() > 0;
+				}
+				catch (MySqlException)
+				{
+					return false;
+				}
+			}
+		}
+
+		/// <summary>
+		///		Updates the staff entity, creates if not, and updates the nickname if it exists.
+		/// </summary>
+		public static bool UpdateStaffMember(ulong userId, string userName) // I don't think it's right to keep a staff nickname
+		{
+			using (MySqlConnection connection = GetConnection())
+			{
+				try
+				{
+					MySqlCommand command = IsStaff(userId) ? new MySqlCommand(@"UPDATE staff SET name = @name WHERE user_id = @user_id", connection) :
+						new MySqlCommand(@"INSERT INTO staff (user_id, name) VALUES (@user_id, @name);", connection);
+
+					connection.Open();
+					command.Parameters.AddWithValue("@user_id", userId);
+					command.Parameters.AddWithValue("@name", userName);
+					return command.ExecuteNonQuery() > 0;
+				}
+				catch (MySqlException)
+				{
+					return false;
+				}
+			}
+		}
+
+		/// <summary>
+		///		Removes the user from the staff.
+		/// </summary>
+		public static bool RemoveStaffMember(ulong userId)
+		{
+			using (MySqlConnection connection = GetConnection())
+			{
+				try
+				{
+					connection.Open();
+					MySqlCommand deletion = new MySqlCommand(@"DELETE FROM staff WHERE user_id=@user_id", connection);
+					deletion.Parameters.AddWithValue("@user_id", userId);
+					deletion.Prepare();
+					return deletion.ExecuteNonQuery() > 0;
+				}
+				catch (MySqlException)
+				{
+					return false;
+				}
+			}
+		}
+
+		/// <summary>
+		///		Updates the ticket summary by channelId.
+		/// </summary>
+		public static bool UpdateTicketSummary(ulong channelId, string summary)
+		{
+			using (MySqlConnection connection = GetConnection())
+			{
+				try
+				{
+					connection.Open();
+					MySqlCommand update = new MySqlCommand(@"UPDATE tickets SET summary = @summary WHERE channel_id = @channel_id", connection);
+					update.Parameters.AddWithValue("@summary", summary);
+					update.Parameters.AddWithValue("@channel_id", channelId);
+					update.Prepare();
+					return update.ExecuteNonQuery() > 0;
+				}
+				catch (MySqlException)
+				{
+					return false;
+				}
+			}
+		}
+
+		/// <summary>
+		///		Updates the staff activity.
+		/// </summary>
+		public static bool UpdateStaffActive(ulong staffId, bool active)
+		{
+			using (MySqlConnection connection = GetConnection())
+			{
+				try
+				{
+					connection.Open();
+					MySqlCommand update = new MySqlCommand(@"UPDATE staff SET active = @active WHERE user_id = @user_id", connection);
+					update.Parameters.AddWithValue("@user_id", staffId);
+					update.Parameters.AddWithValue("@active", active);
+					update.Prepare();
+					return update.ExecuteNonQuery() > 0;
+				}
+				catch (MySqlException)
+				{
+					return false;
+				}
+			}
+		}
+
 		public class Ticket
 		{
 			public uint id;

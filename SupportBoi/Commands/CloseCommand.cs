@@ -1,11 +1,10 @@
-﻿using System;
-using System.Threading.Tasks;
-using DSharpPlus;
+﻿using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Exceptions;
-using MySql.Data.MySqlClient;
+using System;
+using System.Threading.Tasks;
 
 namespace SupportBoi.Commands
 {
@@ -91,29 +90,10 @@ namespace SupportBoi.Commands
 				catch (UnauthorizedException) { }
 			}
 
-			using (MySqlConnection c = Database.GetConnection())
-			{
-				// Create an entry in the ticket history database
-				MySqlCommand archiveTicket = new MySqlCommand(@"INSERT INTO ticket_history (id, created_time, closed_time, creator_id, assigned_staff_id, summary, channel_id) VALUES (@id, @created_time, now(), @creator_id, @assigned_staff_id, @summary, @channel_id);", c);
-				archiveTicket.Parameters.AddWithValue("@id", ticket.id);
-				archiveTicket.Parameters.AddWithValue("@created_time", ticket.createdTime);
-				archiveTicket.Parameters.AddWithValue("@creator_id", ticket.creatorID);
-				archiveTicket.Parameters.AddWithValue("@assigned_staff_id", ticket.assignedStaffID);
-				archiveTicket.Parameters.AddWithValue("@summary", ticket.summary);
-				archiveTicket.Parameters.AddWithValue("@channel_id", channelID);
-
-				c.Open();
-				archiveTicket.ExecuteNonQuery();
-
-				// Delete the channel and database entry
-				await command.Channel.DeleteAsync("Ticket closed.");
-				MySqlCommand deletion = new MySqlCommand(@"DELETE FROM tickets WHERE channel_id=@channel_id", c);
-				deletion.Parameters.AddWithValue("@channel_id", channelID);
-				deletion.Prepare();
-				deletion.ExecuteNonQuery();
-
-				Sheets.DeleteTicketQueued(ticket.id);
-			}
+			Database.InsertToTicketHistory(ticket);
+			await command.Channel.DeleteAsync("Ticket closed.");
+			Database.DeleteActiveTicket(ticket);
+			Sheets.DeleteTicketQueued(ticket.id);
 		}
 	}
 }

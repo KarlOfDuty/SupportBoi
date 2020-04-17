@@ -1,10 +1,9 @@
-﻿using System;
-using System.Threading.Tasks;
-using DSharpPlus;
+﻿using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
-using MySql.Data.MySqlClient;
+using System;
+using System.Threading.Tasks;
 
 namespace SupportBoi.Commands
 {
@@ -40,27 +39,17 @@ namespace SupportBoi.Commands
 				return;
 			}
 
-			string summary = command.Message.Content.Replace(Config.prefix + "setsummary", "").Trim();
+			// command.Message.Content.Replace(Config.prefix + "setsummary", "").Trim();
+			string summary = command.Message.Content.Substring(Config.prefix.Length + 10).Trim();
+			Database.UpdateTicketSummary(channelID, summary);
+			Sheets.SetSummaryQueued(ticket.id, summary);
 
-			using (MySqlConnection c = Database.GetConnection())
+			DiscordEmbed message = new DiscordEmbedBuilder
 			{
-				c.Open();
-				MySqlCommand update = new MySqlCommand(@"UPDATE tickets SET summary = @summary WHERE channel_id = @channel_id", c);
-				update.Parameters.AddWithValue("@summary", summary);
-				update.Parameters.AddWithValue("@channel_id", channelID);
-				update.Prepare();
-				update.ExecuteNonQuery();
-				update.Dispose();
-
-				Sheets.SetSummaryQueued(ticket.id, summary);
-
-				DiscordEmbed message = new DiscordEmbedBuilder
-				{
-					Color = DiscordColor.Green,
-					Description = "Summary set."
-				};
-				await command.RespondAsync("", false, message);
-			}
+				Color = DiscordColor.Green,
+				Description = "Summary set."
+			};
+			await command.RespondAsync("", false, message);
 		}
 	}
 }
