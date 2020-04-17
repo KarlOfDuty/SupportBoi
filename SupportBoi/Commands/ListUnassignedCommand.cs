@@ -28,7 +28,7 @@ namespace SupportBoi.Commands
                 return;
             }
 
-            if (!Database.TryGetAssignedTickets(0, out List<Database.Ticket> unassignedTickets))
+            if (!Database.TicketLinked.TryGetAssignedTickets(0, out List<Database.Ticket> unassignedTickets))
             {
                 DiscordEmbed response = new DiscordEmbedBuilder()
                     .WithColor(DiscordColor.Green)

@@ -52,7 +52,7 @@ namespace SupportBoi.Commands
 
                     try
                     {
-                        if (!Database.Unblacklist(blacklistedUser.Id))
+                        if (!Database.UserLinked.UnBlock(blacklistedUser.Id))
                         {
                             DiscordEmbed error = new DiscordEmbedBuilder
                             {

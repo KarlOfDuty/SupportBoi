@@ -29,7 +29,7 @@ namespace SupportBoi.Commands
             }
 
             // Check if ticket exists in the database
-            if (!Database.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
+            if (!Database.TicketLinked.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
             {
                 DiscordEmbed error = new DiscordEmbedBuilder
                 {
@@ -76,7 +76,7 @@ namespace SupportBoi.Commands
                 return;
             }
 
-            if (!Database.IsStaff(staffMember.Id))
+            if (!Database.StaffLinked.IsStaff(staffMember.Id))
             {
                 DiscordEmbed error = new DiscordEmbedBuilder
                 {
@@ -87,7 +87,7 @@ namespace SupportBoi.Commands
                 return;
             }
 
-            if (!Database.AssignStaff(ticket, staffID))
+            if (!Database.StaffLinked.AssignStaff(ticket, staffID))
             {
                 DiscordEmbed error = new DiscordEmbedBuilder
                 {

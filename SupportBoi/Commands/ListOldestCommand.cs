@@ -43,7 +43,7 @@ namespace SupportBoi.Commands
                 }
             }
 
-            if (!Database.TryGetOldestTickets(command.Member.Id, out List<Database.Ticket> openTickets, listLimit))
+            if (!Database.TicketLinked.TryGetOldestTickets(command.Member.Id, out List<Database.Ticket> openTickets, listLimit))
             {
                 DiscordEmbed channelInfo = new DiscordEmbedBuilder()
                     .WithColor(DiscordColor.Red)

@@ -26,7 +26,7 @@ namespace SupportBoi.Commands
                 return;
             }
 
-            if (Database.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
+            if (Database.TicketLinked.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
             {
                 DiscordEmbed channelInfo = new DiscordEmbedBuilder()
                     .WithTitle("Channel information")

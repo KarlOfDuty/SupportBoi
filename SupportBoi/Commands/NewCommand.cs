@@ -29,7 +29,7 @@ namespace SupportBoi.Commands
 			}
 
 			// Check if user is blacklisted
-			if (Database.IsBlacklisted(command.User.Id))
+			if (Database.UserLinked.IsBlocked(command.User.Id))
 			{
 				DiscordEmbed error = new DiscordEmbedBuilder
 				{
@@ -75,10 +75,10 @@ namespace SupportBoi.Commands
 			ulong staffID = 0;
 			if (Config.randomAssignment)
 			{
-				staffID = Database.GetRandomActiveStaff(0)?.userID ?? 0;
+				staffID = Database.StaffLinked.GetRandomActiveStaff(0)?.userID ?? 0;
 			}
 
-			long id = Database.NewTicket(command.Member.Id, staffID, ticketChannel.Id);
+			long id = Database.TicketLinked.NewTicket(command.Member.Id, staffID, ticketChannel.Id);
 			string ticketID = id.ToString("00000");
 			await ticketChannel.ModifyAsync("ticket-" + ticketID);
 			await ticketChannel.AddOverwriteAsync(command.Member, Permissions.AccessChannels, Permissions.None);
@@ -142,7 +142,7 @@ namespace SupportBoi.Commands
 
 			// Adds the ticket to the google sheets document if enabled
 			Sheets.AddTicketQueued(command.Member, ticketChannel, id.ToString(), staffID.ToString(),
-				Database.TryGetStaff(staffID, out Database.StaffMember staffMemberEntry)
+				Database.StaffLinked.TryGetStaff(staffID, out Database.StaffMember staffMemberEntry)
 					? staffMemberEntry.userID.ToString()
 					: null);
 		}

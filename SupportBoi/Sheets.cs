@@ -22,7 +22,7 @@ namespace SupportBoi
 
         private static Timer timer;
 
-        private static ConcurrentQueue<Action> jobQueue = new ConcurrentQueue<Action>();
+        private static readonly ConcurrentQueue<Action> jobQueue = new ConcurrentQueue<Action>();
 
         public static void Reload()
         {

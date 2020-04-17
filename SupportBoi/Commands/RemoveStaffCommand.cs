@@ -60,7 +60,7 @@ namespace SupportBoi.Commands
 				return;
 			}
 
-			if (!Database.IsStaff(userID))
+			if (!Database.StaffLinked.IsStaff(userID))
 			{
 				DiscordEmbed error = new DiscordEmbedBuilder
 				{
@@ -71,7 +71,7 @@ namespace SupportBoi.Commands
 				return;
 			}
 
-			Database.RemoveStaffMember(userID);
+			Database.StaffLinked.RemoveStaff(userID);
 			DiscordEmbed message = new DiscordEmbedBuilder
 			{
 				Color = DiscordColor.Green,

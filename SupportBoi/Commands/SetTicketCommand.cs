@@ -28,7 +28,7 @@ namespace SupportBoi.Commands
 			}
 
 			// Check if ticket exists in the database
-			if (Database.IsOpenTicket(command.Channel.Id))
+			if (Database.TicketLinked.IsOpenTicket(command.Channel.Id))
 			{
 				DiscordEmbed error = new DiscordEmbedBuilder
 				{
@@ -70,7 +70,7 @@ namespace SupportBoi.Commands
 				return;
 			}
 
-			long id = Database.NewTicket(userID, 0, command.Channel.Id);
+			long id = Database.TicketLinked.NewTicket(userID, 0, command.Channel.Id);
 			string ticketID = id.ToString("00000");
 			DiscordEmbed message = new DiscordEmbedBuilder
 			{

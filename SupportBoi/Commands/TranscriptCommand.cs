@@ -34,7 +34,7 @@ namespace SupportBoi.Commands
             // If there are no arguments use current channel
             if (parsedMessage.Length < 2)
             {
-                if (Database.TryGetOpenTicket(command.Channel.Id, out ticket))
+                if (Database.TicketLinked.TryGetOpenTicket(command.Channel.Id, out ticket))
                 {
                     try
                     {
@@ -77,7 +77,7 @@ namespace SupportBoi.Commands
                 }
 
                 // If the ticket is still open, generate a new fresh transcript
-                if (Database.TryGetOpenTicketByID(ticketID, out ticket) && ticket?.creatorID == command.Member.Id)
+                if (Database.TicketLinked.TryGetOpenTicketById(ticketID, out ticket) && ticket?.creatorID == command.Member.Id)
                 {
                     try
                     {
@@ -96,7 +96,7 @@ namespace SupportBoi.Commands
 
                 }
                 // If there is no open or closed ticket, send an error. If there is a closed ticket we will simply use the old transcript from when the ticket was closed.
-                else if (!Database.TryGetClosedTicket(ticketID, out ticket) || (ticket?.creatorID != command.Member.Id && !Database.IsStaff(command.Member.Id)))
+                else if (!Database.TicketLinked.TryGetClosedTicketById(ticketID, out ticket) || (ticket?.creatorID != command.Member.Id && !Database.StaffLinked.IsStaff(command.Member.Id)))
                 {
                     DiscordEmbed error = new DiscordEmbedBuilder
                     {

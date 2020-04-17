@@ -13,7 +13,7 @@ namespace SupportBoi
 {
     internal class EventHandler
     {
-        private DiscordClient discordClient;
+        private readonly DiscordClient discordClient;
         public EventHandler(DiscordClient client)
         {
             this.discordClient = client;
@@ -55,13 +55,15 @@ namespace SupportBoi
 
 
             // Check if ticket exists in the database
-            if (!Database.TryGetOpenTicket(e.Channel.Id, out Database.Ticket ticket))
+            if (!Database.TicketLinked.TryGetOpenTicket(e.Channel.Id, out Database.Ticket ticket))
             {
                 return;
             }
 
+            bool isStaff = Database.StaffLinked.IsStaff(e.Author.Id);
+
             // Updates last staff message sent field in the google sheet
-            if (Database.IsStaff(e.Author.Id) && Config.sheetsEnabled)
+            if (isStaff && Config.sheetsEnabled)
             {
                 Sheets.RefreshLastStaffMessageSentQueued(ticket.id);
             }
@@ -73,7 +75,7 @@ namespace SupportBoi
 
             // Sends a DM to the assigned staff member if at least a day has gone by since the last message and the user sending the message isn't staff
             IReadOnlyList<DiscordMessage> messages = await e.Channel.GetMessagesAsync(2);
-            if (messages.Count > 1 && messages[1].Timestamp < DateTimeOffset.UtcNow.AddDays(Config.ticketUpdatedNotificationDelay * -1) && !Database.IsStaff(e.Author.Id))
+            if (messages.Count > 1 && messages[1].Timestamp < DateTimeOffset.UtcNow.AddDays(Config.ticketUpdatedNotificationDelay * -1) && !isStaff)
             {
                 try
                 {
@@ -132,7 +134,7 @@ namespace SupportBoi
             DiscordGuild guild = e.Message.Channel.Guild;
             DiscordMember member = await guild.GetMemberAsync(e.User.Id);
 
-            if (!Config.HasPermission(member, "new") || Database.IsBlacklisted(member.Id)) return;
+            if (!Config.HasPermission(member, "new") || Database.UserLinked.IsBlocked(member.Id)) return;
 
             DiscordChannel category = guild.GetChannel(Config.ticketCategory);
             DiscordChannel ticketChannel = await guild.CreateChannelAsync("ticket", ChannelType.Text, category);
@@ -142,10 +144,10 @@ namespace SupportBoi
             ulong staffID = 0;
             if (Config.randomAssignment)
             {
-                staffID = Database.GetRandomActiveStaff(0)?.userID ?? 0;
+                staffID = Database.StaffLinked.GetRandomActiveStaff(0)?.userID ?? 0;
             }
 
-            long id = Database.NewTicket(member.Id, staffID, ticketChannel.Id);
+            long id = Database.TicketLinked.NewTicket(member.Id, staffID, ticketChannel.Id);
             string ticketID = id.ToString("00000");
             await ticketChannel.ModifyAsync("ticket-" + ticketID);
             await ticketChannel.AddOverwriteAsync(member, Permissions.AccessChannels, Permissions.None);
@@ -203,7 +205,7 @@ namespace SupportBoi
 
             // Adds the ticket to the google sheets document if enabled
             Sheets.AddTicketQueued(member, ticketChannel, id.ToString(), staffID.ToString(),
-                Database.TryGetStaff(staffID, out Database.StaffMember staffMemberEntry)
+                Database.StaffLinked.TryGetStaff(staffID, out Database.StaffMember staffMemberEntry)
                     ? staffMemberEntry.userID.ToString()
                     : null);
         }

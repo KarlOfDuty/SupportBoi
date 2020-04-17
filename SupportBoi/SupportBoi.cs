@@ -16,7 +16,7 @@ namespace SupportBoi
         private CommandsNextModule commands = null;
         private EventHandler eventHandler;
 
-        static void Main(string[] args)
+        static void Main()
         {
             new SupportBoi().MainAsync().GetAwaiter().GetResult();
         }

@@ -26,8 +26,8 @@ namespace SupportBoi.Commands
 				return;
 			}
 
-			long openTickets = Database.GetNumberOfTickets();
-			long closedTickets = Database.GetNumberOfClosedTickets();
+			long openTickets = Database.TicketLinked.GetTotalOpenedTickets();
+			long closedTickets = Database.TicketLinked.GetTotalClosedTickets();
 
 			DiscordEmbed botInfo = new DiscordEmbedBuilder()
 				.WithAuthor("KarlofDuty/SupportBoi @ GitHub", "https://github.com/KarlofDuty/SupportBoi", "https://karlofduty.com/img/tardisIcon.jpg")

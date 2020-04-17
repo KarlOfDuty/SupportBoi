@@ -31,7 +31,7 @@ namespace SupportBoi.Commands
 			string channelName = command.Channel.Name;
 
 			// Check if ticket exists in the database
-			if (!Database.TryGetOpenTicket(channelID, out Database.Ticket ticket))
+			if (!Database.TicketLinked.TryGetOpenTicket(channelID, out Database.Ticket ticket))
 			{
 				DiscordEmbed error = new DiscordEmbedBuilder
 				{
@@ -90,9 +90,9 @@ namespace SupportBoi.Commands
 				catch (UnauthorizedException) { }
 			}
 
-			Database.InsertToTicketHistory(ticket);
+			Database.TicketLinked.CloseTicket(ticket);
 			await command.Channel.DeleteAsync("Ticket closed.");
-			Database.DeleteActiveTicket(ticket);
+			Database.TicketLinked.DeleteOpenTicket(ticket);
 			Sheets.DeleteTicketQueued(ticket.id);
 		}
 	}

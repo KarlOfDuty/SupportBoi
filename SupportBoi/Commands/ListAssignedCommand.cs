@@ -47,7 +47,7 @@ namespace SupportBoi.Commands
                 return;
             }
 
-            if (!Database.TryGetAssignedTickets(staffID, out List<Database.Ticket> assignedTickets))
+            if (!Database.TicketLinked.TryGetAssignedTickets(staffID, out List<Database.Ticket> assignedTickets))
             {
                 DiscordEmbed error = new DiscordEmbedBuilder()
                     .WithColor(DiscordColor.Red)

@@ -28,7 +28,7 @@ namespace SupportBoi.Commands
 
 			ulong channelID = command.Channel.Id;
 			// Check if ticket exists in the database
-			if (!Database.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
+			if (!Database.TicketLinked.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
 			{
 				DiscordEmbed error = new DiscordEmbedBuilder
 				{
@@ -41,7 +41,7 @@ namespace SupportBoi.Commands
 
 			// command.Message.Content.Replace(Config.prefix + "setsummary", "").Trim();
 			string summary = command.Message.Content.Substring(Config.prefix.Length + 10).Trim();
-			Database.UpdateTicketSummary(channelID, summary);
+			Database.TicketLinked.UpdateTicketSummary(channelID, summary);
 			Sheets.SetSummaryQueued(ticket.id, summary);
 
 			DiscordEmbed message = new DiscordEmbedBuilder

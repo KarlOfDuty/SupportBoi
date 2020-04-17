@@ -47,7 +47,7 @@ namespace SupportBoi.Commands
 			}
 
 			// Check if ticket exists in the database
-			if (!Database.TryGetStaff(staffID, out Database.StaffMember staffMember))
+			if (!Database.StaffLinked.TryGetStaff(staffID, out Database.StaffMember staffMember))
 			{
 				DiscordEmbed error = new DiscordEmbedBuilder
 				{
@@ -58,7 +58,7 @@ namespace SupportBoi.Commands
 				return;
 			}
 
-			Database.UpdateStaffActive(staffID, !staffMember.active);
+			Database.StaffLinked.UpdateStaffActive(staffID, !staffMember.active);
 
 			DiscordEmbed message = new DiscordEmbedBuilder
 			{

@@ -64,7 +64,7 @@ namespace SupportBoi.Commands
 
 			using (MySqlConnection c = Database.GetConnection())
 			{
-				MySqlCommand cmd = Database.IsStaff(userID) ? new MySqlCommand(@"UPDATE staff SET name = @name WHERE user_id = @user_id", c) : new MySqlCommand(@"INSERT INTO staff (user_id, name) VALUES (@user_id, @name);", c);
+				MySqlCommand cmd = Database.StaffLinked.IsStaff(userID) ? new MySqlCommand(@"UPDATE staff SET name = @name WHERE user_id = @user_id", c) : new MySqlCommand(@"INSERT INTO staff (user_id, name) VALUES (@user_id, @name);", c);
 
 				c.Open();
 				cmd.Parameters.AddWithValue("@user_id", userID);

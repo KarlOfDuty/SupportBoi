@@ -46,7 +46,7 @@ namespace SupportBoi.Commands
                 return;
             }
 
-            if (Database.TryGetOpenTickets(userID, out List<Database.Ticket> openTickets))
+            if (Database.TicketLinked.TryGetOpenTicketsByUser(userID, out List<Database.Ticket> openTickets))
             {
                 List<string> listItems = new List<string>();
                 foreach (Database.Ticket ticket in openTickets)
@@ -72,7 +72,7 @@ namespace SupportBoi.Commands
                 await command.RespondAsync("", false, channelInfo);
             }
 
-            if (Database.TryGetClosedTickets(userID, out List<Database.Ticket> closedTickets))
+            if (Database.TicketLinked.TryGetClosedTickets(userID, out List<Database.Ticket> closedTickets))
             {
                 List<string> listItems = new List<string>();
                 foreach (Database.Ticket ticket in closedTickets)
