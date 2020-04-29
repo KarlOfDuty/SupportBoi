@@ -21,27 +21,27 @@ namespace SupportBoi
 
 		internal Task OnReady(ReadyEventArgs e)
 		{
-			e.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", "Client is ready to process events.", DateTime.UtcNow);
+			e.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", "Client is ready to process events.", DateTime.Now);
 			this.discordClient.UpdateStatusAsync(new DiscordGame(Config.presenceGame), UserStatus.Online);
 			return Task.CompletedTask;
 		}
 
 		internal Task OnGuildAvailable(GuildCreateEventArgs e)
 		{
-			e.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", $"Guild available: {e.Guild.Name}", DateTime.UtcNow);
+			e.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", $"Guild available: {e.Guild.Name}", DateTime.Now);
 
 			IReadOnlyList<DiscordRole> roles = e.Guild.Roles;
 
 			foreach (DiscordRole role in roles)
 			{
-				e.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", role.Name.PadRight(40, '.') + role.Id, DateTime.UtcNow);
+				e.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", role.Name.PadRight(40, '.') + role.Id, DateTime.Now);
 			}
 			return Task.CompletedTask;
 		}
 
 		internal Task OnClientError(ClientErrorEventArgs e)
 		{
-			e.Client.DebugLogger.LogMessage(LogLevel.Error, "SupportBoi", $"Exception occured: {e.Exception.GetType()}: {e.Exception}", DateTime.UtcNow);
+			e.Client.DebugLogger.LogMessage(LogLevel.Error, "SupportBoi", $"Exception occured: {e.Exception.GetType()}: {e.Exception}", DateTime.Now);
 
 			return Task.CompletedTask;
 		}
@@ -73,7 +73,7 @@ namespace SupportBoi
 
 			// Sends a DM to the assigned staff member if at least a day has gone by since the last message and the user sending the message isn't staff
 			IReadOnlyList<DiscordMessage> messages = await e.Channel.GetMessagesAsync(2);
-			if (messages.Count > 1 && messages[1].Timestamp < DateTimeOffset.UtcNow.AddDays(Config.ticketUpdatedNotificationDelay * -1) && !Database.IsStaff(e.Author.Id))
+			if (messages.Count > 1 && messages[1].Timestamp < DateTimeOffset.Now.AddDays(Config.ticketUpdatedNotificationDelay * -1) && !Database.IsStaff(e.Author.Id))
 			{
 				try
 				{
@@ -113,7 +113,7 @@ namespace SupportBoi
 
 				default:
 					{
-						e.Context.Client.DebugLogger.LogMessage(LogLevel.Error, "SupportBoi", $"Exception occured: {e.Exception.GetType()}: {e.Exception}", DateTime.UtcNow);
+						e.Context.Client.DebugLogger.LogMessage(LogLevel.Error, "SupportBoi", $"Exception occured: {e.Exception.GetType()}: {e.Exception}", DateTime.Now);
 						DiscordEmbed error = new DiscordEmbedBuilder
 						{
 							Color = DiscordColor.Red,
