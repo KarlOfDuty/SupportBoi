@@ -293,7 +293,7 @@ namespace SupportBoi
 			{
 				c.Open();
 				MySqlCommand cmd = new MySqlCommand(
-					@"INSERT INTO tickets (created_time, creator_id, assigned_staff_id, summary, channel_id) VALUES (now(), @creator_id, @assigned_staff_id, @summary, @channel_id);",
+					@"INSERT INTO tickets (created_time, creator_id, assigned_staff_id, summary, channel_id) VALUES (UTC_TIMESTAMP(), @creator_id, @assigned_staff_id, @summary, @channel_id);",
 					c);
 				cmd.Parameters.AddWithValue("@creator_id", memberID);
 				cmd.Parameters.AddWithValue("@assigned_staff_id", staffID);
@@ -330,7 +330,7 @@ namespace SupportBoi
 				try
 				{
 					c.Open();
-					MySqlCommand cmd = new MySqlCommand(@"INSERT INTO blacklisted_users (user_id,time,moderator_id) VALUES (@user_id, now(), @moderator_id);", c);
+					MySqlCommand cmd = new MySqlCommand(@"INSERT INTO blacklisted_users (user_id,time,moderator_id) VALUES (@user_id, UTC_TIMESTAMP(), @moderator_id);", c);
 					cmd.Parameters.AddWithValue("@user_id", blacklistedID);
 					cmd.Parameters.AddWithValue("@moderator_id", staffID);
 					cmd.Prepare();
