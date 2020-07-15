@@ -14,6 +14,10 @@ namespace SupportBoi
 	internal class EventHandler
 	{
 		private DiscordClient discordClient;
+
+		//DateTime for the end of the cooldown
+		private static Dictionary<ulong, DateTime> reactionTicketCooldowns = new Dictionary<ulong, DateTime>();
+
 		public EventHandler(DiscordClient client)
 		{
 			this.discordClient = client;
@@ -133,6 +137,12 @@ namespace SupportBoi
 			DiscordMember member = await guild.GetMemberAsync(e.User.Id);
 
 			if (!Config.HasPermission(member, "new") || Database.IsBlacklisted(member.Id)) return;
+			if (reactionTicketCooldowns.ContainsKey(member.Id))
+			{
+				if (reactionTicketCooldowns[member.Id] > DateTime.Now) return; // cooldown has not expired
+				else reactionTicketCooldowns.Remove(member.Id); // cooldown exists but has expired, delete it
+			}
+
 
 			DiscordChannel category = guild.GetChannel(Config.ticketCategory);
 			DiscordChannel ticketChannel = await guild.CreateChannelAsync("ticket", ChannelType.Text, category);
@@ -146,6 +156,7 @@ namespace SupportBoi
 			}
 
 			long id = Database.NewTicket(member.Id, staffID, ticketChannel.Id);
+			reactionTicketCooldowns.Add(member.Id, DateTime.Now.AddSeconds(10)); // add a cooldown which expires in 10 seconds
 			string ticketID = id.ToString("00000");
 			await ticketChannel.ModifyAsync("ticket-" + ticketID);
 			await ticketChannel.AddOverwriteAsync(member, Permissions.AccessChannels, Permissions.None);
