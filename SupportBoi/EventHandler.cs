@@ -153,6 +153,9 @@ namespace SupportBoi
 			await ticketChannel.SendMessageAsync("Hello, " + member.Mention + "!\n" +
 			                                     Config.welcomeMessage);
 
+			// Remove user's reaction
+			await e.Message.DeleteReactionAsync(e.Emoji, e.User);
+
 			// Refreshes the channel as changes were made to it above
 			ticketChannel = await SupportBoi.GetClient().GetChannelAsync(ticketChannel.Id);
 
@@ -187,7 +190,7 @@ namespace SupportBoi
 					}
 				}
 			}
-			
+
 			// Log it if the log channel exists
 			DiscordChannel logChannel = guild.GetChannel(Config.logChannel);
 			if (logChannel != null)
