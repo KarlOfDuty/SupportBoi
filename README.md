@@ -1,6 +1,6 @@
 # Support Boi [![Build Status](http://95.217.45.17:8080/job/SupportBoi/job/master/badge/icon)](http://95.217.45.17:8080/blue/organizations/jenkins/SupportBoi/activity) [![Release](https://img.shields.io/github/release/KarlofDuty/SupportBoi.svg)](https://github.com/KarlOfDuty/SupportBoi/releases) [![Discord Server](https://img.shields.io/discord/430468637183442945.svg?label=discord)](https://discord.gg/C5qMvkj)
 
-A support ticket Discord bot. Uses a MySQL database for storage of ticket information. Creates amazingly formatted HTML ticket transcripts when tickets are closed. Has the ability to output ticket information to a google sheet which can be customized in a number of ways.
+A support ticket Discord bot. Uses a MySQL database for storage of ticket information. Creates amazingly formatted HTML ticket transcripts when tickets are closed. Has the ability to output ticket information to a Google sheet which can be customized in a number of ways.
 
 There appears to be an issue where CentOS 7 may not be compatible with some element of this bot causing it to not start.
 
@@ -14,10 +14,10 @@ There appears to be an issue where CentOS 7 may not be compatible with some elem
 | `close` | Closes a ticket channel and posts a ticket transcript in the log channel. |
 | `transcript (ticket number) ` | Generates a ticket transcript as an html file. |
 | `status` | Shows a status message about the bot with info such as number of tickets and which version is running. |
-| `summary` | Shows some information about a ticket and it's summary if set. |
-| `list (id/mention)` | Lists all of a user's open and closed tickets. |
+| `summary` | Shows some information about a ticket and its summary if set. |
+| `list (id/mention)` | Lists a user's open and closed tickets. |
 | `add <ids/mentions>` | Add users to the ticket. |
-| `assign (id/mention)` | Assigns a ricket to a staff member, themself if no mention or id is provided. |
+| `assign (id/mention)` | Assigns a ticket to a staff member, themself if no mention or id is provided. |
 | `rassign` | Randomly assigns a ticket to an active staff member. |
 | `unassign` | Unassigns a ticket from the currently assigned staff member. |
 | `blacklist <ids/mentions>` | Blacklists users from opening tickets. |
