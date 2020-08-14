@@ -36,7 +36,7 @@ There appears to be an issue where CentOS 7 may not be compatible with some elem
 
 ## Setup
 
-1. [Create a new bot application](https://discordapp.com/developers/applications/).
+1. [Create a new bot application](https://discordpy.readthedocs.io/en/latest/discord.html).
 
 2. [Install .NET Core 2.2](https://dotnet.microsoft.com/download/dotnet-core/2.2).
 
