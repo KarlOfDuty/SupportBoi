@@ -23,7 +23,7 @@ There appears to be an issue where CentOS 7 may not be compatible with some elem
 | `blacklist <ids/mentions>` | Blacklists users from opening tickets. |
 | `unblacklist <ids/mentions>` | Un-blacklists users from opening tickets. |
 | `setsummary <summary>` | Sets a summary for a ticket which can be viewed using the `summary` command. |
-| `toogleactive/ta (id/mention)` | Toggles whether a staff member counts as active or not. |
+| `toggleactive/ta (id/mention)` | Toggles whether a staff member counts as active or not. |
 | `listassigned/la (id/mention)` | Lists all of a staff member's assigned tickets. |
 | `listunassigned/lu` | Lists all unassigned tickets. |
 | `listoldest/lo (limit)` | Lists a number of the oldest still open tickets, default is 20. |
@@ -46,8 +46,8 @@ There appears to be an issue where CentOS 7 may not be compatible with some elem
 
 5. Set up the config (`config.yml`) to your specifications, there are instructions inside and also further down on this page. If you need more help either contact me in Discord or through an issue here.
 
-#### Google Sheets integration (Optional): 
- 
+#### Google Sheets integration (Optional):
+
 If you are using Google Sheets you will have to do some additional setup:
 
 1. Generate a credentials.json file by clicking "Enable the Google Sheets API" [here](https://developers.google.com/sheets/api/quickstart/dotnet), and following the instructions.
@@ -135,8 +135,8 @@ permissions:
     removestaff: []
 
 sheets:
-    # Whether or not to use the google sheets integration. 
-    # You will have to generate a credentials.json file by clicking "Enable the Google Sheets API" here: https://developers.google.com/sheets/api/quickstart/dotnet 
+    # Whether or not to use the google sheets integration.
+    # You will have to generate a credentials.json file by clicking "Enable the Google Sheets API" here: https://developers.google.com/sheets/api/quickstart/dotnet
     enabled: false
     # The spreadsheet ID of the sheet, you can find it in the sheet's URL:
     # https://docs.google.com/spreadsheets/d/<SpreadSheetID>/edit#gid=<SheetID>
