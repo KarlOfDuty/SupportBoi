@@ -1,6 +1,6 @@
 # Support Boi [![Build Status](http://95.217.45.17:8080/job/SupportBoi/job/master/badge/icon)](http://95.217.45.17:8080/blue/organizations/jenkins/SupportBoi/activity) [![Release](https://img.shields.io/github/release/KarlofDuty/SupportBoi.svg)](https://github.com/KarlOfDuty/SupportBoi/releases) [![Discord Server](https://img.shields.io/discord/430468637183442945.svg?label=discord)](https://discord.gg/C5qMvkj)
 
-A support ticket Discord bot. Uses a MySQL database for storage of ticket information. Creates amazingly formatted HTML ticket transcripts when tickets are closed. Has the ability to output ticket information to a Google sheet which can be customized in a number of ways.
+A support ticket Discord bot. Uses a MySQL database for storage of ticket information. Creates amazingly formatted HTML ticket transcripts when tickets are closed.
 
 There appears to be an issue where CentOS 7 may not be compatible with some element of this bot causing it to not start.
 
@@ -46,18 +46,6 @@ There appears to be an issue where CentOS 7 may not be compatible with some elem
 
 5. Set up the config (`config.yml`) to your specifications, there are instructions inside and also further down on this page. If you need more help either contact me in Discord or through an issue here.
 
-#### Google Sheets integration (Optional):
-
-If you are using Google Sheets you will have to do some additional setup:
-
-1. Generate a credentials.json file by clicking "Enable the Google Sheets API" [here](https://developers.google.com/sheets/api/quickstart/dotnet), and following the instructions.
-
-2. Place this file in the same directory as the bot.
-
-3. You now need to generate a token. On a desktop PC the bot will open a browser window for you to log into your Google account and generate an API token, which is then automatically saved as "token.json" in the bot directory. I have no idea how to generate it from a terminal environment so I recommend you run the bot with the Sheets API set up once on your normal PC first and then just transfer the token it creates to your server.
-
-4. If you did step 3 in a desktop environment you do not have to do anything else, if you did it in a terminal environment you likely have to restart the application after adding the token.
-
 ## Default Config
 
 ```yaml
@@ -74,12 +62,18 @@ bot:
     reaction-message: 000000000000000000
     # Message posted when a ticket is opened.
     welcome-message: "Please describe your issue below, and include all information needed for us to take action. This is an example ticket message and can be changed in the config."
-    # Decides what messages are shown in console, possible values are: Critical, Error, Warning, Info, Debug.
-    console-log-level: "Info"
+    # Decides what messages are shown in console
+    # Possible values are: Critical, Error, Warning, Information, Debug.
+    console-log-level: "Information"
     # Format for timestamps in transcripts and google sheets if used
     timestamp-format: "yyyy-MM-dd HH:mm"
     # Whether or not staff members should be randomly assigned tickets when they are made. Individual staff members can opt out using the toggleactive command.
     random-assignment: true
+    # Sets the type of activity for the bot to display in its presence status
+    # Possible values are: Playing, Streaming, ListeningTo, Watching, Competing
+    presence-type: "ListeningTo"
+    # Sets the activity text shown in the bot's status
+    presence-text: "+new"
 
 notifications:
     # Notifiers the assigned staff member when a new message is posted in a ticket if the ticket has been silent for a configurable amount of time
@@ -133,13 +127,4 @@ permissions:
     unsetticket: []
     addstaff: []
     removestaff: []
-
-sheets:
-    # Whether or not to use the google sheets integration.
-    # You will have to generate a credentials.json file by clicking "Enable the Google Sheets API" here: https://developers.google.com/sheets/api/quickstart/dotnet
-    enabled: false
-    # The spreadsheet ID of the sheet, you can find it in the sheet's URL:
-    # https://docs.google.com/spreadsheets/d/<SpreadSheetID>/edit#gid=<SheetID>
-    # In the above link you would use <SpreadSheetID> and not <SheetID>
-    id: "ID here"
 ```
