@@ -434,6 +434,12 @@ namespace SupportBoi
 		}
 		public static StaffMember GetRandomActiveStaff(ulong currentStaffID)
 		{
+			List<StaffMember> staffMembers = GetActiveStaff(currentStaffID);
+			return staffMembers[random.Next(staffMembers.Count)];
+		}
+
+		public static List<StaffMember> GetActiveStaff(ulong currentStaffID = 0)
+		{
 			using (MySqlConnection c = GetConnection())
 			{
 				c.Open();
@@ -445,7 +451,7 @@ namespace SupportBoi
 				// Check if staff exists in the database
 				if (!results.Read())
 				{
-					return null;
+					return new List<StaffMember>();
 				}
 
 				List<StaffMember> staffMembers = new List<StaffMember> { new StaffMember(results) };
@@ -455,9 +461,37 @@ namespace SupportBoi
 				}
 				results.Close();
 
-				return staffMembers[random.Next(staffMembers.Count)];
+				return staffMembers;
 			}
 		}
+
+		public static List<StaffMember> GetAllStaff(ulong currentStaffID = 0)
+		{
+			using (MySqlConnection c = GetConnection())
+			{
+				c.Open();
+				MySqlCommand selection = new MySqlCommand(@"SELECT * FROM staff WHERE user_id != @user_id", c);
+				selection.Parameters.AddWithValue("@user_id", currentStaffID);
+				selection.Prepare();
+				MySqlDataReader results = selection.ExecuteReader();
+
+				// Check if staff exists in the database
+				if (!results.Read())
+				{
+					return new List<StaffMember>();
+				}
+
+				List<StaffMember> staffMembers = new List<StaffMember> { new StaffMember(results) };
+				while (results.Read())
+				{
+					staffMembers.Add(new StaffMember(results));
+				}
+				results.Close();
+
+				return staffMembers;
+			}
+		}
+
 		public static bool IsStaff(ulong staffID)
 		{
 			using (MySqlConnection c = GetConnection())

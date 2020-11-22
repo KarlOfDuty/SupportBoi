@@ -18,6 +18,9 @@
     timestamp-format: "yyyy-MM-dd HH:mm"
     # Whether or not staff members should be randomly assigned tickets when they are made. Individual staff members can opt out using the toggleactive command.
     random-assignment: true
+    # If set to true the rasssign command will include staff members set as inactive if a specific role is specified in the command.
+    # This can be useful if you have admins set as inactive to not automatically recieve tickets and then have moderators elevate tickets when needed.
+    random-assign-role-override: true
     # Sets the type of activity for the bot to display in its presence status
     # Possible values are: Playing, Streaming, ListeningTo, Watching, Competing
     presence-type: "ListeningTo"

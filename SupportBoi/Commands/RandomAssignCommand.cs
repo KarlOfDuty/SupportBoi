@@ -1,9 +1,13 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Exceptions;
 using Microsoft.Extensions.Logging;
+using Tyrrrz.Extensions;
 
 namespace SupportBoi.Commands
 {
@@ -38,38 +42,15 @@ namespace SupportBoi.Commands
 				return;
 			}
 
-			Database.StaffMember staffEntry = Database.GetRandomActiveStaff(ticket.assignedStaffID);
-
-			if (staffEntry == null)
-			{
-				DiscordEmbed error = new DiscordEmbedBuilder
-				{
-					Color = DiscordColor.Red,
-					Description = "Error: There are no other staff to choose from."
-				};
-				await command.RespondAsync("", false, error);
-				return;
-			}
-
-			DiscordMember staffMember = null;
-			try
-			{
-				staffMember = await command.Guild.GetMemberAsync(staffEntry.userID);
-			}
-			catch (NotFoundException) { }
-
+			// Get a random staff member who is verified to have the correct role if applicable
+			DiscordMember staffMember = await GetRandomVerifiedStaffMember(command, ticket);
 			if (staffMember == null)
 			{
-				DiscordEmbed error = new DiscordEmbedBuilder
-				{
-					Color = DiscordColor.Red,
-					Description = "Error: Could not find user."
-				};
-				await command.RespondAsync("", false, error);
 				return;
 			}
 
-			if (!Database.AssignStaff(ticket, staffEntry.userID))
+			// Attempt to assign the staff member to the ticket
+			if (!Database.AssignStaff(ticket, staffMember.Id))
 			{
 				DiscordEmbed error = new DiscordEmbedBuilder
 				{
@@ -80,6 +61,7 @@ namespace SupportBoi.Commands
 				return;
 			}
 
+			// Respond that the command was successful
 			DiscordEmbed feedback = new DiscordEmbedBuilder
 			{
 				Color = DiscordColor.Green,
@@ -87,6 +69,7 @@ namespace SupportBoi.Commands
 			};
 			await command.RespondAsync("", false, feedback);
 
+			// Send a notification to the staff member if applicable
 			if (Config.assignmentNotifications)
 			{
 				try
@@ -112,6 +95,89 @@ namespace SupportBoi.Commands
 				};
 				await logChannel.SendMessageAsync("", false, logMessage);
 			}
+		}
+
+		private async Task<DiscordMember> GetRandomVerifiedStaffMember(CommandContext command, Database.Ticket ticket)
+		{
+			if (!command.RawArguments.IsNullOrEmpty()) // An argument was provided, check if this can be parsed into a role
+			{
+				ulong roleID = 0;
+
+				// Try to parse either discord mention or ID
+				string[] parsedMessage = Utilities.ParseIDs(command.RawArgumentString);
+				if (!ulong.TryParse(parsedMessage[0], out roleID))
+				{
+					// Try to find role by name
+					roleID = Utilities.GetRoleByName(command.Guild, command.RawArgumentString)?.Id ?? 0;
+				}
+
+				// Check if a role was found
+				if (roleID == 0)
+				{
+					DiscordEmbed error = new DiscordEmbedBuilder
+					{
+						Color = DiscordColor.Red,
+						Description = "Could not find a role by that name/ID."
+					};
+					await command.RespondAsync("", false, error);
+					return null;
+				}
+
+				// Check if role rassign should override staff's active status
+				List<Database.StaffMember> staffMembers = Config.randomAssignRoleOverride
+					? Database.GetAllStaff(ticket.assignedStaffID)
+					: Database.GetActiveStaff(ticket.assignedStaffID);
+				
+				// Randomize the list before checking for roles in order to reduce number of API calls
+				staffMembers = Utilities.RandomizeList(staffMembers);
+
+				// Get the first staff member that has the role
+				foreach (Database.StaffMember sm in staffMembers)
+				{
+					try
+					{
+						DiscordMember verifiedMember = await command.Guild.GetMemberAsync(sm.userID);
+						if (verifiedMember?.Roles?.Any(role => role.Id == roleID) ?? false)
+						{
+							return verifiedMember;
+						}
+					}
+					catch (Exception e)
+					{
+						command.Client.Logger.Log(LogLevel.Information, e, "Error occured trying to find a staff member in the rassign command.");
+					}
+				}
+			}
+			else // No role was specified, any active staff will be picked
+			{
+				Database.StaffMember staffEntry = Database.GetRandomActiveStaff(ticket.assignedStaffID);
+				if (staffEntry == null)
+				{
+					DiscordEmbed error = new DiscordEmbedBuilder
+					{
+						Color = DiscordColor.Red,
+						Description = "Error: There are no other staff members to choose from."
+					};
+					await command.RespondAsync("", false, error);
+					return null;
+				}
+
+				// Get the staff member from discord
+				try
+				{
+					return await command.Guild.GetMemberAsync(staffEntry.userID);
+				}
+				catch (NotFoundException) { }
+			}
+
+			// Send a more generic error if we get to this point and still haven't found the staff member
+			DiscordEmbed err = new DiscordEmbedBuilder
+			{
+				Color = DiscordColor.Red,
+				Description = "Error: Could not find an applicable staff member."
+			};
+			await command.RespondAsync("", false, err);
+			return null;
 		}
 	}
 }

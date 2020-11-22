@@ -21,6 +21,7 @@ namespace SupportBoi
 		internal static string logLevel = "Information";
 		internal static string timestampFormat = "yyyy-MMM-dd HH:mm";
 		internal static bool randomAssignment = false;
+		internal static bool randomAssignRoleOverride = false; // TODO: Implement
 		internal static string presenceType = "Playing";
 		internal static string presenceText = "";
 
@@ -94,6 +95,7 @@ namespace SupportBoi
 			logLevel = json.SelectToken("bot.console-log-level").Value<string>() ?? "";
 			timestampFormat = json.SelectToken("bot.timestamp-format").Value<string>() ?? "yyyy-MM-dd HH:mm";
 			randomAssignment = json.SelectToken("bot.random-assignment")?.Value<bool>() ?? false;
+			randomAssignRoleOverride = json.SelectToken("bot.random-assign-role-override")?.Value<bool>() ?? false;
 			presenceType = json.SelectToken("bot.presence-type")?.Value<string>() ?? "Playing";
 			presenceText = json.SelectToken("bot.presence-text")?.Value<string>() ?? "";
 
