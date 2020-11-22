@@ -1,15 +1,14 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
-using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 
 namespace SupportBoi.Commands
 {
-	public class SetTicketCommand
+	public class SetTicketCommand :BaseCommandModule
 	{
 		[Command("setticket")]
 		[Description("Turns a channel into a ticket, warning: this will let anyone with write access delete the channel using the close command.")]
@@ -26,7 +25,7 @@ namespace SupportBoi.Commands
 						Description = "You do not have permission to use this command."
 					};
 					await command.RespondAsync("", false, error);
-					command.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", "User tried to use the setticket command but did not have permission.", DateTime.UtcNow);
+					command.Client.Logger.Log(LogLevel.Information, "User tried to use the setticket command but did not have permission.");
 					return;
 				}
 
@@ -93,8 +92,6 @@ namespace SupportBoi.Commands
 					};
 					await logChannel.SendMessageAsync("", false, logMessage);
 				}
-
-				Sheets.AddTicketQueued(command.Member, command.Channel, id.ToString(), command.Member.Id.ToString(), command.Member.DisplayName);
 			}
 		}
 	}

@@ -18,10 +18,11 @@ namespace SupportBoi
 		internal static ulong ticketCategory;
 		internal static ulong reactionMessage;
 		internal static string welcomeMessage = "";
-		internal static string logLevel = "Info";
+		internal static string logLevel = "Information";
 		internal static string timestampFormat = "yyyy-MMM-dd HH:mm";
 		internal static bool randomAssignment = false;
-		internal static string presenceGame = "";
+		internal static string presenceType = "Playing";
+		internal static string presenceText = "";
 
 		internal static bool ticketUpdatedNotifications = false;
 		internal static double ticketUpdatedNotificationDelay = 0.0;
@@ -31,7 +32,7 @@ namespace SupportBoi
 		internal static string hostName = "127.0.0.1";
 		internal static int port = 3306;
 		internal static string database = "supportbot";
-		internal static string username = "";
+		internal static string username = "supportbot";
 		internal static string password = "";
 
 		private static readonly Dictionary<string, ulong[]> permissions = new Dictionary<string, ulong[]>
@@ -42,7 +43,7 @@ namespace SupportBoi
             { "transcript",					new ulong[]{ } },
 			{ "status",						new ulong[]{ } },
 			{ "summary",					new ulong[]{ } },
-			{ "list",					    new ulong[]{ } },
+			{ "list",						new ulong[]{ } },
 			// Moderator commands
 			{ "add",						new ulong[]{ } },
 			{ "assign",						new ulong[]{ } },
@@ -63,10 +64,7 @@ namespace SupportBoi
 			{ "addstaff",					new ulong[]{ } },
 			{ "removestaff",				new ulong[]{ } },
 		};
-
-		internal static bool sheetsEnabled = false;
-		internal static string spreadsheetID = "";
-
+		
 		public static void LoadConfig()
 		{
 			// Writes default config to file if it does not already exist
@@ -90,25 +88,26 @@ namespace SupportBoi
 			token = json.SelectToken("bot.token").Value<string>() ?? "";
 			prefix = json.SelectToken("bot.prefix").Value<string>() ?? "";
 			logChannel = json.SelectToken("bot.log-channel").Value<ulong>();
-			ticketCategory = json.SelectToken("bot.ticket-category").Value<ulong>();
-			reactionMessage = json.SelectToken("bot.reaction-message").Value<ulong>();
+			ticketCategory = json.SelectToken("bot.ticket-category")?.Value<ulong>() ?? 0;
+			reactionMessage = json.SelectToken("bot.reaction-message")?.Value<ulong>() ?? 0;
 			welcomeMessage = json.SelectToken("bot.welcome-message").Value<string>() ?? "";
 			logLevel = json.SelectToken("bot.console-log-level").Value<string>() ?? "";
 			timestampFormat = json.SelectToken("bot.timestamp-format").Value<string>() ?? "yyyy-MM-dd HH:mm";
-			randomAssignment = json.SelectToken("bot.random-assignment").Value<bool>();
-			presenceGame = json.SelectToken("bot.presence-game").Value<string>();
+			randomAssignment = json.SelectToken("bot.random-assignment")?.Value<bool>() ?? false;
+			presenceType = json.SelectToken("bot.presence-type")?.Value<string>() ?? "Playing";
+			presenceText = json.SelectToken("bot.presence-text")?.Value<string>() ?? "";
 
-			ticketUpdatedNotifications = json.SelectToken("notifications.ticket-updated").Value<bool>();
-			ticketUpdatedNotificationDelay = json.SelectToken("notifications.ticket-updated-delay").Value<double>();
-			assignmentNotifications = json.SelectToken("notifications.assignment").Value<bool>();
-			closingNotifications = json.SelectToken("notifications.closing").Value<bool>();
+			ticketUpdatedNotifications = json.SelectToken("notifications.ticket-updated")?.Value<bool>() ?? false;
+			ticketUpdatedNotificationDelay = json.SelectToken("notifications.ticket-updated-delay")?.Value<double>() ?? 0.0;
+			assignmentNotifications = json.SelectToken("notifications.assignment")?.Value<bool>() ?? false;
+			closingNotifications = json.SelectToken("notifications.closing")?.Value<bool>() ?? false;
 
 			// Reads database info
-			hostName = json.SelectToken("database.address").Value<string>() ?? "";
-			port = json.SelectToken("database.port").Value<int>();
-			database = json.SelectToken("database.name").Value<string>() ?? "";
-			username = json.SelectToken("database.user").Value<string>() ?? "";
-			password = json.SelectToken("database.password").Value<string>() ?? "";
+			hostName = json.SelectToken("database.address")?.Value<string>() ?? "";
+			port = json.SelectToken("database.port")?.Value<int>() ?? 3306;
+			database = json.SelectToken("database.name")?.Value<string>() ?? "supportbot";
+			username = json.SelectToken("database.user")?.Value<string>() ?? "supportbot";
+			password = json.SelectToken("database.password")?.Value<string>() ?? "";
 
 			timestampFormat = timestampFormat.Trim();
 
@@ -123,9 +122,6 @@ namespace SupportBoi
 					Console.WriteLine("Permission node '" + node.Key + "' was not found in the config, using default value: []");
 				}
 			}
-
-			sheetsEnabled = json.SelectToken("sheets.enabled").Value<bool>();
-			spreadsheetID = json.SelectToken("sheets.id").Value<string>() ?? "";
 		}
 
 		/// <summary>

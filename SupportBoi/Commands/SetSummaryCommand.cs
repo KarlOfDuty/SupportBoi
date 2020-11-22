@@ -1,14 +1,13 @@
-﻿using System;
-using System.Threading.Tasks;
-using DSharpPlus;
+﻿using System.Threading.Tasks;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 
 namespace SupportBoi.Commands
 {
-	public class SetSummaryCommand
+	public class SetSummaryCommand : BaseCommandModule
 	{
 		[Command("setsummary")]
 		[Cooldown(1, 5, CooldownBucketType.User)]
@@ -23,7 +22,7 @@ namespace SupportBoi.Commands
 					Description = "You do not have permission to use this command."
 				};
 				await command.RespondAsync("", false, error);
-				command.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", "User tried to use the setsummary command but did not have permission.", DateTime.UtcNow);
+				command.Client.Logger.Log(LogLevel.Information, "User tried to use the setsummary command but did not have permission.");
 				return;
 			}
 
@@ -51,8 +50,6 @@ namespace SupportBoi.Commands
 				update.Prepare();
 				update.ExecuteNonQuery();
 				update.Dispose();
-
-				Sheets.SetSummaryQueued(ticket.id, summary);
 
 				DiscordEmbed message = new DiscordEmbedBuilder
 				{

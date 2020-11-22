@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Exceptions;
+using Microsoft.Extensions.Logging;
 
 namespace SupportBoi.Commands
 {
-	public class MoveCommand
+	public class MoveCommand : BaseCommandModule
 	{
 		[Command("move")]
 		[Description("Moves a ticket to another category.")]
@@ -25,7 +25,7 @@ namespace SupportBoi.Commands
 					Description = "You do not have permission to use this command."
 				};
 				await command.RespondAsync("", false, error);
-				command.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", "User tried to use the move command but did not have permission.", DateTime.UtcNow);
+				command.Client.Logger.Log(LogLevel.Information, "User tried to use the move command but did not have permission.");
 				return;
 			}
 
@@ -80,7 +80,7 @@ namespace SupportBoi.Commands
 
 			try
 			{
-				await command.Channel.ModifyAsync(null, null, null, category, null, null, null);
+				await command.Channel.ModifyAsync(modifiedAttributes => modifiedAttributes.Parent = category);
 			}
 			catch (UnauthorizedException)
 			{

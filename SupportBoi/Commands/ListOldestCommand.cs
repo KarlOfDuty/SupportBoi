@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using Microsoft.Extensions.Logging;
 
 namespace SupportBoi.Commands
 {
-	public class ListOldestCommand
+	public class ListOldestCommand : BaseCommandModule
 	{
 		[Command("listoldest")]
 		[Aliases("lo")]
@@ -25,7 +23,7 @@ namespace SupportBoi.Commands
 					Description = "You do not have permission to use this command."
 				};
 				await command.RespondAsync("", false, error);
-				command.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", "User tried to use the listoldest command but did not have permission.", DateTime.UtcNow);
+				command.Client.Logger.Log(LogLevel.Information, "User tried to use the listoldest command but did not have permission.");
 				return;
 			}
 

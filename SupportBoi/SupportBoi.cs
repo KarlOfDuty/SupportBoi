@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
-using DSharpPlus.Entities;
+using Microsoft.Extensions.Logging;
 using SupportBoi.Commands;
 
 namespace SupportBoi
@@ -14,7 +14,7 @@ namespace SupportBoi
 		internal static SupportBoi instance;
 
 		private DiscordClient discordClient = null;
-		private CommandsNextModule commands = null;
+		private CommandsNextExtension commands = null;
 		private EventHandler eventHandler;
 
 		static void Main(string[] args)
@@ -61,10 +61,10 @@ namespace SupportBoi
 				this.discordClient.Dispose();
 				Console.WriteLine("Discord client disconnected.");
 			}
-
+			
 			Console.WriteLine("Loading config \"" + Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar + "config.yml\"");
 			Config.LoadConfig();
-
+			
 			// Check if token is unset
 			if (Config.token == "<add-token-here>" || Config.token == "")
 			{
@@ -75,7 +75,7 @@ namespace SupportBoi
 			// Database connection and setup
 			try
 			{
-				Console.WriteLine("Connecting to database...");
+				Console.WriteLine("Connecting to database... (" + Config.hostName + ":" + Config.port + ")");
 				Database.SetConnectionString(Config.hostName, Config.port, Config.database, Config.username, Config.password);
 				Database.SetupTables();
 			}
@@ -84,46 +84,29 @@ namespace SupportBoi
 				Console.WriteLine("Could not set up database tables, please confirm connection settings, status of the server and permissions of MySQL user. Error: " + e);
 				throw;
 			}
-
-			// Set up Google Sheets integration if enabled
-			if (Config.sheetsEnabled)
-			{
-				try
-				{
-					Console.WriteLine("Setting up Google Sheets integration...");
-					Sheets.Reload();
-				}
-				catch (Exception e)
-				{
-					Console.WriteLine("Could not load Google Sheets API services, error: " + e);
-					throw;
-				}
-			}
-
+			
 			Console.WriteLine("Setting up Discord client...");
-
+			
 			// Checking log level
 			if (!Enum.TryParse(Config.logLevel, true, out LogLevel logLevel))
 			{
-				Console.WriteLine("Log level " + Config.logLevel + " invalid, using 'Info' instead.");
-				logLevel = LogLevel.Info;
+				Console.WriteLine("Log level " + Config.logLevel + " invalid, using 'Information' instead.");
+				logLevel = LogLevel.Information;
 			}
-
+			
 			// Setting up client configuration
 			DiscordConfiguration cfg = new DiscordConfiguration
 			{
 				Token = Config.token,
 				TokenType = TokenType.Bot,
-
+				MinimumLogLevel = logLevel,
 				AutoReconnect = true,
-				LogLevel = logLevel,
-				UseInternalLogHandler = true
 			};
-
+			
 			this.discordClient = new DiscordClient(cfg);
-
+			
 			this.eventHandler = new EventHandler(this.discordClient);
-
+			
 			Console.WriteLine("Hooking events...");
 			this.discordClient.Ready += this.eventHandler.OnReady;
 			this.discordClient.GuildAvailable += this.eventHandler.OnGuildAvailable;
@@ -133,11 +116,11 @@ namespace SupportBoi
 			{
 				this.discordClient.MessageReactionAdded += this.eventHandler.OnReactionAdded;
 			}
-
+			
 			Console.WriteLine("Registering commands...");
 			commands = discordClient.UseCommandsNext(new CommandsNextConfiguration
 			{
-				StringPrefix = Config.prefix
+				StringPrefixes = new []{ Config.prefix }
 			});
 
 			this.commands.RegisterCommands<AddCommand>();

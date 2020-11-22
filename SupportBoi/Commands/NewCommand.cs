@@ -5,11 +5,11 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Exceptions;
-using MySql.Data.MySqlClient;
+using Microsoft.Extensions.Logging;
 
 namespace SupportBoi.Commands
 {
-	public class NewCommand
+	public class NewCommand : BaseCommandModule
 	{
 		[Command("new")]
 		[Cooldown(1, 5, CooldownBucketType.User)]
@@ -24,8 +24,7 @@ namespace SupportBoi.Commands
 					Description = "You do not have permission to use this command."
 				};
 				await command.RespondAsync("", false, error);
-				command.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi",
-					"User tried to use the new command but did not have permission.", DateTime.UtcNow);
+				command.Client.Logger.Log(LogLevel.Information, "User tried to use the new command but did not have permission.");
 				return;
 			}
 
@@ -81,7 +80,7 @@ namespace SupportBoi.Commands
 
 			long id = Database.NewTicket(command.Member.Id, staffID, ticketChannel.Id);
 			string ticketID = id.ToString("00000");
-			await ticketChannel.ModifyAsync("ticket-" + ticketID);
+			await ticketChannel.ModifyAsync(modifiedAttributes => modifiedAttributes.Name = "ticket-" + ticketID);
 			await ticketChannel.AddOverwriteAsync(command.Member, Permissions.AccessChannels, Permissions.None);
 
 			await ticketChannel.SendMessageAsync("Hello, " + command.Member.Mention + "!\n" + Config.welcomeMessage);
@@ -112,12 +111,8 @@ namespace SupportBoi.Commands
 						DiscordMember staffMember = await command.Guild.GetMemberAsync(staffID);
 						await staffMember.SendMessageAsync("", false, message);
 					}
-					catch (NotFoundException)
-					{
-					}
-					catch (UnauthorizedException)
-					{
-					}
+					catch (NotFoundException) {}
+					catch (UnauthorizedException) {}
 				}
 			}
 
@@ -140,12 +135,6 @@ namespace SupportBoi.Commands
 				};
 				await logChannel.SendMessageAsync("", false, logMessage);
 			}
-
-			// Adds the ticket to the google sheets document if enabled
-			Sheets.AddTicketQueued(command.Member, ticketChannel, id.ToString(), staffID.ToString(),
-				Database.TryGetStaff(staffID, out Database.StaffMember staffMemberEntry)
-					? staffMemberEntry.userID.ToString()
-					: null);
 		}
 	}
 }

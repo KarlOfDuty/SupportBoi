@@ -11,14 +11,18 @@
     reaction-message: 000000000000000000
     # Message posted when a ticket is opened.
     welcome-message: "Please describe your issue below, and include all information needed for us to take action. This is an example ticket message and can be changed in the config."
-    # Decides what messages are shown in console, possible values are: Critical, Error, Warning, Info, Debug.
-    console-log-level: "Info"
+    # Decides what messages are shown in console
+    # Possible values are: Critical, Error, Warning, Information, Debug.
+    console-log-level: "Information"
     # Format for timestamps in transcripts and google sheets if used
     timestamp-format: "yyyy-MM-dd HH:mm"
     # Whether or not staff members should be randomly assigned tickets when they are made. Individual staff members can opt out using the toggleactive command.
-    random-assignment: true    
-    # Sets the game, that the bot is currently playing.
-    presence-game: "SupportBoi"
+    random-assignment: true
+    # Sets the type of activity for the bot to display in its presence status
+    # Possible values are: Playing, Streaming, ListeningTo, Watching, Competing
+    presence-type: "ListeningTo"
+    # Sets the activity text shown in the bot's status
+    presence-text: "+new"
 
 notifications:
     # Notifiers the assigned staff member when a new message is posted in a ticket if the ticket has been silent for a configurable amount of time
@@ -72,12 +76,3 @@ permissions:
     unsetticket: []
     addstaff: []
     removestaff: []
-
-sheets:
-    # Whether or not to use the google sheets integration. 
-    # You will have to generate a credentials.json file by clicking "Enable the Google Sheets API" here: https://developers.google.com/sheets/api/quickstart/dotnet 
-    enabled: false
-    # The spreadsheet ID of the sheet, you can find it in the sheet's URL:
-    # https://docs.google.com/spreadsheets/d/<SpreadSheetID>/edit#gid=<SheetID>
-    # In the above link you would use <SpreadSheetID> and not <SheetID>
-    id: "ID here"

@@ -8,6 +8,7 @@ using DSharpPlus.CommandsNext.Exceptions;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using DSharpPlus.Exceptions;
+using Microsoft.Extensions.Logging;
 
 namespace SupportBoi
 {
@@ -23,54 +24,50 @@ namespace SupportBoi
 			this.discordClient = client;
 		}
 
-		internal Task OnReady(ReadyEventArgs e)
+		internal Task OnReady(DiscordClient client, ReadyEventArgs e)
 		{
-			e.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", "Client is ready to process events.", DateTime.UtcNow);
-			this.discordClient.UpdateStatusAsync(new DiscordGame(Config.presenceGame), UserStatus.Online);
+			discordClient.Logger.Log(LogLevel.Information, "Client is ready to process events.");
+
+			// Checking activity type
+			if (!Enum.TryParse(Config.presenceType, true, out ActivityType activityType))
+			{
+				Console.WriteLine("Presence type " + Config.presenceType + " invalid, using 'Playing' instead.");
+				activityType = ActivityType.Playing;
+			}
+
+			this.discordClient.UpdateStatusAsync(new DiscordActivity(Config.presenceText, activityType), UserStatus.Online);
 			return Task.CompletedTask;
 		}
 
-		internal Task OnGuildAvailable(GuildCreateEventArgs e)
+		internal Task OnGuildAvailable(DiscordClient client, GuildCreateEventArgs e)
 		{
-			e.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", $"Guild available: {e.Guild.Name}", DateTime.UtcNow);
+			discordClient.Logger.Log(LogLevel.Information, $"Guild available: {e.Guild.Name}");
 
-			IReadOnlyList<DiscordRole> roles = e.Guild.Roles;
+			IReadOnlyDictionary<ulong, DiscordRole> roles = e.Guild.Roles;
 
-			foreach (DiscordRole role in roles)
+			foreach ((ulong roleID, DiscordRole role) in roles)
 			{
-				e.Client.DebugLogger.LogMessage(LogLevel.Info, "SupportBoi", role.Name.PadRight(40, '.') + role.Id, DateTime.UtcNow);
+				discordClient.Logger.Log(LogLevel.Information, role.Name.PadRight(40, '.') + roleID);
 			}
 			return Task.CompletedTask;
 		}
 
-		internal Task OnClientError(ClientErrorEventArgs e)
+		internal Task OnClientError(DiscordClient client, ClientErrorEventArgs e)
 		{
-			e.Client.DebugLogger.LogMessage(LogLevel.Error, "SupportBoi", $"Exception occured: {e.Exception.GetType()}: {e.Exception}", DateTime.UtcNow);
+			discordClient.Logger.Log(LogLevel.Error, $"Exception occured: {e.Exception.GetType()}: {e.Exception}");
 
 			return Task.CompletedTask;
 		}
 
-		internal async Task OnMessageCreated(MessageCreateEventArgs e)
+		internal async Task OnMessageCreated(DiscordClient client, MessageCreateEventArgs e)
 		{
 			if (e.Author.IsBot)
 			{
 				return;
 			}
 
-
-			// Check if ticket exists in the database
-			if (!Database.TryGetOpenTicket(e.Channel.Id, out Database.Ticket ticket))
-			{
-				return;
-			}
-
-			// Updates last staff message sent field in the google sheet
-			if (Database.IsStaff(e.Author.Id) && Config.sheetsEnabled)
-			{
-				Sheets.RefreshLastStaffMessageSentQueued(ticket.id);
-			}
-
-			if (!Config.ticketUpdatedNotifications)
+			// Check if ticket exists in the database and ticket notifications are enabled
+			if (!Database.TryGetOpenTicket(e.Channel.Id, out Database.Ticket ticket) || !Config.ticketUpdatedNotifications)
 			{
 				return;
 			}
@@ -95,7 +92,7 @@ namespace SupportBoi
 			}
 		}
 
-		internal Task OnCommandError(CommandErrorEventArgs e)
+		internal Task OnCommandError(CommandsNextExtension commandSystem, CommandErrorEventArgs e)
 		{
 			switch (e.Exception)
 			{
@@ -117,7 +114,7 @@ namespace SupportBoi
 
 				default:
 					{
-						e.Context.Client.DebugLogger.LogMessage(LogLevel.Error, "SupportBoi", $"Exception occured: {e.Exception.GetType()}: {e.Exception}", DateTime.UtcNow);
+						discordClient.Logger.Log(LogLevel.Error, $"Exception occured: {e.Exception.GetType()}: {e.Exception}");
 						DiscordEmbed error = new DiscordEmbedBuilder
 						{
 							Color = DiscordColor.Red,
@@ -129,7 +126,7 @@ namespace SupportBoi
 			}
 		}
 
-		internal async Task OnReactionAdded(MessageReactionAddEventArgs e)
+		internal async Task OnReactionAdded(DiscordClient client, MessageReactionAddEventArgs e)
 		{
 			if (e.Message.Id != Config.reactionMessage) return;
 
@@ -158,11 +155,10 @@ namespace SupportBoi
 			long id = Database.NewTicket(member.Id, staffID, ticketChannel.Id);
 			reactionTicketCooldowns.Add(member.Id, DateTime.Now.AddSeconds(10)); // add a cooldown which expires in 10 seconds
 			string ticketID = id.ToString("00000");
-			await ticketChannel.ModifyAsync("ticket-" + ticketID);
-			await ticketChannel.AddOverwriteAsync(member, Permissions.AccessChannels, Permissions.None);
 
-			await ticketChannel.SendMessageAsync("Hello, " + member.Mention + "!\n" +
-			                                     Config.welcomeMessage);
+			await ticketChannel.ModifyAsync(model => model.Name = "ticket-" + ticketID);
+			await ticketChannel.AddOverwriteAsync(member, Permissions.AccessChannels, Permissions.None);
+			await ticketChannel.SendMessageAsync("Hello, " + member.Mention + "!\n" + Config.welcomeMessage);
 
 			// Remove user's reaction
 			await e.Message.DeleteReactionAsync(e.Emoji, e.User);
@@ -214,12 +210,6 @@ namespace SupportBoi
 				};
 				await logChannel.SendMessageAsync("", false, logMessage);
 			}
-
-			// Adds the ticket to the google sheets document if enabled
-			Sheets.AddTicketQueued(member, ticketChannel, id.ToString(), staffID.ToString(),
-				Database.TryGetStaff(staffID, out Database.StaffMember staffMemberEntry)
-					? staffMemberEntry.userID.ToString()
-					: null);
 		}
 
 		private string ParseFailedCheck(CheckBaseAttribute attr)
@@ -232,7 +222,7 @@ namespace SupportBoi
 					return "Only the server owner can use that command!";
 				case RequirePermissionsAttribute _:
 					return "You don't have permission to do that!";
-				case RequireRolesAttributeAttribute _:
+				case RequireRolesAttribute _:
 					return "You do not have a required role!";
 				case RequireUserPermissionsAttribute _:
 					return "You don't have permission to do that!";
