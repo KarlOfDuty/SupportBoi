@@ -90,7 +90,7 @@ namespace SupportBoi
 			// Checking log level
 			if (!Enum.TryParse(Config.logLevel, true, out LogLevel logLevel))
 			{
-				Console.WriteLine("Log level " + Config.logLevel + " invalid, using 'Information' instead.");
+				Console.WriteLine("Log level '" + Config.logLevel + "' invalid, using 'Information' instead.");
 				logLevel = LogLevel.Information;
 			}
 			
@@ -101,6 +101,7 @@ namespace SupportBoi
 				TokenType = TokenType.Bot,
 				MinimumLogLevel = logLevel,
 				AutoReconnect = true,
+				Intents = DiscordIntents.AllUnprivileged
 			};
 			
 			this.discordClient = new DiscordClient(cfg);

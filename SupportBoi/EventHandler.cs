@@ -31,7 +31,7 @@ namespace SupportBoi
 			// Checking activity type
 			if (!Enum.TryParse(Config.presenceType, true, out ActivityType activityType))
 			{
-				Console.WriteLine("Presence type " + Config.presenceType + " invalid, using 'Playing' instead.");
+				Console.WriteLine("Presence type '" + Config.presenceType + "' invalid, using 'Playing' instead.");
 				activityType = ActivityType.Playing;
 			}
 
