@@ -18,7 +18,7 @@ There appears to be an issue where CentOS 7 may not be compatible with some elem
 | `list (id/mention)` | Lists a user's open and closed tickets. |
 | `add <ids/mentions>` | Add users to the ticket. |
 | `assign (id/mention)` | Assigns a ticket to a staff member, themself if no mention or id is provided. |
-| `rassign` | Randomly assigns a ticket to an active staff member. |
+| `rassign (role id/mention/name)` | Randomly assigns a ticket to an active staff member. If a role is provided only staff member with that role are considered. |
 | `unassign` | Unassigns a ticket from the currently assigned staff member. |
 | `blacklist <ids/mentions>` | Blacklists users from opening tickets. |
 | `unblacklist <ids/mentions>` | Un-blacklists users from opening tickets. |
