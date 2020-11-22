@@ -12,7 +12,7 @@ namespace SupportBoi.Commands
 		[Command("unsetticket")]
 		[Description(
 			"Deletes a channel from the ticket system without deleting the channel.")]
-		public async Task OnExecute(CommandContext command)
+		public async Task OnExecute(CommandContext command, [RemainingText] string commandArgs)
 		{
 			using (MySqlConnection c = Database.GetConnection())
 			{

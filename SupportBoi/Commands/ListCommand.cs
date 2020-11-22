@@ -12,7 +12,7 @@ namespace SupportBoi.Commands
 	{
 		[Command("list")]
 		[Cooldown(1, 5, CooldownBucketType.User)]
-		public async Task OnExecute(CommandContext command)
+		public async Task OnExecute(CommandContext command, [RemainingText] string commandArgs)
 		{
 			// Check if the user has permission to use this command.
 			if (!Config.HasPermission(command.Member, "list"))

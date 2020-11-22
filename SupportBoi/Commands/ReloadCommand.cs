@@ -10,7 +10,7 @@ namespace SupportBoi.Commands
 	public class ReloadCommand : BaseCommandModule
 	{
 		[Command("reload")]
-		public async Task OnExecute(CommandContext command)
+		public async Task OnExecute(CommandContext command, [RemainingText] string commandArgs)
 		{
 			// Check if the user has permission to use this command.
 			if (!Config.HasPermission(command.Member, "reload"))

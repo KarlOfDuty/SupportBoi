@@ -10,7 +10,7 @@ namespace SupportBoi.Commands
 	{
 		[Command("unassign")]
 		[Description("Unassigns a staff member from a ticket.")]
-		public async Task OnExecute(CommandContext command)
+		public async Task OnExecute(CommandContext command, [RemainingText] string commandArgs)
 		{
 			// Check if the user has permission to use this command.
 			if (!Config.HasPermission(command.Member, "unassign"))

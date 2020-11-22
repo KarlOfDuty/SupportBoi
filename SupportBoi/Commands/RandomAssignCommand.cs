@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
@@ -11,7 +11,7 @@ namespace SupportBoi.Commands
 	{
 		[Command("rassign")]
 		[Description("Randomly assigns a staff member to a ticket.")]
-		public async Task OnExecute(CommandContext command)
+		public async Task OnExecute(CommandContext command, [RemainingText] string commandArguments)
 		{
 			// Check if the user has permission to use this command.
 			if (!Config.HasPermission(command.Member, "rassign"))

@@ -12,7 +12,7 @@ namespace SupportBoi.Commands
 	{
 		[Command("assign")]
 		[Description("Assigns a staff member to a ticket.")]
-		public async Task OnExecute(CommandContext command)
+		public async Task OnExecute(CommandContext command, [RemainingText] string commandArgs)
 		{
 			// Check if the user has permission to use this command.
 			if (!Config.HasPermission(command.Member, "assign"))

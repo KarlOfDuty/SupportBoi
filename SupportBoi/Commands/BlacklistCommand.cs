@@ -12,7 +12,7 @@ namespace SupportBoi.Commands
 	{
 		[Command("blacklist")]
 		[Description("Blacklists a user from opening tickets.")]
-		public async Task OnExecute(CommandContext command)
+		public async Task OnExecute(CommandContext command, [RemainingText] string commandArgs)
 		{
 			// Check if the user has permission to use this command.
 			if (!Config.HasPermission(command.Member, "blacklist"))

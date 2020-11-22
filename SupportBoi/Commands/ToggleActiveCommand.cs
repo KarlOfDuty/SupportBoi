@@ -12,7 +12,7 @@ namespace SupportBoi.Commands
 	{
 		[Command("toggleactive")]
 		[Aliases("ta")]
-		public async Task OnExecute(CommandContext command)
+		public async Task OnExecute(CommandContext command, [RemainingText] string commandArgs)
 		{
 			using (MySqlConnection c = Database.GetConnection())
 			{

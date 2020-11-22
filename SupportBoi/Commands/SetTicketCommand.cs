@@ -12,7 +12,7 @@ namespace SupportBoi.Commands
 	{
 		[Command("setticket")]
 		[Description("Turns a channel into a ticket, warning: this will let anyone with write access delete the channel using the close command.")]
-		public async Task OnExecute(CommandContext command)
+		public async Task OnExecute(CommandContext command, [RemainingText] string commandArgs)
 		{
 			using (MySqlConnection c = Database.GetConnection())
 			{

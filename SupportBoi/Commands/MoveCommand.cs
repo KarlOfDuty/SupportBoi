@@ -14,7 +14,7 @@ namespace SupportBoi.Commands
 	{
 		[Command("move")]
 		[Description("Moves a ticket to another category.")]
-		public async Task OnExecute(CommandContext command)
+		public async Task OnExecute(CommandContext command, [RemainingText] string commandArgs)
 		{
 			// Check if the user has permission to use this command.
 			if (!Config.HasPermission(command.Member, "move"))
