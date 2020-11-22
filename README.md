@@ -79,7 +79,7 @@ bot:
     presence-text: "+new"
 
 notifications:
-    # Notifiers the assigned staff member when a new message is posted in a ticket if the ticket has been silent for a configurable amount of time
+    # Notifies the assigned staff member when a new message is posted in a ticket if the ticket has been silent for a configurable amount of time
     # Other staff members and bots do not trigger this.
     ticket-updated: true
     # The above notification will only be sent if the ticket has been silent for more than this amount of days. Default is 0.5 days.
