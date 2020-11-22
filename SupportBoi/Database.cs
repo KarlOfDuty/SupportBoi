@@ -303,6 +303,53 @@ namespace SupportBoi
 				return cmd.LastInsertedId;
 			}
 		}
+
+		public static void ArchiveTicket(Ticket ticket)
+		{
+			// Check if ticket already exists in the archive
+			if (TryGetClosedTicket(ticket.id, out Ticket _))
+			{
+				using (MySqlConnection c = GetConnection())
+				{
+					MySqlCommand deleteTicket = new MySqlCommand(@"DELETE FROM ticket_history WHERE id=@id", c);
+					deleteTicket.Parameters.AddWithValue("@id", ticket.id);
+
+					c.Open();
+					deleteTicket.Prepare();
+					deleteTicket.ExecuteNonQuery();
+				}
+			}
+
+			using (MySqlConnection c = GetConnection())
+			{
+				// Create an entry in the ticket history database
+				MySqlCommand archiveTicket = new MySqlCommand(@"INSERT INTO ticket_history (id, created_time, closed_time, creator_id, assigned_staff_id, summary, channel_id) VALUES (@id, @created_time, UTC_TIMESTAMP(), @creator_id, @assigned_staff_id, @summary, @channel_id);", c);
+				archiveTicket.Parameters.AddWithValue("@id", ticket.id);
+				archiveTicket.Parameters.AddWithValue("@created_time", ticket.createdTime);
+				archiveTicket.Parameters.AddWithValue("@creator_id", ticket.creatorID);
+				archiveTicket.Parameters.AddWithValue("@assigned_staff_id", ticket.assignedStaffID);
+				archiveTicket.Parameters.AddWithValue("@summary", ticket.summary);
+				archiveTicket.Parameters.AddWithValue("@channel_id", ticket.channelID);
+
+				c.Open();
+				archiveTicket.Prepare();
+				archiveTicket.ExecuteNonQuery();
+			}
+		}
+
+		public static void DeleteOpenTicket(uint ticketID)
+		{
+			using (MySqlConnection c = GetConnection())
+			{
+				MySqlCommand deletion = new MySqlCommand(@"DELETE FROM tickets WHERE id=@id", c);
+				deletion.Parameters.AddWithValue("@id", ticketID);
+
+				c.Open();
+				deletion.Prepare();
+				deletion.ExecuteNonQuery();
+			}
+		}
+
 		public static bool IsBlacklisted(ulong userID)
 		{
 			using (MySqlConnection c = GetConnection())
