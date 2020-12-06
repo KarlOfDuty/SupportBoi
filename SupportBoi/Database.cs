@@ -312,8 +312,9 @@ namespace SupportBoi
 			{
 				using (MySqlConnection c = GetConnection())
 				{
-					MySqlCommand deleteTicket = new MySqlCommand(@"DELETE FROM ticket_history WHERE id=@id", c);
+					MySqlCommand deleteTicket = new MySqlCommand(@"DELETE FROM ticket_history WHERE id=@id OR channel_id=@channel_id", c);
 					deleteTicket.Parameters.AddWithValue("@id", ticket.id);
+					deleteTicket.Parameters.AddWithValue("@channel_id", ticket.channelID);
 
 					c.Open();
 					deleteTicket.Prepare();
