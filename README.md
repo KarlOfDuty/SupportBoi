@@ -38,13 +38,11 @@ There appears to be an issue where CentOS 7 may not be compatible with some elem
 
 1. [Create a new bot application](https://discordpy.readthedocs.io/en/latest/discord.html).
 
-2. [Install .NET Core 2.2](https://dotnet.microsoft.com/download/dotnet-core/2.2).
+2. Download the bot for your operating system, either a [release version](https://github.com/KarlOfDuty/SupportBoi/releases) or a [dev build](http://95.217.45.17:8080/blue/organizations/jenkins/SupportBoi/activity). The bot should include dotnet but if your bot doesnt work and this seems to be the issue please tell me.
 
-3. Download the bot for your operating system, either a [release version](https://github.com/KarlOfDuty/SupportBoi/releases) or a [dev build](http://95.217.45.17:8080/blue/organizations/jenkins/SupportBoi/activity).
+3. Run `./SupportBoi_Linux` on Linux or `./SupportBoi_Windows.exe` on Windows.
 
-4. Run `./SupportBoi` on Linux or `./SupportBoi.exe` on Windows.
-
-5. Set up the config (`config.yml`) to your specifications, there are instructions inside and also further down on this page. If you need more help either contact me in Discord or through an issue here.
+4. Set up the config (`config.yml`) to your specifications, there are instructions inside and also further down on this page. If you need more help either contact me in Discord or through an issue here.
 
 ## Default Config
 
