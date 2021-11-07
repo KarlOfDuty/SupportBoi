@@ -121,13 +121,14 @@ namespace SupportBoi.Commands
 					Footer = new DiscordEmbedBuilder.EmbedFooter { Text = '#' + command.Channel.Name }
 				};
 
-				using FileStream file = new FileStream(Transcriber.GetPath(ticket.id), FileMode.Open, FileAccess.Read);
+				using (FileStream file = new FileStream(Transcriber.GetPath(ticket.id), FileMode.Open, FileAccess.Read))
+				{
+					DiscordMessageBuilder message = new DiscordMessageBuilder();
+					message.WithEmbed(embed);
+					message.WithFiles(new Dictionary<string, Stream>() { { Transcriber.GetFilename(ticket.id), file } });
 
-				DiscordMessageBuilder message = new DiscordMessageBuilder();
-				message.WithEmbed(embed);
-				message.WithFiles(new Dictionary<string, Stream>() { { Transcriber.GetFilename(ticket.id), file } });
-
-				await logChannel.SendMessageAsync(message);
+					await logChannel.SendMessageAsync(message);
+				}
 			}
 
 			try
@@ -138,13 +139,15 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Green,
 					Description = "Transcript generated, " + command.Member.Mention + "!\n"
 				};
-				using FileStream file = new FileStream(Transcriber.GetPath(ticket.id), FileMode.Open, FileAccess.Read);
 
-				DiscordMessageBuilder directMessage = new DiscordMessageBuilder();
-				directMessage.WithEmbed(directMessageEmbed);
-				directMessage.WithFiles(new Dictionary<string, Stream>() { { Transcriber.GetFilename(ticket.id), file } });
+				using (FileStream file = new FileStream(Transcriber.GetPath(ticket.id), FileMode.Open, FileAccess.Read))
+				{
+					DiscordMessageBuilder directMessage = new DiscordMessageBuilder();
+					directMessage.WithEmbed(directMessageEmbed);
+					directMessage.WithFiles(new Dictionary<string, Stream>() { { Transcriber.GetFilename(ticket.id), file } });
 
-				await command.RespondAsync(directMessage);
+					await command.RespondAsync(directMessage);
+				}
 
 				// Respond to message directly
 				DiscordEmbed response = new DiscordEmbedBuilder

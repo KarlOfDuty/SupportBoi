@@ -72,13 +72,14 @@ namespace SupportBoi.Commands
 					Footer = new DiscordEmbedBuilder.EmbedFooter { Text = '#' + channelName }
 				};
 
-				using FileStream file = new FileStream(Transcriber.GetPath(ticket.id), FileMode.Open, FileAccess.Read);
+				using (FileStream file = new FileStream(Transcriber.GetPath(ticket.id), FileMode.Open, FileAccess.Read))
+				{
+					DiscordMessageBuilder message = new DiscordMessageBuilder();
+					message.WithEmbed(embed);
+					message.WithFiles(new Dictionary<string, Stream>() { { Transcriber.GetFilename(ticket.id), file } });
 
-				DiscordMessageBuilder message = new DiscordMessageBuilder();
-				message.WithEmbed(embed);
-				message.WithFiles(new Dictionary<string, Stream>() { { Transcriber.GetFilename(ticket.id), file } });
-
-				await logChannel.SendMessageAsync(message);
+					await logChannel.SendMessageAsync(message);
+				}
 			}
 
 			if (Config.closingNotifications)
@@ -94,13 +95,14 @@ namespace SupportBoi.Commands
 				{
 					DiscordMember staffMember = await command.Guild.GetMemberAsync(ticket.creatorID);
 
-					using FileStream file = new FileStream(Transcriber.GetPath(ticket.id), FileMode.Open, FileAccess.Read);
+					using (FileStream file = new FileStream(Transcriber.GetPath(ticket.id), FileMode.Open, FileAccess.Read))
+					{
+						DiscordMessageBuilder message = new DiscordMessageBuilder();
+						message.WithEmbed(embed);
+						message.WithFiles(new Dictionary<string, Stream>() { { Transcriber.GetFilename(ticket.id), file } });
 
-					DiscordMessageBuilder message = new DiscordMessageBuilder();
-					message.WithEmbed(embed);
-					message.WithFiles(new Dictionary<string, Stream>() { { Transcriber.GetFilename(ticket.id), file } });
-
-					await staffMember.SendMessageAsync(message);
+						await staffMember.SendMessageAsync(message);
+					}
 				}
 				catch (NotFoundException) { }
 				catch (UnauthorizedException) { }
