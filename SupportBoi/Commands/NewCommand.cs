@@ -40,13 +40,23 @@ namespace SupportBoi.Commands
 				return;
 			}
 
+			if (Database.IsOpenTicket(command.Channel.Id))
+			{
+				DiscordEmbed error = new DiscordEmbedBuilder
+				{
+					Color = DiscordColor.Red,
+					Description = "You cannot use this command in a ticket channel."
+				};
+				await command.RespondAsync(error);
+				return;
+			}
+
 			DiscordChannel category = command.Guild.GetChannel(Config.ticketCategory);
 			DiscordChannel ticketChannel;
 
 			try
 			{
 				ticketChannel = await command.Guild.CreateChannelAsync("ticket", ChannelType.Text, category);
-
 			}
 			catch (Exception)
 			{
