@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using MySql.Data.MySqlClient;
-using Tyrrrz.Extensions;
 
 namespace SupportBoi
 {
@@ -437,7 +437,7 @@ namespace SupportBoi
 		public static StaffMember GetRandomActiveStaff(ulong currentStaffID)
 		{
 			List<StaffMember> staffMembers = GetActiveStaff(currentStaffID);
-			if (staffMembers.IsNullOrEmpty())
+			if (!staffMembers.Any())
 			{
 				return null;
 			}
