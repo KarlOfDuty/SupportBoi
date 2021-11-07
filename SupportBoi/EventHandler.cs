@@ -85,7 +85,7 @@ namespace SupportBoi
 					};
 
 					DiscordMember staffMember = await e.Guild.GetMemberAsync(ticket.assignedStaffID);
-					await staffMember.SendMessageAsync("", false, message);
+					await staffMember.SendMessageAsync(message);
 				}
 				catch (NotFoundException) { }
 				catch (UnauthorizedException) { }
@@ -107,7 +107,7 @@ namespace SupportBoi
 								Color = DiscordColor.Red,
 								Description = this.ParseFailedCheck(attr)
 							};
-							e.Context?.Channel?.SendMessageAsync("", false, error);
+							e.Context?.Channel?.SendMessageAsync(error);
 						}
 						return Task.CompletedTask;
 					}
@@ -120,7 +120,7 @@ namespace SupportBoi
 							Color = DiscordColor.Red,
 							Description = "Internal error occured, please report this to the developer."
 						};
-						e.Context?.Channel?.SendMessageAsync("", false, error);
+						e.Context?.Channel?.SendMessageAsync(error);
 						return Task.CompletedTask;
 					}
 			}
@@ -173,7 +173,7 @@ namespace SupportBoi
 					Color = DiscordColor.Green,
 					Description = "Ticket was randomly assigned to <@" + staffID + ">."
 				};
-				await ticketChannel.SendMessageAsync("", false, assignmentMessage);
+				await ticketChannel.SendMessageAsync(assignmentMessage);
 
 				if (Config.assignmentNotifications)
 				{
@@ -187,7 +187,7 @@ namespace SupportBoi
 					try
 					{
 						DiscordMember staffMember = await guild.GetMemberAsync(staffID);
-						await staffMember.SendMessageAsync("", false, message);
+						await staffMember.SendMessageAsync(message);
 					}
 					catch (NotFoundException)
 					{
@@ -208,7 +208,7 @@ namespace SupportBoi
 					Description = "Ticket " + ticketChannel.Mention + " opened by " + member.Mention + ".\n",
 					Footer = new DiscordEmbedBuilder.EmbedFooter {Text = "Ticket " + ticketID}
 				};
-				await logChannel.SendMessageAsync("", false, logMessage);
+				await logChannel.SendMessageAsync(logMessage);
 			}
 		}
 

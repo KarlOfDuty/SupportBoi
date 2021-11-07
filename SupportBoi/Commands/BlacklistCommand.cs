@@ -22,7 +22,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Red,
 					Description = "You do not have permission to use this command."
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				command.Client.Logger.Log(LogLevel.Information, "User tried to use the blacklist command but did not have permission.");
 				return;
 			}
@@ -46,7 +46,7 @@ namespace SupportBoi.Commands
 							Color = DiscordColor.Red,
 							Description = "Error: Could not find user."
 						};
-						await command.RespondAsync("", false, message);
+						await command.RespondAsync(message);
 						continue;
 					}
 
@@ -59,7 +59,7 @@ namespace SupportBoi.Commands
 								Color = DiscordColor.Red,
 								Description = blacklistedUser.Mention + " is already blacklisted."
 							};
-							await command.RespondAsync("", false, error);
+							await command.RespondAsync(error);
 							continue;
 						}
 
@@ -68,7 +68,7 @@ namespace SupportBoi.Commands
 							Color = DiscordColor.Green,
 							Description = "Blacklisted " + blacklistedUser.Mention + "."
 						};
-						await command.RespondAsync("", false, message);
+						await command.RespondAsync(message);
 
 						// Log it if the log channel exists
 						DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
@@ -79,7 +79,7 @@ namespace SupportBoi.Commands
 								Color = DiscordColor.Green,
 								Description = blacklistedUser.Mention + " was blacklisted from opening tickets by " + command.Member.Mention + "."
 							};
-							await logChannel.SendMessageAsync("", false, logMessage);
+							await logChannel.SendMessageAsync(logMessage);
 						}
 					}
 					catch (Exception)
@@ -89,7 +89,7 @@ namespace SupportBoi.Commands
 							Color = DiscordColor.Red,
 							Description = "Error occured while blacklisting " + blacklistedUser.Mention + "."
 						};
-						await command.RespondAsync("", false, message);
+						await command.RespondAsync(message);
 						throw;
 					}
 				}

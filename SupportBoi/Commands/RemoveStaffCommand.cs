@@ -23,7 +23,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Red,
 					Description = "You do not have permission to use this command."
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				command.Client.Logger.Log(LogLevel.Information, "User tried to use the removestaff command but did not have permission.");
 				return;
 			}
@@ -42,7 +42,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Red,
 					Description = "Invalid ID/Mention. (Could not convert to numerical)"
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				return;
 			}
 
@@ -57,7 +57,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Red,
 					Description = "Invalid ID/Mention. (Could not find user on Discord)"
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				return;
 			}
 
@@ -68,7 +68,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Red,
 					Description = "User is already not registered as staff."
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				return;
 			}
 
@@ -85,7 +85,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Green,
 					Description = "User was removed from staff."
 				};
-				await command.RespondAsync("", false, message);
+				await command.RespondAsync(message);
 
 				// Log it if the log channel exists
 				DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
@@ -96,7 +96,7 @@ namespace SupportBoi.Commands
 						Color = DiscordColor.Green,
 						Description = "User was removed from staff.\n",
 					};
-					await logChannel.SendMessageAsync("", false, logMessage);
+					await logChannel.SendMessageAsync(logMessage);
 				}
 			}
 		}

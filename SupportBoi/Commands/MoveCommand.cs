@@ -24,7 +24,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Red,
 					Description = "You do not have permission to use this command."
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				command.Client.Logger.Log(LogLevel.Information, "User tried to use the move command but did not have permission.");
 				return;
 			}
@@ -37,7 +37,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Red,
 					Description = "This channel is not a ticket."
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				return;
 			}
 
@@ -48,7 +48,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Red,
 					Description = "Error: No category provided."
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				return;
 			}
 
@@ -63,7 +63,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Red,
 					Description = "Error: Could not find a category by that name."
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				return;
 			}
 
@@ -74,7 +74,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Red,
 					Description = "Error: The ticket is already in that category."
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				return;
 			}
 
@@ -89,7 +89,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Red,
 					Description = "Error: Not authorized to move this ticket to that category."
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				return;
 			}
 
@@ -98,7 +98,7 @@ namespace SupportBoi.Commands
 				Color = DiscordColor.Green,
 				Description = "Ticket was moved to " + category.Mention
 			};
-			await command.RespondAsync("", false, feedback);
+			await command.RespondAsync(feedback);
 		}
 	}
 }

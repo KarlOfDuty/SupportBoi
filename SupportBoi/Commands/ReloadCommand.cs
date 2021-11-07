@@ -20,7 +20,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Red,
 					Description = "You do not have permission to use this command."
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				command.Client.Logger.Log(LogLevel.Information, "User tried to use the reload command but did not have permission.");
 				return;
 			}
@@ -30,7 +30,7 @@ namespace SupportBoi.Commands
 				Color = DiscordColor.Green,
 				Description = "Reloading bot application..."
 			};
-			await command.RespondAsync("", false, message);
+			await command.RespondAsync(message);
 			Console.WriteLine("Reloading bot...");
 			SupportBoi.instance.Reload();
 		}

@@ -22,7 +22,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Red,
 					Description = "You do not have permission to use this command."
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				command.Client.Logger.Log(LogLevel.Information, "User tried to use the listunassigned command but did not have permission.");
 				return;
 			}
@@ -32,7 +32,7 @@ namespace SupportBoi.Commands
 				DiscordEmbed response = new DiscordEmbedBuilder()
 					.WithColor(DiscordColor.Green)
 					.WithDescription("There are no unassigned tickets.");
-				await command.RespondAsync("", false, response);
+				await command.RespondAsync(response);
 			}
 
 			List<string> listItems = new List<string>();
@@ -48,7 +48,7 @@ namespace SupportBoi.Commands
 					.WithTitle("Unassigned tickets: ")
 					.WithColor(DiscordColor.Green)
 					.WithDescription(message?.Trim());
-				await command.RespondAsync("", false, channelInfo);
+				await command.RespondAsync(channelInfo);
 			}
 		}
 	}

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
@@ -23,7 +25,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Red,
 					Description = "You do not have permission to use this command."
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				command.Client.Logger.Log(LogLevel.Information, "User tried to use the close command but did not have permission.");
 				return;
 			}
@@ -39,7 +41,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Red,
 					Description = "This channel is not a ticket."
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				return;
 			}
 
@@ -55,27 +57,33 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Red,
 					Description = "ERROR: Could not save transcript file. Aborting..."
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				throw;
 			}
-			string filePath = Transcriber.GetPath(ticket.id);
 
 			// Log it if the log channel exists
 			DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
 			if (logChannel != null)
 			{
-				DiscordEmbed logMessage = new DiscordEmbedBuilder
+				DiscordEmbed embed = new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Green,
 					Description = "Ticket " + ticket.id.ToString("00000") + " closed by " + command.Member.Mention + ".\n",
 					Footer = new DiscordEmbedBuilder.EmbedFooter { Text = '#' + channelName }
 				};
-				await logChannel.SendFileAsync(filePath, "", false, logMessage);
+
+				using FileStream file = new FileStream(Transcriber.GetPath(ticket.id), FileMode.Open, FileAccess.Read);
+
+				DiscordMessageBuilder message = new DiscordMessageBuilder();
+				message.WithEmbed(embed);
+				message.WithFiles(new Dictionary<string, Stream>() { { Transcriber.GetFilename(ticket.id), file } });
+
+				await logChannel.SendMessageAsync(message);
 			}
 
 			if (Config.closingNotifications)
 			{
-				DiscordEmbed message = new DiscordEmbedBuilder
+				DiscordEmbed embed = new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Green,
 					Description = "Ticket " + ticket.id.ToString("00000") + " which you opened has now been closed, check the transcript for more info.\n",
@@ -85,7 +93,14 @@ namespace SupportBoi.Commands
 				try
 				{
 					DiscordMember staffMember = await command.Guild.GetMemberAsync(ticket.creatorID);
-					await staffMember.SendFileAsync(filePath, "", false, message);
+
+					using FileStream file = new FileStream(Transcriber.GetPath(ticket.id), FileMode.Open, FileAccess.Read);
+
+					DiscordMessageBuilder message = new DiscordMessageBuilder();
+					message.WithEmbed(embed);
+					message.WithFiles(new Dictionary<string, Stream>() { { Transcriber.GetFilename(ticket.id), file } });
+
+					await staffMember.SendMessageAsync(message);
 				}
 				catch (NotFoundException) { }
 				catch (UnauthorizedException) { }

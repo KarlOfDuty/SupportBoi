@@ -25,7 +25,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Red,
 					Description = "You do not have permission to use this command."
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				command.Client.Logger.Log(LogLevel.Information, "User tried to use the rassign command but did not have permission.");
 				return;
 			}
@@ -38,7 +38,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Red,
 					Description = "This channel is not a ticket."
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				return;
 			}
 
@@ -57,7 +57,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Red,
 					Description = "Error: Failed to assign " + staffMember.Mention + " to ticket."
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				return;
 			}
 
@@ -67,7 +67,7 @@ namespace SupportBoi.Commands
 				Color = DiscordColor.Green,
 				Description = "Randomly assigned " + staffMember.Mention + " to ticket."
 			};
-			await command.RespondAsync("", false, feedback);
+			await command.RespondAsync(feedback);
 
 			// Send a notification to the staff member if applicable
 			if (Config.assignmentNotifications)
@@ -79,7 +79,7 @@ namespace SupportBoi.Commands
 						Color = DiscordColor.Green,
 						Description = "You have been randomly assigned to a support ticket: " + command.Channel.Mention
 					};
-					await staffMember.SendMessageAsync("", false, message);
+					await staffMember.SendMessageAsync(message);
 				}
 				catch (UnauthorizedException) {}
 			}
@@ -93,7 +93,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Green,
 					Description = staffMember.Mention + " was was assigned to " + command.Channel.Mention + " by " + command.Member.Mention + "."
 				};
-				await logChannel.SendMessageAsync("", false, logMessage);
+				await logChannel.SendMessageAsync(logMessage);
 			}
 		}
 
@@ -119,7 +119,7 @@ namespace SupportBoi.Commands
 						Color = DiscordColor.Red,
 						Description = "Could not find a role by that name/ID."
 					};
-					await command.RespondAsync("", false, error);
+					await command.RespondAsync(error);
 					return null;
 				}
 
@@ -158,7 +158,7 @@ namespace SupportBoi.Commands
 						Color = DiscordColor.Red,
 						Description = "Error: There are no other staff members to choose from."
 					};
-					await command.RespondAsync("", false, error);
+					await command.RespondAsync(error);
 					return null;
 				}
 
@@ -176,7 +176,7 @@ namespace SupportBoi.Commands
 				Color = DiscordColor.Red,
 				Description = "Error: Could not find an applicable staff member."
 			};
-			await command.RespondAsync("", false, err);
+			await command.RespondAsync(err);
 			return null;
 		}
 	}

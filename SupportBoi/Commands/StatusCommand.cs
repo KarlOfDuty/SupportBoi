@@ -20,7 +20,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Red,
 					Description = "You do not have permission to use this command."
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				command.Client.Logger.Log(LogLevel.Information, "User tried to use the status command but did not have permission.");
 				return;
 			}
@@ -35,7 +35,7 @@ namespace SupportBoi.Commands
 				.AddField("Version:", SupportBoi.GetVersion(), false)
 				.AddField("Open tickets:", openTickets + "", true)
 				.AddField("Closed tickets (1.1.0+ tickets only):", closedTickets + " ", true);
-			await command.RespondAsync("", false, botInfo);
+			await command.RespondAsync(botInfo);
 		}
 	}
 }

@@ -22,7 +22,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Red,
 					Description = "You do not have permission to use this command."
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				command.Client.Logger.Log(LogLevel.Information, "User tried to use the list command but did not have permission.");
 				return;
 			}
@@ -41,7 +41,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Red,
 					Description = "Invalid ID/Mention. (Could not convert to numerical)"
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				return;
 			}
 
@@ -60,7 +60,7 @@ namespace SupportBoi.Commands
 						.WithTitle("Open tickets: ")
 						.WithColor(DiscordColor.Green)
 						.WithDescription(message);
-					await command.RespondAsync("", false, channelInfo);
+					await command.RespondAsync(channelInfo);
 				}
 			}
 			else
@@ -68,7 +68,7 @@ namespace SupportBoi.Commands
 				DiscordEmbed channelInfo = new DiscordEmbedBuilder()
 					.WithColor(DiscordColor.Green)
 					.WithDescription("User does not have any open tickets.");
-				await command.RespondAsync("", false, channelInfo);
+				await command.RespondAsync(channelInfo);
 			}
 
 			if (Database.TryGetClosedTickets(userID, out List<Database.Ticket> closedTickets))
@@ -86,7 +86,7 @@ namespace SupportBoi.Commands
 						.WithTitle("Closed tickets: ")
 						.WithColor(DiscordColor.Red)
 						.WithDescription(message);
-					await command.RespondAsync("", false, channelInfo);
+					await command.RespondAsync(channelInfo);
 				}
 			}
 			else
@@ -94,7 +94,7 @@ namespace SupportBoi.Commands
 				DiscordEmbed channelInfo = new DiscordEmbedBuilder()
 					.WithColor(DiscordColor.Red)
 					.WithDescription("User does not have any closed tickets.");
-				await command.RespondAsync("", false, channelInfo);
+				await command.RespondAsync(channelInfo);
 			}
 		}
 	}

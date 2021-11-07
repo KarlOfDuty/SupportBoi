@@ -23,7 +23,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Red,
 					Description = "You do not have permission to use this command."
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				command.Client.Logger.Log(LogLevel.Information, "User tried to use the new command but did not have permission.");
 				return;
 			}
@@ -36,7 +36,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Red,
 					Description = "You are banned from opening tickets."
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				return;
 			}
 
@@ -56,7 +56,7 @@ namespace SupportBoi.Commands
 					Description = "Error occured while creating ticket, " + command.Member.Mention +
 					              "!\nIs the channel limit reached in the server or ticket category?"
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				return;
 			}
 
@@ -68,7 +68,7 @@ namespace SupportBoi.Commands
 					Description = "Error occured while creating ticket, " + command.Member.Mention +
 					              "!\nIs the channel limit reached in the server or ticket category?"
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				return;
 			}
 
@@ -95,7 +95,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Green,
 					Description = "Ticket was randomly assigned to <@" + staffID + ">."
 				};
-				await ticketChannel.SendMessageAsync("", false, assignmentMessage);
+				await ticketChannel.SendMessageAsync(assignmentMessage);
 
 				if (Config.assignmentNotifications)
 				{
@@ -109,7 +109,7 @@ namespace SupportBoi.Commands
 					try
 					{
 						DiscordMember staffMember = await command.Guild.GetMemberAsync(staffID);
-						await staffMember.SendMessageAsync("", false, message);
+						await staffMember.SendMessageAsync(message);
 					}
 					catch (NotFoundException) {}
 					catch (UnauthorizedException) {}
@@ -121,7 +121,7 @@ namespace SupportBoi.Commands
 				Color = DiscordColor.Green,
 				Description = "Ticket opened, " + command.Member.Mention + "!\n" + ticketChannel.Mention
 			};
-			await command.RespondAsync("", false, response);
+			await command.RespondAsync(response);
 
 			// Log it if the log channel exists
 			DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
@@ -133,7 +133,7 @@ namespace SupportBoi.Commands
 					Description = "Ticket " + ticketChannel.Mention + " opened by " + command.Member.Mention + ".\n",
 					Footer = new DiscordEmbedBuilder.EmbedFooter {Text = "Ticket " + ticketID}
 				};
-				await logChannel.SendMessageAsync("", false, logMessage);
+				await logChannel.SendMessageAsync(logMessage);
 			}
 		}
 	}

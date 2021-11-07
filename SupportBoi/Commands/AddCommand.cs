@@ -22,7 +22,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Red,
 					Description = "You do not have permission to use this command."
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				command.Client.Logger.Log(LogLevel.Information, "User tried to use the add command but did not have permission.");
 				return;
 			}
@@ -35,7 +35,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Red,
 					Description = "This channel is not a ticket."
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				return;
 			}
 
@@ -49,7 +49,7 @@ namespace SupportBoi.Commands
 						Color = DiscordColor.Red,
 						Description = "Invalid ID/Mention. (Could not convert to numerical)"
 					};
-					await command.RespondAsync("", false, error);
+					await command.RespondAsync(error);
 					continue;
 				}
 
@@ -65,7 +65,7 @@ namespace SupportBoi.Commands
 						Color = DiscordColor.Red,
 						Description = "Invalid ID/Mention. (Could not find user on this server)"
 					};
-					await command.RespondAsync("", false, error);
+					await command.RespondAsync(error);
 					continue;
 				}
 
@@ -77,7 +77,7 @@ namespace SupportBoi.Commands
 						Color = DiscordColor.Green,
 						Description = "Added " + mentionedMember.Mention + " to ticket."
 					};
-					await command.RespondAsync("", false, message);
+					await command.RespondAsync(message);
 
 					// Log it if the log channel exists
 					DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
@@ -89,7 +89,7 @@ namespace SupportBoi.Commands
 							Description = mentionedMember.Mention + " was added to " + command.Channel.Mention +
 							              " by " + command.Member.Mention + "."
 						};
-						await logChannel.SendMessageAsync("", false, logMessage);
+						await logChannel.SendMessageAsync(logMessage);
 					}
 				}
 				catch (Exception)
@@ -99,7 +99,7 @@ namespace SupportBoi.Commands
 						Color = DiscordColor.Red,
 						Description = "Could not add <@" + parsedArg + "> to ticket, unknown error occured."
 					};
-					await command.RespondAsync("", false, message);
+					await command.RespondAsync(message);
 				}
 			}
 		}
