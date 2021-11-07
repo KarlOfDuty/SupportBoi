@@ -125,19 +125,22 @@ namespace SupportBoi
 			});
 
 			this.commands.RegisterCommands<AddCommand>();
+			this.commands.RegisterCommands<AddMessageCommand>();
 			this.commands.RegisterCommands<AddStaffCommand>();
 			this.commands.RegisterCommands<AssignCommand>();
 			this.commands.RegisterCommands<BlacklistCommand>();
 			this.commands.RegisterCommands<CloseCommand>();
-			this.commands.RegisterCommands<ListCommand>();
 			this.commands.RegisterCommands<ListAssignedCommand>();
-			this.commands.RegisterCommands<ListUnassignedCommand>();
+			this.commands.RegisterCommands<ListCommand>();
 			this.commands.RegisterCommands<ListOldestCommand>();
+			this.commands.RegisterCommands<ListUnassignedCommand>();
 			this.commands.RegisterCommands<MoveCommand>();
 			this.commands.RegisterCommands<NewCommand>();
 			this.commands.RegisterCommands<RandomAssignCommand>();
 			this.commands.RegisterCommands<ReloadCommand>();
+			this.commands.RegisterCommands<RemoveMessageCommand>();
 			this.commands.RegisterCommands<RemoveStaffCommand>();
+			this.commands.RegisterCommands<SayCommand>();
 			this.commands.RegisterCommands<SetSummaryCommand>();
 			this.commands.RegisterCommands<SetTicketCommand>();
 			this.commands.RegisterCommands<StatusCommand>();

@@ -97,11 +97,18 @@ namespace SupportBoi
 					"name VARCHAR(256) NOT NULL," +
 					"active BOOLEAN NOT NULL DEFAULT true)",
 					c);
+				MySqlCommand createMessages = new MySqlCommand(
+					"CREATE TABLE IF NOT EXISTS messages(" +
+					"identifier VARCHAR(256) NOT NULL PRIMARY KEY," +
+					"user_id BIGINT UNSIGNED NOT NULL," +
+					"message VARCHAR(5000) NOT NULL)",
+					c);
 				c.Open();
 				createTickets.ExecuteNonQuery();
 				createBlacklisted.ExecuteNonQuery();
 				createTicketHistory.ExecuteNonQuery();
 				createStaffList.ExecuteNonQuery();
+				createMessages.ExecuteNonQuery();
 			}
 		}
 		public static bool IsOpenTicket(ulong channelID)
@@ -482,7 +489,7 @@ namespace SupportBoi
 				selection.Prepare();
 				MySqlDataReader results = selection.ExecuteReader();
 
-				// Check if staff exists in the database
+				// Check if staff exist in the database
 				if (!results.Read())
 				{
 					return new List<StaffMember>();
@@ -539,6 +546,96 @@ namespace SupportBoi
 				return true;
 			}
 		}
+
+		public static List<Message> GetAllMessages()
+		{
+			using (MySqlConnection c = GetConnection())
+			{
+				c.Open();
+				MySqlCommand selection = new MySqlCommand(@"SELECT * FROM messages", c);
+				selection.Prepare();
+				MySqlDataReader results = selection.ExecuteReader();
+
+				// Check if messages exist in the database
+				if (!results.Read())
+				{
+					return new List<Message>();
+				}
+
+				List<Message> messages = new List<Message> { new Message(results) };
+				while (results.Read())
+				{
+					messages.Add(new Message(results));
+				}
+				results.Close();
+
+				return messages;
+			}
+		}
+
+		public static bool TryGetMessage(string identifier, out Message message)
+		{
+			using (MySqlConnection c = GetConnection())
+			{
+				c.Open();
+				MySqlCommand selection = new MySqlCommand(@"SELECT * FROM messages WHERE identifier=@identifier", c);
+				selection.Parameters.AddWithValue("@identifier", identifier);
+				selection.Prepare();
+				MySqlDataReader results = selection.ExecuteReader();
+
+				// Check if ticket exists in the database
+				if (!results.Read())
+				{
+					message = null;
+					return false;
+				}
+				message = new Message(results);
+				results.Close();
+				return true;
+			}
+		}
+
+		public static bool AddMessage(string identifier, ulong userID, string message)
+		{
+			using (MySqlConnection c = GetConnection())
+			{
+				try
+				{
+					c.Open();
+					MySqlCommand cmd = new MySqlCommand(@"INSERT INTO messages (identifier,user_id,message) VALUES (@identifier, @user_id, @message);", c);
+					cmd.Parameters.AddWithValue("@identifier", identifier);
+					cmd.Parameters.AddWithValue("@user_id", userID);
+					cmd.Parameters.AddWithValue("@message", message);
+					cmd.Prepare();
+					return cmd.ExecuteNonQuery() > 0;
+				}
+				catch (MySqlException)
+				{
+					return false;
+				}
+			}
+		}
+
+		public static bool RemoveMessage(string identifier)
+		{
+			using (MySqlConnection c = GetConnection())
+			{
+				try
+				{
+					c.Open();
+					MySqlCommand cmd = new MySqlCommand(@"DELETE FROM messages WHERE identifier=@identifier", c);
+					cmd.Parameters.AddWithValue("@identifier", identifier);
+					cmd.Prepare();
+					return cmd.ExecuteNonQuery() > 0;
+				}
+				catch (MySqlException)
+				{
+					return false;
+				}
+
+			}
+		}
+
 		public class Ticket
 		{
 			public uint id;
@@ -574,6 +671,20 @@ namespace SupportBoi
 				this.userID = reader.GetUInt64("user_id");
 				this.name = reader.GetString("name");
 				this.active = reader.GetBoolean("active");
+			}
+		}
+
+		public class Message
+		{
+			public string identifier;
+			public ulong userID;
+			public string message;
+
+			public Message(MySqlDataReader reader)
+			{
+				this.identifier = reader.GetString("identifier");
+				this.userID = reader.GetUInt64("user_id");
+				this.message = reader.GetString("message");
 			}
 		}
 	}

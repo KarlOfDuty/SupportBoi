@@ -39,31 +39,34 @@ namespace SupportBoi
 		private static readonly Dictionary<string, ulong[]> permissions = new Dictionary<string, ulong[]>
 		{
 			// Public commands
-            { "new",						new ulong[]{ } },
 			{ "close",						new ulong[]{ } },
-            { "transcript",					new ulong[]{ } },
+			{ "list",						new ulong[]{ } },
+            { "new",						new ulong[]{ } },
+			{ "say",                        new ulong[]{ } },
 			{ "status",						new ulong[]{ } },
 			{ "summary",					new ulong[]{ } },
-			{ "list",						new ulong[]{ } },
+            { "transcript",					new ulong[]{ } },
 			// Moderator commands
 			{ "add",						new ulong[]{ } },
+			{ "addmessage",                 new ulong[]{ } },
 			{ "assign",						new ulong[]{ } },
-			{ "rassign",					new ulong[]{ } },
-			{ "unassign",					new ulong[]{ } },
 			{ "blacklist",					new ulong[]{ } },
-			{ "unblacklist",				new ulong[]{ } },
+			{ "listassigned",				new ulong[]{ } },
+			{ "listoldest",					new ulong[]{ } },
+			{ "listunassigned",				new ulong[]{ } },
+			{ "move",						new ulong[]{ } },
+			{ "rassign",					new ulong[]{ } },
+			{ "removemessage",              new ulong[]{ } },
 			{ "setsummary",					new ulong[]{ } },
 			{ "toggleactive",				new ulong[]{ } },
-			{ "listassigned",				new ulong[]{ } },
-			{ "listunassigned",				new ulong[]{ } },
-			{ "listoldest",					new ulong[]{ } },
-			{ "move",						new ulong[]{ } },
+			{ "unassign",					new ulong[]{ } },
+			{ "unblacklist",				new ulong[]{ } },
 			// Admin commands
+			{ "addstaff",					new ulong[]{ } },
 			{ "reload",						new ulong[]{ } },
+			{ "removestaff",				new ulong[]{ } },
 			{ "setticket",					new ulong[]{ } },
 			{ "unsetticket",				new ulong[]{ } },
-			{ "addstaff",					new ulong[]{ } },
-			{ "removestaff",				new ulong[]{ } },
 		};
 		
 		public static void LoadConfig()
