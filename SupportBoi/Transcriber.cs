@@ -33,7 +33,12 @@ namespace SupportBoi
 
 		internal static string GetPath(uint ticketNumber)
 		{
-			return "./transcripts/ticket-" + ticketNumber.ToString("00000") + ".html";
+			return "./transcripts/" + GetFilename(ticketNumber);
+		}
+
+		internal static string GetFilename(uint ticketNumber)
+		{
+			return "ticket-" + ticketNumber.ToString("00000") + ".html";
 		}
 	}
 

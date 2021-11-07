@@ -20,7 +20,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Red,
 					Description = "You do not have permission to use this command."
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				command.Client.Logger.Log(LogLevel.Information, "User tried to use the unassign command but did not have permission.");
 				return;
 			}
@@ -33,7 +33,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Red,
 					Description = "This channel is not a ticket."
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				return;
 			}
 
@@ -44,7 +44,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Red,
 					Description = "Error: Failed to unassign staff from ticket."
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				return;
 			}
 
@@ -53,7 +53,7 @@ namespace SupportBoi.Commands
 				Color = DiscordColor.Green,
 				Description = "Unassigned staff from ticket."
 			};
-			await command.RespondAsync("", false, message);
+			await command.RespondAsync(message);
 
 			// Log it if the log channel exists
 			DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
@@ -64,7 +64,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Green,
 					Description = "Staff was unassigned from " + command.Channel.Mention + " by " + command.Member.Mention + "."
 				};
-				await logChannel.SendMessageAsync("", false, logMessage);
+				await logChannel.SendMessageAsync(logMessage);
 			}
 		}
 	}

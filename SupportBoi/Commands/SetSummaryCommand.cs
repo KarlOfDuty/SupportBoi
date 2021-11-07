@@ -21,7 +21,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Red,
 					Description = "You do not have permission to use this command."
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				command.Client.Logger.Log(LogLevel.Information, "User tried to use the setsummary command but did not have permission.");
 				return;
 			}
@@ -35,7 +35,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Red,
 					Description = "This channel is not a ticket."
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				return;
 			}
 
@@ -56,7 +56,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Green,
 					Description = "Summary set."
 				};
-				await command.RespondAsync("", false, message);
+				await command.RespondAsync(message);
 			}
 		}
 	}

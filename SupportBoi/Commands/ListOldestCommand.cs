@@ -22,7 +22,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Red,
 					Description = "You do not have permission to use this command."
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				command.Client.Logger.Log(LogLevel.Information, "User tried to use the listoldest command but did not have permission.");
 				return;
 			}
@@ -37,7 +37,7 @@ namespace SupportBoi.Commands
 						Color = DiscordColor.Red,
 						Description = "Invalid list amount. (Must be integer between 5 and 100)"
 					};
-					await command.RespondAsync("", false, error);
+					await command.RespondAsync(error);
 					return;
 				}
 			}
@@ -47,7 +47,7 @@ namespace SupportBoi.Commands
 				DiscordEmbed channelInfo = new DiscordEmbedBuilder()
 					.WithColor(DiscordColor.Red)
 					.WithDescription("Could not fetch any open tickets.");
-				await command.RespondAsync("", false, channelInfo);
+				await command.RespondAsync(channelInfo);
 				return;
 			}
 
@@ -64,7 +64,7 @@ namespace SupportBoi.Commands
 					.WithTitle("The " + openTickets.Count + " oldest open tickets: ")
 					.WithColor(DiscordColor.Green)
 					.WithDescription(message?.Trim());
-				await command.RespondAsync("", false, channelInfo);
+				await command.RespondAsync(channelInfo);
 			}
 		}
 	}

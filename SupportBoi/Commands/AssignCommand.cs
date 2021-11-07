@@ -22,7 +22,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Red,
 					Description = "You do not have permission to use this command."
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				command.Client.Logger.Log(LogLevel.Information, "User tried to use the assign command but did not have permission.");
 				return;
 			}
@@ -35,7 +35,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Red,
 					Description = "This channel is not a ticket."
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				return;
 			}
 
@@ -53,7 +53,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Red,
 					Description = "Invalid ID/Mention. (Could not convert to numerical)"
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				return;
 			}
 
@@ -71,7 +71,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Red,
 					Description = "Error: Could not find user."
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				return;
 			}
 
@@ -82,7 +82,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Red,
 					Description = "Error: User is not registered as staff."
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				return;
 			}
 
@@ -93,7 +93,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Red,
 					Description = "Error: Failed to assign " + staffMember.Mention + " to ticket."
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				return;
 			}
 
@@ -102,7 +102,7 @@ namespace SupportBoi.Commands
 				Color = DiscordColor.Green,
 				Description = "Assigned " + staffMember.Mention + " to ticket."
 			};
-			await command.RespondAsync("", false, feedback);
+			await command.RespondAsync(feedback);
 
 			if (Config.assignmentNotifications)
 			{
@@ -113,7 +113,7 @@ namespace SupportBoi.Commands
 						Color = DiscordColor.Green,
 						Description = "You have been assigned to a support ticket: " + command.Channel.Mention
 					};
-					await staffMember.SendMessageAsync("", false, message);
+					await staffMember.SendMessageAsync(message);
 				}
 				catch (UnauthorizedException) {}
 
@@ -128,7 +128,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Green,
 					Description = staffMember.Mention + " was was assigned to " + command.Channel.Mention + " by " + command.Member.Mention + "."
 				};
-				await logChannel.SendMessageAsync("", false, logMessage);
+				await logChannel.SendMessageAsync(logMessage);
 			}
 		}
 	}

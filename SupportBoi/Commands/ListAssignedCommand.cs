@@ -23,7 +23,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Red,
 					Description = "You do not have permission to use this command."
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				command.Client.Logger.Log(LogLevel.Information, "User tried to use the listassigned command but did not have permission.");
 				return;
 			}
@@ -42,7 +42,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Red,
 					Description = "Invalid ID/Mention. (Could not convert to numerical)"
 				};
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				return;
 			}
 
@@ -51,7 +51,7 @@ namespace SupportBoi.Commands
 				DiscordEmbed error = new DiscordEmbedBuilder()
 					.WithColor(DiscordColor.Red)
 					.WithDescription("User does not have any assigned tickets.");
-				await command.RespondAsync("", false, error);
+				await command.RespondAsync(error);
 				return;
 			}
 
@@ -68,7 +68,7 @@ namespace SupportBoi.Commands
 					.WithTitle("Assigned tickets: ")
 					.WithColor(DiscordColor.Green)
 					.WithDescription(message);
-				await command.RespondAsync("", false, channelInfo);
+				await command.RespondAsync(channelInfo);
 			}
 
 		}

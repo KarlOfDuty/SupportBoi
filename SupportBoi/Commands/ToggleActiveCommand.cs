@@ -24,7 +24,7 @@ namespace SupportBoi.Commands
 						Color = DiscordColor.Red,
 						Description = "You do not have permission to use this command."
 					};
-					await command.RespondAsync("", false, error);
+					await command.RespondAsync(error);
 					command.Client.Logger.Log(LogLevel.Information, "User tried to use the toggleactive command but did not have permission.");
 					return;
 				}
@@ -43,7 +43,7 @@ namespace SupportBoi.Commands
 						Color = DiscordColor.Red,
 						Description = "Invalid ID/Mention. (Could not convert to numerical)"
 					};
-					await command.RespondAsync("", false, error);
+					await command.RespondAsync(error);
 					return;
 				}
 
@@ -55,7 +55,7 @@ namespace SupportBoi.Commands
 						Color = DiscordColor.Red,
 						Description = "You have not been registered as staff."
 					};
-					await command.RespondAsync("", false, error);
+					await command.RespondAsync(error);
 					return;
 				}
 
@@ -71,7 +71,7 @@ namespace SupportBoi.Commands
 					Color = DiscordColor.Green,
 					Description = staffMember.active ? "Staff member is now set as inactive and will no longer be randomly assigned any support tickets." : "Staff member is now set as active and will be randomly assigned support tickets again."
 				};
-				await command.RespondAsync("", false, message);
+				await command.RespondAsync(message);
 			}
 		}
 	}
