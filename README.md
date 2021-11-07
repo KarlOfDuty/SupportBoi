@@ -33,6 +33,9 @@ There appears to be an issue where CentOS 7 may not be compatible with some elem
 | `unsetticket` | Removes a ticket without deleting the channel. |
 | `addstaff <id/mention>` | Registers a user as a staff member for ticket assignment. |
 | `removestaff <id/mention>` | Removes a user from staff. |
+| `say (identifier)` | Prints a message with information from staff. Use with no arguments to list ids. |
+| `addmessage <identifier> <message>` | Adds a new message for the 'say' command. The identifier is one word used in the say command and the message is what the bot prints. |
+| `removestaff <identifier>` | Removes message from the database. |
 
 ## Setup
 
