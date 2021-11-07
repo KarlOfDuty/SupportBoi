@@ -101,7 +101,7 @@ namespace SupportBoi
 				TokenType = TokenType.Bot,
 				MinimumLogLevel = logLevel,
 				AutoReconnect = true,
-				Intents = DiscordIntents.AllUnprivileged
+				Intents = DiscordIntents.All
 			};
 			
 			this.discordClient = new DiscordClient(cfg);
@@ -113,6 +113,8 @@ namespace SupportBoi
 			this.discordClient.GuildAvailable += this.eventHandler.OnGuildAvailable;
 			this.discordClient.ClientErrored += this.eventHandler.OnClientError;
 			this.discordClient.MessageCreated += this.eventHandler.OnMessageCreated;
+			this.discordClient.GuildMemberAdded += this.eventHandler.OnMemberAdded;
+			this.discordClient.GuildMemberRemoved += this.eventHandler.OnMemberRemoved;
 			if (Config.reactionMessage != 0)
 			{
 				this.discordClient.MessageReactionAdded += this.eventHandler.OnReactionAdded;

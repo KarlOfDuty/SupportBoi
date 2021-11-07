@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using DSharpPlus;
@@ -209,6 +209,64 @@ namespace SupportBoi
 					Footer = new DiscordEmbedBuilder.EmbedFooter {Text = "Ticket " + ticketID}
 				};
 				await logChannel.SendMessageAsync(logMessage);
+			}
+		}
+
+		internal async Task OnMemberAdded(DiscordClient client, GuildMemberAddEventArgs e)
+		{
+			if (!Database.TryGetOpenTickets(e.Member.Id, out List<Database.Ticket> ownTickets))
+			{
+				return;
+			}
+
+			foreach (Database.Ticket ticket in ownTickets)
+			{
+				DiscordChannel channel = await client.GetChannelAsync(ticket.channelID);
+				if (channel?.GuildId == e.Guild.Id)
+				{
+					await channel.AddOverwriteAsync(e.Member, Permissions.AccessChannels, Permissions.None);
+					DiscordEmbed message = new DiscordEmbedBuilder()
+						.WithColor(DiscordColor.Green)
+						.WithDescription("User '" + e.Member.Username + "#" + e.Member.Discriminator + "' has rejoined the server, and has been re-added to the ticket.");
+					await channel.SendMessageAsync(message);
+				}
+			}
+		}
+
+		internal async Task OnMemberRemoved(DiscordClient client, Guild​Member​Remove​Event​Args e)
+		{
+			if (Database.TryGetOpenTickets(e.Member.Id, out List<Database.Ticket> ownTickets))
+			{
+				foreach(Database.Ticket ticket in ownTickets)
+				{
+					DiscordChannel channel = await client.GetChannelAsync(ticket.channelID);
+					if (channel?.GuildId == e.Guild.Id)
+					{
+						DiscordEmbed message = new DiscordEmbedBuilder()
+							.WithColor(DiscordColor.Red)
+							.WithDescription("User '" + e.Member.Username + "#" + e.Member.Discriminator + "' has left the server.");
+						await channel.SendMessageAsync(message);
+					}
+				}
+			}
+
+			if (Database.TryGetAssignedTickets(e.Member.Id, out List<Database.Ticket> assignedTickets) && Config.logChannel != 0)
+			{
+				DiscordChannel logChannel = await client.GetChannelAsync(Config.logChannel);
+				if (logChannel != null)
+				{
+					foreach (Database.Ticket ticket in assignedTickets)
+					{
+						DiscordChannel channel = await client.GetChannelAsync(ticket.channelID);
+						if (channel?.GuildId == e.Guild.Id)
+						{
+							DiscordEmbed message = new DiscordEmbedBuilder()
+								.WithColor(DiscordColor.Red)
+								.WithDescription("Assigned staff member '" + e.Member.Username + "#" + e.Member.Discriminator + "' has left the server: <#" + channel.Id + ">");
+							await logChannel.SendMessageAsync(message);
+						}
+					}
+				}
 			}
 		}
 
