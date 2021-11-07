@@ -7,7 +7,6 @@ using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Exceptions;
 using Microsoft.Extensions.Logging;
-using MySql.Data.MySqlClient;
 
 namespace SupportBoi.Commands
 {
@@ -48,7 +47,7 @@ namespace SupportBoi.Commands
 			// Build transcript
 			try
 			{
-				await Transcriber.ExecuteAsync(command.Channel.Id.ToString(), ticket.id);
+				await Transcriber.ExecuteAsync(command.Channel.Id, ticket.id);
 			}
 			catch (Exception)
 			{

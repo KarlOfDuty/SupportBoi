@@ -7,7 +7,6 @@ using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Exceptions;
 using Microsoft.Extensions.Logging;
-using Tyrrrz.Extensions;
 
 namespace SupportBoi.Commands
 {
@@ -99,7 +98,7 @@ namespace SupportBoi.Commands
 
 		private async Task<DiscordMember> GetRandomVerifiedStaffMember(CommandContext command, Database.Ticket ticket)
 		{
-			if (!command.RawArguments.IsNullOrEmpty()) // An argument was provided, check if this can be parsed into a role
+			if (command.RawArguments.Any()) // An argument was provided, check if this can be parsed into a role
 			{
 				ulong roleID = 0;
 

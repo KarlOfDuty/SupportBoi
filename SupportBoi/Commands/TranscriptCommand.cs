@@ -40,7 +40,7 @@ namespace SupportBoi.Commands
 				{
 					try
 					{
-						await Transcriber.ExecuteAsync(ticket.channelID.ToString(), ticket.id);
+						await Transcriber.ExecuteAsync(command.Channel.Id, ticket.id);
 					}
 					catch (Exception)
 					{
@@ -83,7 +83,7 @@ namespace SupportBoi.Commands
 				{
 					try
 					{
-						await Transcriber.ExecuteAsync(ticket.channelID.ToString(), ticket.id);
+						await Transcriber.ExecuteAsync(command.Channel.Id, ticket.id);
 					}
 					catch (Exception)
 					{
