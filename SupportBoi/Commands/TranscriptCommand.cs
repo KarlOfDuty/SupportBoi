@@ -146,7 +146,7 @@ namespace SupportBoi.Commands
 					directMessage.WithEmbed(directMessageEmbed);
 					directMessage.WithFiles(new Dictionary<string, Stream>() { { Transcriber.GetFilename(ticket.id), file } });
 
-					await command.RespondAsync(directMessage);
+					await command.Member.SendMessageAsync(directMessage);
 				}
 
 				// Respond to message directly
