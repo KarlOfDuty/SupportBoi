@@ -221,15 +221,19 @@ namespace SupportBoi
 
 			foreach (Database.Ticket ticket in ownTickets)
 			{
-				DiscordChannel channel = await client.GetChannelAsync(ticket.channelID);
-				if (channel?.GuildId == e.Guild.Id)
+				try
 				{
-					await channel.AddOverwriteAsync(e.Member, Permissions.AccessChannels, Permissions.None);
-					DiscordEmbed message = new DiscordEmbedBuilder()
-						.WithColor(DiscordColor.Green)
-						.WithDescription("User '" + e.Member.Username + "#" + e.Member.Discriminator + "' has rejoined the server, and has been re-added to the ticket.");
-					await channel.SendMessageAsync(message);
+					DiscordChannel channel = await client.GetChannelAsync(ticket.channelID);
+					if (channel?.GuildId == e.Guild.Id)
+					{
+						await channel.AddOverwriteAsync(e.Member, Permissions.AccessChannels, Permissions.None);
+						DiscordEmbed message = new DiscordEmbedBuilder()
+							.WithColor(DiscordColor.Green)
+							.WithDescription("User '" + e.Member.Username + "#" + e.Member.Discriminator + "' has rejoined the server, and has been re-added to the ticket.");
+						await channel.SendMessageAsync(message);
+					}
 				}
+				catch (Exception) { }
 			}
 		}
 
@@ -239,14 +243,18 @@ namespace SupportBoi
 			{
 				foreach(Database.Ticket ticket in ownTickets)
 				{
-					DiscordChannel channel = await client.GetChannelAsync(ticket.channelID);
-					if (channel?.GuildId == e.Guild.Id)
+					try
 					{
-						DiscordEmbed message = new DiscordEmbedBuilder()
-							.WithColor(DiscordColor.Red)
-							.WithDescription("User '" + e.Member.Username + "#" + e.Member.Discriminator + "' has left the server.");
-						await channel.SendMessageAsync(message);
+						DiscordChannel channel = await client.GetChannelAsync(ticket.channelID);
+						if (channel?.GuildId == e.Guild.Id)
+						{
+							DiscordEmbed message = new DiscordEmbedBuilder()
+								.WithColor(DiscordColor.Red)
+								.WithDescription("User '" + e.Member.Username + "#" + e.Member.Discriminator + "' has left the server.");
+							await channel.SendMessageAsync(message);
+						}
 					}
+					catch (Exception) { }
 				}
 			}
 
@@ -255,16 +263,21 @@ namespace SupportBoi
 				DiscordChannel logChannel = await client.GetChannelAsync(Config.logChannel);
 				if (logChannel != null)
 				{
+
 					foreach (Database.Ticket ticket in assignedTickets)
 					{
-						DiscordChannel channel = await client.GetChannelAsync(ticket.channelID);
-						if (channel?.GuildId == e.Guild.Id)
+						try
 						{
-							DiscordEmbed message = new DiscordEmbedBuilder()
-								.WithColor(DiscordColor.Red)
-								.WithDescription("Assigned staff member '" + e.Member.Username + "#" + e.Member.Discriminator + "' has left the server: <#" + channel.Id + ">");
-							await logChannel.SendMessageAsync(message);
+							DiscordChannel channel = await client.GetChannelAsync(ticket.channelID);
+							if (channel?.GuildId == e.Guild.Id)
+							{
+								DiscordEmbed message = new DiscordEmbedBuilder()
+									.WithColor(DiscordColor.Red)
+									.WithDescription("Assigned staff member '" + e.Member.Username + "#" + e.Member.Discriminator + "' has left the server: <#" + channel.Id + ">");
+								await logChannel.SendMessageAsync(message);
+							}
 						}
+						catch (Exception) { }
 					}
 				}
 			}
