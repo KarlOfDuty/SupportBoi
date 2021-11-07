@@ -5,12 +5,12 @@ pipeline {
       parallel {
         stage('Linux') {
           steps {
-            sh 'msbuild SupportBoi/SupportBoi.csproj -restore -t:Publish -p:OutputPath=bin/linux/ -p:BaseIntermediateOutputPath=obj/linux/ -p:TargetFramework=netcoreapp3.1 -p:SelfContained=true -p:RuntimeIdentifier=linux-x64 -p:Configuration=Release -p:DebugType=None'
+            sh 'msbuild SupportBoi/SupportBoi.csproj -restore -t:Publish -p:OutputPath=bin/linux/ -p:BaseIntermediateOutputPath=obj/linux/ -p:SelfContained=true -p:RuntimeIdentifier=linux-x64 -p:Configuration=Release -p:DebugType=None'
           }
         }
         stage('Windows') {
           steps {
-            sh 'msbuild SupportBoi/SupportBoi.csproj -restore -t:Publish -p:OutputPath=bin/win/ -p:BaseIntermediateOutputPath=obj/win/ -p:TargetFramework=netcoreapp3.1 -p:SelfContained=true -p:RuntimeIdentifier=win-x64 -p:Configuration=Release -p:DebugType=None'
+            sh 'msbuild SupportBoi/SupportBoi.csproj -restore -t:Publish -p:OutputPath=bin/win/ -p:BaseIntermediateOutputPath=obj/win/ -p:SelfContained=true -p:RuntimeIdentifier=win-x64 -p:Configuration=Release -p:DebugType=None'
           }
         }
       }
