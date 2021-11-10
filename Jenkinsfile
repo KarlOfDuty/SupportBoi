@@ -2,6 +2,11 @@ pipeline {
   agent any
   stages {
     stage('Build') {
+      steps {
+        sh 'dotnet restore'
+      }
+    }
+    stage('Build') {
       parallel {
         stage('Linux') {
           steps {
