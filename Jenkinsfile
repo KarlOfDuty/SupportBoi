@@ -10,12 +10,12 @@ pipeline {
       parallel {
         stage('Linux') {
           steps {
-            sh 'dotnet publish -p:PublishSingleFile=true -r linux-x64 -c Release --self-contained true -p:PublishTrimmed=true'
+            sh 'dotnet publish -p:PublishSingleFile=true -r linux-x64 -c Release --self-contained true -p:PublishTrimmed=true --no-restore --output Linux-x64/'
           }
         }
         stage('Windows') {
           steps {
-            sh 'dotnet publish -p:PublishSingleFile=true -r win-x64 -c Release --self-contained true -p:PublishTrimmed=true'
+            sh 'dotnet publish -p:PublishSingleFile=true -r win-x64 -c Release --self-contained true -p:PublishTrimmed=true --no-restore --output Windows-x64/'
           }
         }
       }
