@@ -5,34 +5,12 @@ pipeline {
       parallel {
         stage('Linux') {
           steps {
-            sh 'dotnet msbuild SupportBoi/SupportBoi.csproj -restore -t:Publish -p:OutputPath=bin/linux/ -p:BaseIntermediateOutputPath=obj/linux/ -p:SelfContained=true -p:RuntimeIdentifier=linux-x64 -p:Configuration=Release -p:DebugType=None'
+            sh 'dotnet publish -p:PublishSingleFile=true -r linux-x64 -c Release --self-contained true -p:PublishTrimmed=true'
           }
         }
         stage('Windows') {
           steps {
-            sh 'dotnet msbuild SupportBoi/SupportBoi.csproj -restore -t:Publish -p:OutputPath=bin/win/ -p:BaseIntermediateOutputPath=obj/win/ -p:SelfContained=true -p:RuntimeIdentifier=win-x64 -p:Configuration=Release -p:DebugType=None'
-          }
-        }
-      }
-    }
-    stage('Package') {
-      parallel {
-        stage('Linux') {
-          steps {
-            sh 'mkdir Linux-x64'
-            dir(path: './Linux-x64') {
-              sh 'warp-packer --arch linux-x64 --input_dir ../SupportBoi/bin/linux/publish --exec SupportBoi --output SupportBoi'
-            }
-
-          }
-        }
-        stage('Windows') {
-          steps {
-            sh 'mkdir Windows-x64'
-            dir(path: './Windows-x64') {
-              sh 'warp-packer --arch windows-x64 --input_dir ../SupportBoi/bin/win/publish --exec SupportBoi.exe --output SupportBoi.exe'
-            }
-
+            sh 'dotnet publish -p:PublishSingleFile=true -r win-x64 -c Release --self-contained true -p:PublishTrimmed=true'
           }
         }
       }
