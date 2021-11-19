@@ -41,7 +41,7 @@ There appears to be an issue where CentOS 7 may not be compatible with some elem
 
 1. [Create a new bot application](https://discordpy.readthedocs.io/en/latest/discord.html).
 
-2. Download the bot for your operating system, either a [release version](https://github.com/KarlOfDuty/SupportBoi/releases) or a [dev build](http://95.217.45.17:8080/blue/organizations/jenkins/SupportBoi/activity). The bot should include dotnet but if your bot doesnt work and this seems to be the issue please tell me.
+2. Download the bot for your operating system, either a [release version](https://github.com/KarlOfDuty/SupportBoi/releases) or a [dev build](https://jenkins.karlofduty.com/blue/organizations/jenkins/SupportBoi/activity).
 
 3. Run `./SupportBoi_Linux` on Linux or `./SupportBoi_Windows.exe` on Windows.
 
