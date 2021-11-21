@@ -39,13 +39,15 @@ There appears to be an issue where CentOS 7 may not be compatible with some elem
 
 ## Setup
 
-1. [Create a new bot application](https://discordpy.readthedocs.io/en/latest/discord.html).
+1. Set up a mysql server, create a user and empty database for the bot to use.
 
-2. Download the bot for your operating system, either a [release version](https://github.com/KarlOfDuty/SupportBoi/releases) or a [dev build](https://jenkins.karlofduty.com/blue/organizations/jenkins/SupportBoi/activity).
+2. [Create a new bot application](https://discordpy.readthedocs.io/en/latest/discord.html).
 
-3. Run `./SupportBoi_Linux` on Linux or `./SupportBoi_Windows.exe` on Windows.
+3. Download the bot for your operating system, either a [release version](https://github.com/KarlOfDuty/SupportBoi/releases) or a [dev build](https://jenkins.karlofduty.com/blue/organizations/jenkins/SupportBoi/activity).
 
-4. Set up the config (`config.yml`) to your specifications, there are instructions inside and also further down on this page. If you need more help either contact me in Discord or through an issue here.
+4. Run `./SupportBoi_Linux` on Linux or `./SupportBoi_Windows.exe` on Windows.
+
+5. Set up the config (`config.yml`) to your specifications, there are instructions inside and also further down on this page. If you need more help either contact me in Discord or through an issue here.
 
 ## Default Config
 
