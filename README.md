@@ -2,8 +2,6 @@
 
 A support ticket Discord bot. Uses a MySQL database for storage of ticket information. Creates amazingly formatted HTML ticket transcripts when tickets are closed.
 
-There appears to be an issue where CentOS 7 may not be compatible with some element of this bot causing it to not start.
-
 #### Thanks to [DiscordChatExporter](https://github.com/Tyrrrz/DiscordChatExporter) for the great library used in the transcript function.
 
 ## Commands
