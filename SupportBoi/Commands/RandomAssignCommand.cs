@@ -90,7 +90,7 @@ namespace SupportBoi.Commands
 				DiscordEmbed logMessage = new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Green,
-					Description = staffMember.Mention + " was was assigned to " + command.Channel.Mention + " by " + command.Member.Mention + "."
+					Description = staffMember.Mention + " was assigned to " + command.Channel.Mention + " by " + command.Member.Mention + "."
 				};
 				await logChannel.SendMessageAsync(logMessage);
 			}
@@ -126,7 +126,7 @@ namespace SupportBoi.Commands
 				List<Database.StaffMember> staffMembers = Config.randomAssignRoleOverride
 					? Database.GetAllStaff(ticket.assignedStaffID)
 					: Database.GetActiveStaff(ticket.assignedStaffID);
-				
+
 				// Randomize the list before checking for roles in order to reduce number of API calls
 				staffMembers = Utilities.RandomizeList(staffMembers);
 
