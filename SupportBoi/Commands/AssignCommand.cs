@@ -126,7 +126,7 @@ namespace SupportBoi.Commands
 				DiscordEmbed logMessage = new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Green,
-					Description = staffMember.Mention + " was was assigned to " + command.Channel.Mention + " by " + command.Member.Mention + "."
+					Description = staffMember.Mention + " was assigned to " + command.Channel.Mention + " by " + command.Member.Mention + "."
 				};
 				await logChannel.SendMessageAsync(logMessage);
 			}
