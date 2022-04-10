@@ -3,7 +3,7 @@ pipeline {
   stages {
     stage('Setup Dependencies') {
       steps {
-        sh 'dotnet restore'
+        sh 'dotnet restore --force --verbosity detailed'
       }
     }
     stage('Build') {
