@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -14,9 +14,10 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageIconUrl>https://karlofduty.com/img/tardisIcon.jpg</PackageIconUrl>
     <Description>A Discord support ticket bot. Saves to a MySQL database and has the option to output open tickets to a Google Sheet and HTML ticket transcript files when they are closed.</Description>
-    <AssemblyVersion>2.5.0.0</AssemblyVersion>
-    <FileVersion>2.5.0.0</FileVersion>
+    <AssemblyVersion>2.6.1.1</AssemblyVersion>
+    <FileVersion>2.6.1.1</FileVersion>
     <NeutralLanguage>en</NeutralLanguage>
+    <PackageVersion>2.6.1-A</PackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
