@@ -15,7 +15,7 @@ namespace SupportBoi
 	{
 		internal static async Task ExecuteAsync(ulong channelID, uint ticketID)
 		{
-			DiscordClient discordClient = new DiscordClient(new AuthToken(AuthTokenKind.Bot, Config.token));
+			DiscordClient discordClient = new DiscordClient(Config.token);
 			ChannelExporter Exporter = new ChannelExporter(discordClient);
 
 			if (!Directory.Exists("./transcripts"))
@@ -33,17 +33,17 @@ namespace SupportBoi
 			Guild guild = await discordClient.GetGuildAsync(channel.GuildId);
 
 			ExportRequest request = new ExportRequest(
-				guild: guild,
-				channel: channel,
-				outputPath: GetPath(ticketID),
-				format: ExportFormat.HtmlDark,
-				after: null,
-				before: null,
-				partitionLimit: PartitionLimit.Null,
-				messageFilter: MessageFilter.Null,
-				shouldDownloadMedia: false,
-				shouldReuseMedia: false,
-				dateFormat: dateFormat
+				Guild: guild,
+				Channel: channel,
+				OutputPath: GetPath(ticketID),
+				Format: ExportFormat.HtmlDark,
+				After: null,
+				Before: null,
+				PartitionLimit: PartitionLimit.Null,
+				MessageFilter: MessageFilter.Null,
+				ShouldDownloadMedia: false,
+				ShouldReuseMedia: false,
+				DateFormat: dateFormat
 			);
 
 			await Exporter.ExportChannelAsync(request);
