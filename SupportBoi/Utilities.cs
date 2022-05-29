@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
+using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
 
 namespace SupportBoi
@@ -66,6 +68,34 @@ namespace SupportBoi
 			}
 
 			return null;
+		}
+		
+		public static async Task<bool> VerifyPermission(CommandContext command, string permission)
+		{
+			try
+			{
+				// Check if the user has permission to use this command.
+				if (!Config.HasPermission(command.Member, permission))
+				{
+					await command.RespondAsync(new DiscordEmbedBuilder
+					{
+						Color = DiscordColor.Red,
+						Description = "You do not have permission to use this command."
+					});
+					return false;
+				}
+
+				return true;
+			}
+			catch (Exception)
+			{
+				await command.RespondAsync(new DiscordEmbedBuilder
+				{
+					Color = DiscordColor.Red,
+					Description = "Error occured when checking permissions, please report this to the developer."
+				});
+				return false;
+			}
 		}
 	}
 }

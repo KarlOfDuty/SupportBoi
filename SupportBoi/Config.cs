@@ -124,7 +124,7 @@ namespace SupportBoi
 				}
 				catch (ArgumentNullException)
 				{
-					Console.WriteLine("Permission node '" + node.Key + "' was not found in the config, using default value: []");
+					Logger.Warn(LogID.CONFIG, "Permission node '" + node.Key + "' was not found in the config, using default value: []");
 				}
 			}
 		}

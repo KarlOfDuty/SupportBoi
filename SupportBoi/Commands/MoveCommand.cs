@@ -16,18 +16,7 @@ namespace SupportBoi.Commands
 		[Description("Moves a ticket to another category.")]
 		public async Task OnExecute(CommandContext command, [RemainingText] string commandArgs)
 		{
-			// Check if the user has permission to use this command.
-			if (!Config.HasPermission(command.Member, "move"))
-			{
-				DiscordEmbed error = new DiscordEmbedBuilder
-				{
-					Color = DiscordColor.Red,
-					Description = "You do not have permission to use this command."
-				};
-				await command.RespondAsync(error);
-				command.Client.Logger.Log(LogLevel.Information, "User tried to use the move command but did not have permission.");
-				return;
-			}
+			if (!await Utilities.VerifyPermission(command, "move")) return;
 
 			// Check if ticket exists in the database
 			if (!Database.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))

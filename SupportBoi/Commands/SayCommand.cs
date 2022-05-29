@@ -15,18 +15,7 @@ namespace SupportBoi.Commands
 		[Description("Prints a message with information from staff.")]
 		public async Task OnExecute(CommandContext command, string identifier)
 		{
-			// Check if the user has permission to use this command.
-			if (!Config.HasPermission(command.Member, "say"))
-			{
-				DiscordEmbed error = new DiscordEmbedBuilder
-				{
-					Color = DiscordColor.Red,
-					Description = "You do not have permission to use this command."
-				};
-				await command.RespondAsync(error);
-				command.Client.Logger.Log(LogLevel.Information, "User tried to use the say command but did not have permission.");
-				return;
-			}
+			if (!await Utilities.VerifyPermission(command, "say")) return;
 
 			if (!Database.TryGetMessage(identifier.ToLower(), out Database.Message message))
 			{

@@ -14,18 +14,7 @@ namespace SupportBoi.Commands
 		[Description("Adds a user to a ticket.")]
 		public async Task OnExecute(CommandContext command, [RemainingText] string commandArgs)
 		{
-			// Check if the user has permission to use this command.
-			if (!Config.HasPermission(command.Member, "add"))
-			{
-				DiscordEmbed error = new DiscordEmbedBuilder
-				{
-					Color = DiscordColor.Red,
-					Description = "You do not have permission to use this command."
-				};
-				await command.RespondAsync(error);
-				command.Client.Logger.Log(LogLevel.Information, "User tried to use the add command but did not have permission.");
-				return;
-			}
+			if (!await Utilities.VerifyPermission(command, "add")) return;
 
 			// Check if ticket exists in the database
 			if (!Database.IsOpenTicket(command.Channel.Id))

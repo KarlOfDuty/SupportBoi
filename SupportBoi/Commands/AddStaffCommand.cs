@@ -15,18 +15,7 @@ namespace SupportBoi.Commands
 		[Cooldown(1, 5, CooldownBucketType.User)]
 		public async Task OnExecute(CommandContext command, [RemainingText] string commandArgs)
 		{
-			// Check if the user has permission to use this command.
-			if (!Config.HasPermission(command.Member, "addstaff"))
-			{
-				DiscordEmbed error = new DiscordEmbedBuilder
-				{
-					Color = DiscordColor.Red,
-					Description = "You do not have permission to use this command."
-				};
-				await command.RespondAsync(error);
-				command.Client.Logger.Log(LogLevel.Information, "User tried to use the addstaff command but did not have permission.");
-				return;
-			}
+			if (!await Utilities.VerifyPermission(command, "addstaff")) return;
 
 			ulong userID;
 			string[] parsedArgs = Utilities.ParseIDs(commandArgs);

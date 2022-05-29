@@ -14,84 +14,70 @@ namespace SupportBoi.Commands
 		[Description("Turns a channel into a ticket, warning: this will let anyone with write access delete the channel using the close command.")]
 		public async Task OnExecute(CommandContext command, [RemainingText] string commandArgs)
 		{
-			using (MySqlConnection c = Database.GetConnection())
+			if (!await Utilities.VerifyPermission(command, "setticket")) return;
+
+			// Check if ticket exists in the database
+			if (Database.IsOpenTicket(command.Channel.Id))
 			{
-				// Check if the user has permission to use this command.
-				if (!Config.HasPermission(command.Member, "setticket"))
+				DiscordEmbed error = new DiscordEmbedBuilder
 				{
-					DiscordEmbed error = new DiscordEmbedBuilder
-					{
-						Color = DiscordColor.Red,
-						Description = "You do not have permission to use this command."
-					};
-					await command.RespondAsync(error);
-					command.Client.Logger.Log(LogLevel.Information, "User tried to use the setticket command but did not have permission.");
-					return;
-				}
+					Color = DiscordColor.Red,
+					Description = "This channel is already a ticket."
+				};
+				await command.RespondAsync(error);
+				return;
+			}
 
-				// Check if ticket exists in the database
-				if (Database.IsOpenTicket(command.Channel.Id))
+			ulong userID;
+			string[] parsedMessage = Utilities.ParseIDs(command.RawArgumentString);
+
+			if (!parsedMessage.Any())
+			{
+				userID = command.Member.Id;
+			}
+			else if (!ulong.TryParse(parsedMessage[0], out userID))
+			{
+				DiscordEmbed error = new DiscordEmbedBuilder
 				{
-					DiscordEmbed error = new DiscordEmbedBuilder
-					{
-						Color = DiscordColor.Red,
-						Description = "This channel is already a ticket."
-					};
-					await command.RespondAsync(error);
-					return;
-				}
+					Color = DiscordColor.Red,
+					Description = "Invalid ID/Mention. (Could not convert to numerical)"
+				};
+				await command.RespondAsync(error);
+				return;
+			}
 
-				ulong userID;
-				string[] parsedMessage = Utilities.ParseIDs(command.RawArgumentString);
+			DiscordUser user = await command.Client.GetUserAsync(userID);
 
-				if (!parsedMessage.Any())
+			if (user == null)
+			{
+				DiscordEmbed error = new DiscordEmbedBuilder
 				{
-					userID = command.Member.Id;
-				}
-				else if (!ulong.TryParse(parsedMessage[0], out userID))
-				{
-					DiscordEmbed error = new DiscordEmbedBuilder
-					{
-						Color = DiscordColor.Red,
-						Description = "Invalid ID/Mention. (Could not convert to numerical)"
-					};
-					await command.RespondAsync(error);
-					return;
-				}
+					Color = DiscordColor.Red,
+					Description = "Invalid ID/Mention."
+				};
+				await command.RespondAsync(error);
+				return;
+			}
 
-				DiscordUser user = await command.Client.GetUserAsync(userID);
+			long id = Database.NewTicket(userID, 0, command.Channel.Id);
+			string ticketID = id.ToString("00000");
+			DiscordEmbed message = new DiscordEmbedBuilder
+			{
+				Color = DiscordColor.Green,
+				Description = "Channel has been designated ticket " + ticketID + "."
+			};
+			await command.RespondAsync(message);
 
-				if (user == null)
-				{
-					DiscordEmbed error = new DiscordEmbedBuilder
-					{
-						Color = DiscordColor.Red,
-						Description = "Invalid ID/Mention."
-					};
-					await command.RespondAsync(error);
-					return;
-				}
-
-				long id = Database.NewTicket(userID, 0, command.Channel.Id);
-				string ticketID = id.ToString("00000");
-				DiscordEmbed message = new DiscordEmbedBuilder
+			// Log it if the log channel exists
+			DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
+			if (logChannel != null)
+			{
+				DiscordEmbed logMessage = new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Green,
-					Description = "Channel has been designated ticket " + ticketID + "."
+					Description = command.Channel.Mention + " has been designated ticket " + ticketID + " by " + command.Member.Mention + "."
 				};
-				await command.RespondAsync(message);
-
-				// Log it if the log channel exists
-				DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
-				if (logChannel != null)
-				{
-					DiscordEmbed logMessage = new DiscordEmbedBuilder
-					{
-						Color = DiscordColor.Green,
-						Description = command.Channel.Mention + " has been designated ticket " + ticketID + " by " + command.Member.Mention + "."
-					};
-					await logChannel.SendMessageAsync(logMessage);
-				}
+				await logChannel.SendMessageAsync(logMessage);
 			}
 		}
 	}

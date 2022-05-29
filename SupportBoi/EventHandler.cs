@@ -12,54 +12,46 @@ using Microsoft.Extensions.Logging;
 
 namespace SupportBoi
 {
-	internal class EventHandler
+	internal static class EventHandler
 	{
-		private DiscordClient discordClient;
-
 		//DateTime for the end of the cooldown
 		private static Dictionary<ulong, DateTime> reactionTicketCooldowns = new Dictionary<ulong, DateTime>();
 
-		public EventHandler(DiscordClient client)
+		internal static Task OnReady(DiscordClient client, ReadyEventArgs e)
 		{
-			this.discordClient = client;
-		}
-
-		internal Task OnReady(DiscordClient client, ReadyEventArgs e)
-		{
-			discordClient.Logger.Log(LogLevel.Information, "Client is ready to process events.");
+			Logger.Log(LogID.DISCORD, "Client is ready to process events.");
 
 			// Checking activity type
 			if (!Enum.TryParse(Config.presenceType, true, out ActivityType activityType))
 			{
-				Console.WriteLine("Presence type '" + Config.presenceType + "' invalid, using 'Playing' instead.");
+				Logger.Log(LogID.CONFIG, "Presence type '" + Config.presenceType + "' invalid, using 'Playing' instead.");
 				activityType = ActivityType.Playing;
 			}
 
-			this.discordClient.UpdateStatusAsync(new DiscordActivity(Config.presenceText, activityType), UserStatus.Online);
+			client.UpdateStatusAsync(new DiscordActivity(Config.presenceText, activityType), UserStatus.Online);
 			return Task.CompletedTask;
 		}
 
-		internal Task OnGuildAvailable(DiscordClient client, GuildCreateEventArgs e)
+		internal static Task OnGuildAvailable(DiscordClient _, GuildCreateEventArgs e)
 		{
-			discordClient.Logger.Log(LogLevel.Information, $"Guild available: {e.Guild.Name}");
+			Logger.Log(LogID.DISCORD, "Guild available: " + e.Guild.Name);
 
 			IReadOnlyDictionary<ulong, DiscordRole> roles = e.Guild.Roles;
 
 			foreach ((ulong roleID, DiscordRole role) in roles)
 			{
-				discordClient.Logger.Log(LogLevel.Information, role.Name.PadRight(40, '.') + roleID);
+				Logger.Log(LogID.DISCORD, role.Name.PadRight(40, '.') + roleID);
 			}
 			return Task.CompletedTask;
 		}
 
-		internal Task OnClientError(DiscordClient client, ClientErrorEventArgs e)
+		internal static Task OnClientError(DiscordClient _, ClientErrorEventArgs e)
 		{
-			discordClient.Logger.Log(LogLevel.Error, $"Exception occured: {e.Exception.GetType()}: {e.Exception}");
-
+			Logger.Error(LogID.DISCORD, "Exception occured:\n" + e.Exception);
 			return Task.CompletedTask;
 		}
 
-		internal async Task OnMessageCreated(DiscordClient client, MessageCreateEventArgs e)
+		internal static async Task OnMessageCreated(DiscordClient client, MessageCreateEventArgs e)
 		{
 			if (e.Author.IsBot)
 			{
@@ -92,7 +84,7 @@ namespace SupportBoi
 			}
 		}
 
-		internal Task OnCommandError(CommandsNextExtension commandSystem, CommandErrorEventArgs e)
+		internal static Task OnCommandError(CommandsNextExtension commandSystem, CommandErrorEventArgs e)
 		{
 			switch (e.Exception)
 			{
@@ -105,7 +97,7 @@ namespace SupportBoi
 							DiscordEmbed error = new DiscordEmbedBuilder
 							{
 								Color = DiscordColor.Red,
-								Description = this.ParseFailedCheck(attr)
+								Description = ParseFailedCheck(attr)
 							};
 							e.Context?.Channel?.SendMessageAsync(error);
 						}
@@ -114,7 +106,7 @@ namespace SupportBoi
 
 				default:
 					{
-						discordClient.Logger.Log(LogLevel.Error, $"Exception occured: {e.Exception.GetType()}: {e.Exception}");
+						Logger.Error(LogID.COMMAND, "Exception occured: " + e.Exception.GetType() + ": " + e.Exception);
 						DiscordEmbed error = new DiscordEmbedBuilder
 						{
 							Color = DiscordColor.Red,
@@ -126,7 +118,7 @@ namespace SupportBoi
 			}
 		}
 
-		internal async Task OnReactionAdded(DiscordClient client, MessageReactionAddEventArgs e)
+		internal static async Task OnReactionAdded(DiscordClient client, MessageReactionAddEventArgs e)
 		{
 			if (e.Message.Id != Config.reactionMessage) return;
 
@@ -157,14 +149,14 @@ namespace SupportBoi
 			string ticketID = id.ToString("00000");
 
 			await ticketChannel.ModifyAsync(model => model.Name = "ticket-" + ticketID);
-			await ticketChannel.AddOverwriteAsync(member, Permissions.AccessChannels, Permissions.None);
+			await ticketChannel.AddOverwriteAsync(member, Permissions.AccessChannels);
 			await ticketChannel.SendMessageAsync("Hello, " + member.Mention + "!\n" + Config.welcomeMessage);
 
 			// Remove user's reaction
 			await e.Message.DeleteReactionAsync(e.Emoji, e.User);
 
 			// Refreshes the channel as changes were made to it above
-			ticketChannel = await SupportBoi.GetClient().GetChannelAsync(ticketChannel.Id);
+			ticketChannel = await client.GetChannelAsync(ticketChannel.Id);
 
 			if (staffID != 0)
 			{
@@ -212,7 +204,7 @@ namespace SupportBoi
 			}
 		}
 
-		internal async Task OnMemberAdded(DiscordClient client, GuildMemberAddEventArgs e)
+		internal static async Task OnMemberAdded(DiscordClient client, GuildMemberAddEventArgs e)
 		{
 			if (!Database.TryGetOpenTickets(e.Member.Id, out List<Database.Ticket> ownTickets))
 			{
@@ -237,7 +229,7 @@ namespace SupportBoi
 			}
 		}
 
-		internal async Task OnMemberRemoved(DiscordClient client, Guild​Member​Remove​Event​Args e)
+		internal static async Task OnMemberRemoved(DiscordClient client, GuildMemberRemoveEventArgs e)
 		{
 			if (Database.TryGetOpenTickets(e.Member.Id, out List<Database.Ticket> ownTickets))
 			{
@@ -263,7 +255,6 @@ namespace SupportBoi
 				DiscordChannel logChannel = await client.GetChannelAsync(Config.logChannel);
 				if (logChannel != null)
 				{
-
 					foreach (Database.Ticket ticket in assignedTickets)
 					{
 						try
@@ -283,7 +274,7 @@ namespace SupportBoi
 			}
 		}
 
-		private string ParseFailedCheck(CheckBaseAttribute attr)
+		private static string ParseFailedCheck(CheckBaseAttribute attr)
 		{
 			switch (attr)
 			{

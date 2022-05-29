@@ -16,18 +16,7 @@ namespace SupportBoi.Commands
 		[Description("Adds a new message for the 'say' command.")]
 		public async Task OnExecute(CommandContext command, string identifier, [RemainingText] string message)
 		{
-			// Check if the user has permission to use this command.
-			if (!Config.HasPermission(command.Member, "addmessage"))
-			{
-				DiscordEmbed error = new DiscordEmbedBuilder
-				{
-					Color = DiscordColor.Red,
-					Description = "You do not have permission to use this command."
-				};
-				await command.RespondAsync(error);
-				command.Client.Logger.Log(LogLevel.Information, "User tried to use the addmessage command but did not have permission.");
-				return;
-			}
+			if (!await Utilities.VerifyPermission(command, "addmessage")) return;
 
 			if (string.IsNullOrEmpty(message))
 			{

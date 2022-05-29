@@ -14,18 +14,7 @@ namespace SupportBoi.Commands
 		[Cooldown(1, 5, CooldownBucketType.User)]
 		public async Task OnExecute(CommandContext command, [RemainingText] string commandArgs)
 		{
-			// Check if the user has permission to use this command.
-			if (!Config.HasPermission(command.Member, "listunassigned"))
-			{
-				DiscordEmbed error = new DiscordEmbedBuilder
-				{
-					Color = DiscordColor.Red,
-					Description = "You do not have permission to use this command."
-				};
-				await command.RespondAsync(error);
-				command.Client.Logger.Log(LogLevel.Information, "User tried to use the listunassigned command but did not have permission.");
-				return;
-			}
+			if (!await Utilities.VerifyPermission(command, "listunassigned")) return;
 
 			if (!Database.TryGetAssignedTickets(0, out List<Database.Ticket> unassignedTickets))
 			{
