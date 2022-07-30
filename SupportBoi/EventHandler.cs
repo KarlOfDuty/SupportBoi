@@ -279,7 +279,7 @@ namespace SupportBoi
 			switch (attr)
 			{
 				case CooldownAttribute _:
-					return "You cannot use do that so often!";
+					return "You cannot use that so often!";
 				case RequireOwnerAttribute _:
 					return "Only the server owner can use that command!";
 				case RequirePermissionsAttribute _:
