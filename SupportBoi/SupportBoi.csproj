@@ -4,7 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
     <RuntimeIdentifiers>win-x64;linux-x64</RuntimeIdentifiers>
-    <Version>2.6.1.2</Version>
+    <Version>2.7.0.1</Version>
     <StartupObject>SupportBoi.SupportBoi</StartupObject>
     <Authors>KarlofDuty</Authors>
     <Product />
@@ -13,26 +13,26 @@
     <RepositoryType>Git</RepositoryType>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageIconUrl>https://karlofduty.com/img/tardisIcon.jpg</PackageIconUrl>
-    <Description>A Discord support ticket bot. Saves to a MySQL database and has the option to output open tickets to a Google Sheet and HTML ticket transcript files when they are closed.</Description>
-    <AssemblyVersion>2.6.1.2</AssemblyVersion>
-    <FileVersion>2.6.1.2</FileVersion>
+    <Description>A Discord support ticket bot. Saves to a MySQL database and has the option to output open tickets to HTML ticket transcript files when they are closed.</Description>
+    <AssemblyVersion>2.7.0.1</AssemblyVersion>
+    <FileVersion>2.7.0.1</FileVersion>
     <NeutralLanguage>en</NeutralLanguage>
-    <PackageVersion>2.6.1-B</PackageVersion>
+    <PackageVersion>2.7.0</PackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DSharpPlus" Version="4.2.0" />
-    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.2.0" />
-    <PackageReference Include="DSharpPlus.Interactivity" Version="4.2.0" />
+    <PackageReference Include="DSharpPlus" Version="4.3.0-nightly-01160" />
+    <PackageReference Include="DSharpPlus.Interactivity" Version="4.3.0-nightly-01160" />
+    <PackageReference Include="DSharpPlus.SlashCommands" Version="4.3.0-nightly-01160" />
     <PackageReference Include="Gress" Version="2.0.1" />
     <PackageReference Include="JsonExtensions" Version="1.2.0" />
     <PackageReference Include="MiniRazor.CodeGen" Version="2.2.1" />
-    <PackageReference Include="MySql.Data" Version="8.0.29" />
+    <PackageReference Include="MySql.Data" Version="8.0.30" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Polly" Version="7.2.3" />
     <PackageReference Include="Superpower" Version="3.0.0" />
     <PackageReference Include="Tyrrrz.Extensions" Version="1.6.5" />
-    <PackageReference Include="YamlDotNet" Version="11.2.1" />
+    <PackageReference Include="YamlDotNet" Version="12.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -49,14 +49,7 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
-
-  <ItemGroup>
-    <None Include="..\LICENSE">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-  </ItemGroup>
-
+  
   <ItemGroup>
     <Folder Include="lib\" />
   </ItemGroup>
