@@ -1,68 +1,45 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Attributes;
+﻿using System.Threading.Tasks;
 using DSharpPlus.Entities;
-using Microsoft.Extensions.Logging;
-using MySql.Data.MySqlClient;
+using DSharpPlus.SlashCommands;
+using DSharpPlus.SlashCommands.Attributes;
 
 namespace SupportBoi.Commands
 {
-	public class ToggleActiveCommand : BaseCommandModule
+	public class ToggleActiveCommand : ApplicationCommandModule
 	{
-		[Command("toggleactive")]
-		[Aliases("ta")]
-		public async Task OnExecute(CommandContext command, [RemainingText] string commandArgs)
+		[SlashRequireGuild]
+		[Config.ConfigPermissionCheckAttribute("toggleactive")]
+		[SlashCommand("toggleactive", "Toggles active status for a staff member.")]
+		public async Task OnExecute(InteractionContext command, DiscordUser user = null)
 		{
-			if (!await Utilities.VerifyPermission(command, "toggleactive")) return;
-
-			ulong staffID;
-			string[] parsedMessage = Utilities.ParseIDs(command.RawArgumentString);
-
-			if (!parsedMessage.Any())
-			{
-				staffID = command.Member.Id;
-			}
-			else if (!ulong.TryParse(parsedMessage[0], out staffID))
-			{
-				DiscordEmbed error = new DiscordEmbedBuilder
-				{
-					Color = DiscordColor.Red,
-					Description = "Invalid ID/Mention. (Could not convert to numerical)"
-				};
-				await command.RespondAsync(error);
-				return;
-			}
-
+			DiscordUser staffUser = user == null ? command.User : user;
+			
 			// Check if ticket exists in the database
-			if (!Database.TryGetStaff(staffID, out Database.StaffMember staffMember))
+			if (!Database.TryGetStaff(staffUser.Id, out Database.StaffMember staffMember))
 			{
-				DiscordEmbed error = new DiscordEmbedBuilder
+				await command.CreateResponseAsync(new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Red,
-					Description = "You have not been registered as staff."
-				};
-				await command.RespondAsync(error);
+					Description = user == null ? "You have not been registered as staff." : "The user is not registered as staff."
+				}, true);
 				return;
 			}
 
-			if (Database.SetStaffActive(staffID, !staffMember.active))
+			if (Database.SetStaffActive(staffUser.Id, !staffMember.active))
 			{
-				DiscordEmbed message = new DiscordEmbedBuilder
-                {
-                    Color = DiscordColor.Green,
-                    Description = staffMember.active ? "Staff member is now set as inactive and will no longer be randomly assigned any support tickets." : "Staff member is now set as active and will be randomly assigned support tickets again."
-                };
-                await command.RespondAsync(message);
+                await command.CreateResponseAsync(new DiscordEmbedBuilder
+				{
+					Color = DiscordColor.Green,
+					Description = staffMember.active ? "Staff member is now set as inactive and will no longer be randomly assigned any support tickets." : "Staff member is now set as active and will be randomly assigned support tickets again."
+				}, true);
 			}
 			else
 			{
-				DiscordEmbed error = new DiscordEmbedBuilder
+				await command.CreateResponseAsync(new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Red,
 					Description = "Error: Unable to update active status in database."
-				};
-				await command.RespondAsync(error);
+				}, true);
 			}
 		}
 	}

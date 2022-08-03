@@ -2,34 +2,31 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Exceptions;
-using Microsoft.Extensions.Logging;
+using DSharpPlus.SlashCommands;
+using DSharpPlus.SlashCommands.Attributes;
 
 namespace SupportBoi.Commands
 {
-	public class CloseCommand :BaseCommandModule
+	public class CloseCommand : ApplicationCommandModule
 	{
-		[Command("close")]
-		[Cooldown(1, 5, CooldownBucketType.User)]
-		public async Task OnExecute(CommandContext command, [RemainingText] string commandArgs)
+		[SlashRequireGuild]
+		[Config.ConfigPermissionCheckAttribute("close")]
+		[SlashCommand("close", "Closes a ticket.")]
+		public async Task OnExecute(InteractionContext command)
 		{
-			if (!await Utilities.VerifyPermission(command, "close")) return;
-
 			ulong channelID = command.Channel.Id;
 			string channelName = command.Channel.Name;
 
 			// Check if ticket exists in the database
 			if (!Database.TryGetOpenTicket(channelID, out Database.Ticket ticket))
 			{
-				DiscordEmbed error = new DiscordEmbedBuilder
+				await command.CreateResponseAsync(new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Red,
 					Description = "This channel is not a ticket."
-				};
-				await command.RespondAsync(error);
+				}, true);
 				return;
 			}
 
@@ -40,12 +37,11 @@ namespace SupportBoi.Commands
 			}
 			catch (Exception)
 			{
-				DiscordEmbed error = new DiscordEmbedBuilder
+				await command.CreateResponseAsync(new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Red,
 					Description = "ERROR: Could not save transcript file. Aborting..."
-				};
-				await command.RespondAsync(error);
+				});
 				throw;
 			}
 

@@ -1,63 +1,25 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Attributes;
+﻿using System.Threading.Tasks;
 using DSharpPlus.Entities;
-using Microsoft.Extensions.Logging;
+using DSharpPlus.SlashCommands;
+using DSharpPlus.SlashCommands.Attributes;
 using MySql.Data.MySqlClient;
 
 namespace SupportBoi.Commands
 {
-	public class RemoveStaffCommand : BaseCommandModule
+	public class RemoveStaffCommand : ApplicationCommandModule
 	{
-		[Command("removestaff")]
-		[Cooldown(1, 5, CooldownBucketType.User)]
-		public async Task OnExecute(CommandContext command, [RemainingText] string commandArgs)
+		[SlashRequireGuild]
+		[Config.ConfigPermissionCheckAttribute("removestaff")]
+		[SlashCommand("removestaff", "Removes a staff member.")]
+		public async Task OnExecute(InteractionContext command, DiscordUser user)
 		{
-			if (!await Utilities.VerifyPermission(command, "removestaff")) return;
-
-			ulong userID;
-			string[] parsedMessage = Utilities.ParseIDs(command.RawArgumentString);
-
-			if (!parsedMessage.Any())
+			if (!Database.IsStaff(user.Id))
 			{
-				userID = command.Member.Id;
-			}
-			else if (!ulong.TryParse(parsedMessage[0], out userID))
-			{
-				DiscordEmbed error = new DiscordEmbedBuilder
-				{
-					Color = DiscordColor.Red,
-					Description = "Invalid ID/Mention. (Could not convert to numerical)"
-				};
-				await command.RespondAsync(error);
-				return;
-			}
-
-			try
-			{
-				await command.Client.GetUserAsync(userID);
-			}
-			catch (Exception)
-			{
-				DiscordEmbed error = new DiscordEmbedBuilder
-				{
-					Color = DiscordColor.Red,
-					Description = "Invalid ID/Mention. (Could not find user on Discord)"
-				};
-				await command.RespondAsync(error);
-				return;
-			}
-
-			if (!Database.IsStaff(userID))
-			{
-				DiscordEmbed error = new DiscordEmbedBuilder
+				await command.CreateResponseAsync(new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Red,
 					Description = "User is already not registered as staff."
-				};
-				await command.RespondAsync(error);
+				}, true);
 				return;
 			}
 
@@ -65,27 +27,25 @@ namespace SupportBoi.Commands
 			{
 				c.Open();
 				MySqlCommand deletion = new MySqlCommand(@"DELETE FROM staff WHERE user_id=@user_id", c);
-				deletion.Parameters.AddWithValue("@user_id", userID);
+				deletion.Parameters.AddWithValue("@user_id", user.Id);
 				deletion.Prepare();
 				deletion.ExecuteNonQuery();
 
-				DiscordEmbed message = new DiscordEmbedBuilder
+				await command.CreateResponseAsync(new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Green,
 					Description = "User was removed from staff."
-				};
-				await command.RespondAsync(message);
+				}, true);
 
 				// Log it if the log channel exists
 				DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
 				if (logChannel != null)
 				{
-					DiscordEmbed logMessage = new DiscordEmbedBuilder
+					await logChannel.SendMessageAsync(new DiscordEmbedBuilder
 					{
 						Color = DiscordColor.Green,
 						Description = "User was removed from staff.\n",
-					};
-					await logChannel.SendMessageAsync(logMessage);
+					});
 				}
 			}
 		}

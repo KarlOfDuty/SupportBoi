@@ -1,61 +1,54 @@
 ﻿using System.Threading.Tasks;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
-using Microsoft.Extensions.Logging;
-using MySql.Data.MySqlClient;
+using DSharpPlus.SlashCommands;
+using DSharpPlus.SlashCommands.Attributes;
 
 namespace SupportBoi.Commands
 {
-	public class UnsetTicketCommand : BaseCommandModule
+	public class UnsetTicketCommand : ApplicationCommandModule
 	{
-		[Command("unsetticket")]
-		[Description("Deletes a channel from the ticket system without deleting the channel.")]
-		public async Task OnExecute(CommandContext command, [RemainingText] string commandArgs)
+		[SlashRequireGuild]
+		[Config.ConfigPermissionCheckAttribute("unsetticket")]
+		[SlashCommand("unsetticket", "Deletes a channel from the ticket system without deleting the channel.")]
+		public async Task OnExecute(InteractionContext command)
 		{
-			if (!await Utilities.VerifyPermission(command, "unsetticket")) return;
-
 			// Check if ticket exists in the database
 			if (!Database.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
 			{
-				DiscordEmbed error = new DiscordEmbedBuilder
+				await command.CreateResponseAsync(new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Red,
 					Description = "This channel is not a ticket."
-				};
-				await command.RespondAsync(error);
+				}, true);
 				return;
 			}
 
 			if (Database.DeleteOpenTicket(ticket.id))
 			{
-				DiscordEmbed message = new DiscordEmbedBuilder
-                {
-                	Color = DiscordColor.Green,
-                	Description = "Channel has been undesignated as a ticket."
-                };
-                await command.RespondAsync(message);
+                await command.CreateResponseAsync(new DiscordEmbedBuilder
+				{
+					Color = DiscordColor.Green,
+					Description = "Channel has been undesignated as a ticket."
+				});
     
                 // Log it if the log channel exists
                 DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
                 if (logChannel != null)
                 {
-                	DiscordEmbed logMessage = new DiscordEmbedBuilder
-                	{
-                		Color = DiscordColor.Green,
-                		Description = command.Channel.Mention + " has been undesignated as a ticket by " + command.Member.Mention + "."
-                	};
-                	await logChannel.SendMessageAsync(logMessage);
+                	await logChannel.SendMessageAsync(new DiscordEmbedBuilder
+					{
+						Color = DiscordColor.Green,
+						Description = command.Channel.Mention + " has been undesignated as a ticket by " + command.Member.Mention + "."
+					});
                 }
 			}
 			else
 			{
-				DiscordEmbed error = new DiscordEmbedBuilder
+				await command.CreateResponseAsync(new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Red,
 					Description = "Error: Failed removing ticket from database."
-				};
-				await command.RespondAsync(error);
+				}, true);
 			}
 		}
 	}

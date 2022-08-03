@@ -1,46 +1,29 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using DSharpPlus.SlashCommands;
+using DSharpPlus.SlashCommands.Attributes;
 using Microsoft.Extensions.Logging;
 
 namespace SupportBoi.Commands
 {
-	public class ListAssignedCommand : BaseCommandModule
+	public class ListAssignedCommand : ApplicationCommandModule
 	{
-		[Command("listassigned")]
-		[Aliases("la")]
-		[Cooldown(1, 5, CooldownBucketType.User)]
-		public async Task OnExecute(CommandContext command, [RemainingText] string commandArgs)
+		[SlashRequireGuild]
+		[Config.ConfigPermissionCheckAttribute("listassigned")]
+		[SlashCommand("listassigned", "Lists tickets assigned to a user.")]
+		public async Task OnExecute(InteractionContext command, DiscordUser user = null)
 		{
-			if (!await Utilities.VerifyPermission(command, "listassigned")) return;
-
-			ulong staffID;
-			string[] parsedIDs = Utilities.ParseIDs(command.RawArgumentString);
-
-			if (!parsedIDs.Any())
+			DiscordUser listUser = user == null ? command.User : user;
+			
+			if (!Database.TryGetAssignedTickets(listUser.Id, out List<Database.Ticket> assignedTickets))
 			{
-				staffID = command.Member.Id;
-			}
-			else if (!ulong.TryParse(parsedIDs[0], out staffID))
-			{
-				DiscordEmbed error = new DiscordEmbedBuilder
+				await command.CreateResponseAsync(new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Red,
-					Description = "Invalid ID/Mention. (Could not convert to numerical)"
-				};
-				await command.RespondAsync(error);
-				return;
-			}
-
-			if (!Database.TryGetAssignedTickets(staffID, out List<Database.Ticket> assignedTickets))
-			{
-				DiscordEmbed error = new DiscordEmbedBuilder()
-					.WithColor(DiscordColor.Red)
-					.WithDescription("User does not have any assigned tickets.");
-				await command.RespondAsync(error);
+					Description = "User does not have any assigned tickets."
+				});
 				return;
 			}
 
@@ -50,6 +33,7 @@ namespace SupportBoi.Commands
 				listItems.Add("**" + ticket.FormattedCreatedTime() + ":** <#" + ticket.channelID + "> by <@" + ticket.creatorID + ">\n");
 			}
 
+			bool replySent = false;
 			LinkedList<string> messages = Utilities.ParseListIntoMessages(listItems);
 			foreach (string message in messages)
 			{
@@ -57,9 +41,18 @@ namespace SupportBoi.Commands
 					.WithTitle("Assigned tickets: ")
 					.WithColor(DiscordColor.Green)
 					.WithDescription(message);
-				await command.RespondAsync(channelInfo);
+				
+				// We have to send exactly one reply to the interaction and all other messages as normal messages
+				if (replySent)
+				{
+					await command.Channel.SendMessageAsync(channelInfo);
+				}
+				else
+				{
+					await command.CreateResponseAsync(channelInfo);
+					replySent = true;
+				}
 			}
-
 		}
 	}
 }

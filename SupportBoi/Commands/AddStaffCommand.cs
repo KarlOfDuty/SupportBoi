@@ -1,84 +1,46 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
-using Microsoft.Extensions.Logging;
+using DSharpPlus.SlashCommands;
+using DSharpPlus.SlashCommands.Attributes;
 using MySql.Data.MySqlClient;
 
 namespace SupportBoi.Commands
 {
-	public class AddStaffCommand : BaseCommandModule
+	public class AddStaffCommand : ApplicationCommandModule
 	{
-		[Command("addstaff")]
-		[Cooldown(1, 5, CooldownBucketType.User)]
-		public async Task OnExecute(CommandContext command, [RemainingText] string commandArgs)
+		[SlashRequireGuild]
+		[Config.ConfigPermissionCheckAttribute("addstaff")]
+		[SlashCommand("addstaff", "Adds a new staff member.")]
+		public async Task OnExecute(InteractionContext command, DiscordMember user)
 		{
-			if (!await Utilities.VerifyPermission(command, "addstaff")) return;
+			DiscordMember staffMember = user == null ? command.Member : user;
 
-			ulong userID;
-			string[] parsedArgs = Utilities.ParseIDs(commandArgs);
+			await using MySqlConnection c = Database.GetConnection();
+			MySqlCommand cmd = Database.IsStaff(staffMember.Id) ? new MySqlCommand(@"UPDATE staff SET name = @name WHERE user_id = @user_id", c) : new MySqlCommand(@"INSERT INTO staff (user_id, name) VALUES (@user_id, @name);", c);
 
-			if (!parsedArgs.Any())
+			c.Open();
+			cmd.Parameters.AddWithValue("@user_id", staffMember.Id);
+			cmd.Parameters.AddWithValue("@name", staffMember.DisplayName);
+			cmd.ExecuteNonQuery();
+			cmd.Dispose();
+
+			await command.CreateResponseAsync(new DiscordEmbedBuilder
 			{
-				userID = command.Member.Id;
-			}
-			else if (!ulong.TryParse(parsedArgs[0], out userID))
-			{
-				DiscordEmbed error = new DiscordEmbedBuilder
-				{
-					Color = DiscordColor.Red,
-					Description = "Invalid ID/Mention. (Could not convert to numerical)"
-				};
-				await command.RespondAsync(error);
-				return;
-			}
+				Color = DiscordColor.Green,
+				Description = staffMember.Mention + " was added to staff."
+			});
 
-			DiscordMember member;
-			try
+			// Log it if the log channel exists
+			DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
+			if (logChannel != null)
 			{
-				member = await command.Guild.GetMemberAsync(userID);
-			}
-			catch (Exception)
-			{
-				DiscordEmbed error = new DiscordEmbedBuilder
-				{
-					Color = DiscordColor.Red,
-					Description = "Invalid ID/Mention. (Could not find user on this server)"
-				};
-				await command.RespondAsync(error);
-				return;
-			}
-
-			using (MySqlConnection c = Database.GetConnection())
-			{
-				MySqlCommand cmd = Database.IsStaff(userID) ? new MySqlCommand(@"UPDATE staff SET name = @name WHERE user_id = @user_id", c) : new MySqlCommand(@"INSERT INTO staff (user_id, name) VALUES (@user_id, @name);", c);
-
-				c.Open();
-				cmd.Parameters.AddWithValue("@user_id", userID);
-				cmd.Parameters.AddWithValue("@name", member.DisplayName);
-				cmd.ExecuteNonQuery();
-				cmd.Dispose();
-
-				DiscordEmbed message = new DiscordEmbedBuilder
+				await logChannel.SendMessageAsync(new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Green,
-					Description = member.Mention + " was added to staff."
-				};
-				await command.RespondAsync(message);
-
-				// Log it if the log channel exists
-				DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
-				if (logChannel != null)
-				{
-					DiscordEmbed logMessage = new DiscordEmbedBuilder
-					{
-						Color = DiscordColor.Green,
-						Description = member.Mention + " was added to staff.\n",
-					};
-					await logChannel.SendMessageAsync(logMessage);
-				}
+					Description = staffMember.Mention + " was added to staff.\n",
+				});
 			}
 		}
 	}

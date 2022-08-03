@@ -1,8 +1,6 @@
 ﻿bot:
     # Bot token.
     token: "<add-token-here>"
-    # Command prefix.
-    prefix: "+"
     # Channel where ticket logs are posted (recommended)
     log-channel: 000000000000000000
     # Category where the ticket will be created, it will have the same permissions of that ticket plus read permissions for the user opening the ticket (recommended)
@@ -25,7 +23,7 @@
     # Possible values are: Playing, Streaming, ListeningTo, Watching, Competing
     presence-type: "ListeningTo"
     # Sets the activity text shown in the bot's status
-    presence-text: "+new"
+    presence-text: "/new"
 
 notifications:
     # Notifies the assigned staff member when a new message is posted in a ticket if the ticket has been silent for a configurable amount of time

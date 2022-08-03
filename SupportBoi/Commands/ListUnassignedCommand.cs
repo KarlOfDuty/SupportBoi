@@ -1,27 +1,25 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
-using Microsoft.Extensions.Logging;
+using DSharpPlus.SlashCommands;
+using DSharpPlus.SlashCommands.Attributes;
 
 namespace SupportBoi.Commands
 {
-	public class ListUnassignedCommand : BaseCommandModule
+	public class ListUnassignedCommand : ApplicationCommandModule
 	{
-		[Command("listunassigned")]
-		[Aliases("lu")]
-		[Cooldown(1, 5, CooldownBucketType.User)]
-		public async Task OnExecute(CommandContext command, [RemainingText] string commandArgs)
+		[SlashRequireGuild]
+		[Config.ConfigPermissionCheckAttribute("listunassigned")]
+		[SlashCommand("listunassigned", "Lists unassigned tickets.")]
+		public async Task OnExecute(InteractionContext command, int limit = 20)
 		{
-			if (!await Utilities.VerifyPermission(command, "listunassigned")) return;
-
 			if (!Database.TryGetAssignedTickets(0, out List<Database.Ticket> unassignedTickets))
 			{
-				DiscordEmbed response = new DiscordEmbedBuilder()
-					.WithColor(DiscordColor.Green)
-					.WithDescription("There are no unassigned tickets.");
-				await command.RespondAsync(response);
+				await command.CreateResponseAsync(new DiscordEmbedBuilder()
+				{
+					Color = DiscordColor.Green,
+					Description = "There are no unassigned tickets."
+				});
 			}
 
 			List<string> listItems = new List<string>();
@@ -30,14 +28,27 @@ namespace SupportBoi.Commands
 				listItems.Add("**" + ticket.FormattedCreatedTime() + ":** <#" + ticket.channelID + "> by <@" + ticket.creatorID + ">\n");
 			}
 
+			bool replySent = false;
 			LinkedList<string> messages = Utilities.ParseListIntoMessages(listItems);
 			foreach (string message in messages)
 			{
 				DiscordEmbed channelInfo = new DiscordEmbedBuilder()
-					.WithTitle("Unassigned tickets: ")
-					.WithColor(DiscordColor.Green)
-					.WithDescription(message?.Trim());
-				await command.RespondAsync(channelInfo);
+				{
+					Title = "Unassigned tickets: ",
+					Color = DiscordColor.Green,
+					Description = message?.Trim()
+				};
+
+				// We have to send exactly one reply to the interaction and all other messages as normal messages
+				if (replySent)
+				{
+					await command.Channel.SendMessageAsync(channelInfo);
+				}
+				else
+				{
+					await command.CreateResponseAsync(channelInfo);
+					replySent = true;
+				}
 			}
 		}
 	}

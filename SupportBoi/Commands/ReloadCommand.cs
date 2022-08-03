@@ -1,25 +1,20 @@
-﻿using System;
-using System.Threading.Tasks;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Attributes;
+﻿using System.Threading.Tasks;
 using DSharpPlus.Entities;
-using Microsoft.Extensions.Logging;
+using DSharpPlus.SlashCommands;
 
 namespace SupportBoi.Commands
 {
-	public class ReloadCommand : BaseCommandModule
+	public class ReloadCommand : ApplicationCommandModule
 	{
-		[Command("reload")]
-		public async Task OnExecute(CommandContext command, [RemainingText] string commandArgs)
+		[Config.ConfigPermissionCheckAttribute("reload")]
+		[SlashCommand("reload", "Reloads the bot config.")]
+		public async Task OnExecute(InteractionContext command)
 		{
-			if (!await Utilities.VerifyPermission(command, "reload")) return;
-
-			DiscordEmbed message = new DiscordEmbedBuilder
+			await command.CreateResponseAsync(new DiscordEmbedBuilder
 			{
 				Color = DiscordColor.Green,
 				Description = "Reloading bot application..."
-			};
-			await command.RespondAsync(message);
+			});
 			Logger.Log(LogID.DISCORD, "Reloading bot...");
 			SupportBoi.Reload();
 		}

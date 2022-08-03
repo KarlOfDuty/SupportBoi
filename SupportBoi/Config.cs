@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using DSharpPlus.Entities;
+using DSharpPlus.SlashCommands;
 using Newtonsoft.Json.Linq;
 using SupportBoi.Properties;
 using YamlDotNet.Serialization;
@@ -13,7 +15,6 @@ namespace SupportBoi
 	internal static class Config
 	{
 		internal static string token = "";
-		internal static string prefix = "";
 		internal static ulong logChannel;
 		internal static ulong ticketCategory;
 		internal static ulong reactionMessage;
@@ -90,7 +91,6 @@ namespace SupportBoi
 
 			// Sets up the bot
 			token = json.SelectToken("bot.token").Value<string>() ?? "";
-			prefix = json.SelectToken("bot.prefix").Value<string>() ?? "";
 			logChannel = json.SelectToken("bot.log-channel").Value<ulong>();
 			ticketCategory = json.SelectToken("bot.ticket-category")?.Value<ulong>() ?? 0;
 			reactionMessage = json.SelectToken("bot.reaction-message")?.Value<ulong>() ?? 0;
@@ -138,6 +138,40 @@ namespace SupportBoi
 		public static bool HasPermission(DiscordMember member, string permission)
 		{
 			return member.Roles.Any(role => permissions[permission].Contains(role.Id)) || permissions[permission].Contains(member.Guild.Id);
+		}
+		
+		public class ConfigPermissionCheckAttribute : SlashCheckBaseAttribute
+		{
+			public string permissionName { get; }
+
+			public ConfigPermissionCheckAttribute(string permission)
+			{
+				permissionName = permission;
+			}
+			
+			public override async Task<bool> ExecuteChecksAsync(InteractionContext command)
+			{
+				try
+				{
+					// Check if the user has permission to use this command.
+					if (!HasPermission(command.Member, permissionName))
+					{
+						return false;
+					}
+
+					return true;
+				}
+				catch (Exception e)
+				{
+					Logger.Error(LogID.COMMAND, "Exception occured: " + e.GetType() + ": " + e);
+					await command.CreateResponseAsync(new DiscordEmbedBuilder
+					{
+						Color = DiscordColor.Red,
+						Description = "Error occured when checking permissions, please report this to the developer."
+					});
+					return false;
+				}
+			}
 		}
 	}
 }

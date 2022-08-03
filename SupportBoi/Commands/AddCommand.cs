@@ -1,95 +1,60 @@
 ﻿using System;
 using System.Threading.Tasks;
 using DSharpPlus;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
-using Microsoft.Extensions.Logging;
+using DSharpPlus.SlashCommands;
+using DSharpPlus.SlashCommands.Attributes;
 
 namespace SupportBoi.Commands
 {
-	public class AddCommand : BaseCommandModule
+	public class AddCommand : ApplicationCommandModule
 	{
-		[Command("add")]
-		[Description("Adds a user to a ticket.")]
-		public async Task OnExecute(CommandContext command, [RemainingText] string commandArgs)
+		[SlashRequireGuild]
+		[Config.ConfigPermissionCheckAttribute("add")]
+		[SlashCommand("add", "Adds a user to a ticket")]
+		public async Task OnExecute(InteractionContext command, DiscordMember user)
 		{
-			if (!await Utilities.VerifyPermission(command, "add")) return;
-
+			DiscordMember member = user == null ? command.Member : user;
+			
 			// Check if ticket exists in the database
 			if (!Database.IsOpenTicket(command.Channel.Id))
 			{
-				DiscordEmbed error = new DiscordEmbedBuilder
+				await command.CreateResponseAsync(new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Red,
 					Description = "This channel is not a ticket."
-				};
-				await command.RespondAsync(error);
+				}, true);
 				return;
 			}
-
-			string[] parsedArgs = Utilities.ParseIDs(command.RawArgumentString);
-			foreach (string parsedArg in parsedArgs)
+			
+			try
 			{
-				if (!ulong.TryParse(parsedArg, out ulong userID))
+				await command.Channel.AddOverwriteAsync(member, Permissions.AccessChannels, Permissions.None);
+				await command.CreateResponseAsync(new DiscordEmbedBuilder
 				{
-					DiscordEmbed error = new DiscordEmbedBuilder
-					{
-						Color = DiscordColor.Red,
-						Description = "Invalid ID/Mention. (Could not convert to numerical)"
-					};
-					await command.RespondAsync(error);
-					continue;
-				}
+					Color = DiscordColor.Green,
+					Description = "Added " + member.Mention + " to ticket."
+				});
 
-				DiscordMember mentionedMember;
-				try
+				// Log it if the log channel exists
+				DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
+				if (logChannel != null)
 				{
-					mentionedMember = await command.Guild.GetMemberAsync(userID);
-				}
-				catch (Exception)
-				{
-					DiscordEmbed error = new DiscordEmbedBuilder
-					{
-						Color = DiscordColor.Red,
-						Description = "Invalid ID/Mention. (Could not find user on this server)"
-					};
-					await command.RespondAsync(error);
-					continue;
-				}
-
-				try
-				{
-					await command.Channel.AddOverwriteAsync(mentionedMember, Permissions.AccessChannels, Permissions.None);
-					DiscordEmbed message = new DiscordEmbedBuilder
+					await logChannel.SendMessageAsync(new DiscordEmbedBuilder
 					{
 						Color = DiscordColor.Green,
-						Description = "Added " + mentionedMember.Mention + " to ticket."
-					};
-					await command.RespondAsync(message);
-
-					// Log it if the log channel exists
-					DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
-					if (logChannel != null)
-					{
-						DiscordEmbed logMessage = new DiscordEmbedBuilder
-						{
-							Color = DiscordColor.Green,
-							Description = mentionedMember.Mention + " was added to " + command.Channel.Mention +
-							              " by " + command.Member.Mention + "."
-						};
-						await logChannel.SendMessageAsync(logMessage);
-					}
+						Description = member.Mention + " was added to " + command.Channel.Mention +
+									  " by " + command.Member.Mention + "."
+					});
 				}
-				catch (Exception)
+			}
+			catch (Exception)
+			{
+				await command.CreateResponseAsync(new DiscordEmbedBuilder
 				{
-					DiscordEmbed message = new DiscordEmbedBuilder
-					{
-						Color = DiscordColor.Red,
-						Description = "Could not add <@" + parsedArg + "> to ticket, unknown error occured."
-					};
-					await command.RespondAsync(message);
-				}
+					Color = DiscordColor.Red,
+					Description = "Could not add " + member.Mention + " to ticket, unknown error occured."
+				}, true);
 			}
 		}
 	}

@@ -2,13 +2,12 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using DSharpPlus;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Attributes;
-using DSharpPlus.CommandsNext.Exceptions;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using DSharpPlus.Exceptions;
-using Microsoft.Extensions.Logging;
+using DSharpPlus.SlashCommands;
+using DSharpPlus.SlashCommands.Attributes;
+using DSharpPlus.SlashCommands.EventArgs;
 
 namespace SupportBoi
 {
@@ -70,51 +69,45 @@ namespace SupportBoi
 			{
 				try
 				{
-					DiscordEmbed message = new DiscordEmbedBuilder
+					DiscordMember staffMember = await e.Guild.GetMemberAsync(ticket.assignedStaffID);
+					await staffMember.SendMessageAsync(new DiscordEmbedBuilder
 					{
 						Color = DiscordColor.Green,
 						Description = "A ticket you are assigned to has been updated: " + e.Channel.Mention
-					};
-
-					DiscordMember staffMember = await e.Guild.GetMemberAsync(ticket.assignedStaffID);
-					await staffMember.SendMessageAsync(message);
+					});
 				}
 				catch (NotFoundException) { }
 				catch (UnauthorizedException) { }
 			}
 		}
 
-		internal static Task OnCommandError(CommandsNextExtension commandSystem, CommandErrorEventArgs e)
+		internal static Task OnCommandError(SlashCommandsExtension commandSystem, SlashCommandErrorEventArgs e)
 		{
 			switch (e.Exception)
 			{
-				case CommandNotFoundException _:
-					return Task.CompletedTask;
-				case ChecksFailedException _:
+				case SlashExecutionChecksFailedException checksFailedException:
+				{
+					foreach (SlashCheckBaseAttribute attr in checksFailedException.FailedChecks)
 					{
-						foreach (CheckBaseAttribute attr in ((ChecksFailedException)e.Exception).FailedChecks)
-						{
-							DiscordEmbed error = new DiscordEmbedBuilder
-							{
-								Color = DiscordColor.Red,
-								Description = ParseFailedCheck(attr)
-							};
-							e.Context?.Channel?.SendMessageAsync(error);
-						}
-						return Task.CompletedTask;
-					}
-
-				default:
-					{
-						Logger.Error(LogID.COMMAND, "Exception occured: " + e.Exception.GetType() + ": " + e.Exception);
-						DiscordEmbed error = new DiscordEmbedBuilder
+						e.Context?.Channel?.SendMessageAsync(new DiscordEmbedBuilder
 						{
 							Color = DiscordColor.Red,
-							Description = "Internal error occured, please report this to the developer."
-						};
-						e.Context?.Channel?.SendMessageAsync(error);
-						return Task.CompletedTask;
+							Description = ParseFailedCheck(attr)
+						});
 					}
+					return Task.CompletedTask;
+				}
+
+				default:
+				{
+					Logger.Error(LogID.COMMAND, "Exception occured: " + e.Exception.GetType() + ": " + e.Exception);
+					e.Context?.Channel?.SendMessageAsync(new DiscordEmbedBuilder
+					{
+						Color = DiscordColor.Red,
+						Description = "Internal error occured, please report this to the developer."
+					});
+					return Task.CompletedTask;
+				}
 			}
 		}
 
@@ -169,17 +162,15 @@ namespace SupportBoi
 
 				if (Config.assignmentNotifications)
 				{
-					DiscordEmbed message = new DiscordEmbedBuilder
-					{
-						Color = DiscordColor.Green,
-						Description = "You have been randomly assigned to a newly opened support ticket: " +
-						              ticketChannel.Mention
-					};
-
 					try
 					{
 						DiscordMember staffMember = await guild.GetMemberAsync(staffID);
-						await staffMember.SendMessageAsync(message);
+						await staffMember.SendMessageAsync(new DiscordEmbedBuilder
+						{
+							Color = DiscordColor.Green,
+							Description = "You have been randomly assigned to a newly opened support ticket: " +
+										  ticketChannel.Mention
+						});
 					}
 					catch (NotFoundException)
 					{
@@ -194,13 +185,12 @@ namespace SupportBoi
 			DiscordChannel logChannel = guild.GetChannel(Config.logChannel);
 			if (logChannel != null)
 			{
-				DiscordEmbed logMessage = new DiscordEmbedBuilder
+				await logChannel.SendMessageAsync(new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Green,
 					Description = "Ticket " + ticketChannel.Mention + " opened by " + member.Mention + ".\n",
 					Footer = new DiscordEmbedBuilder.EmbedFooter {Text = "Ticket " + ticketID}
-				};
-				await logChannel.SendMessageAsync(logMessage);
+				});
 			}
 		}
 
@@ -218,11 +208,11 @@ namespace SupportBoi
 					DiscordChannel channel = await client.GetChannelAsync(ticket.channelID);
 					if (channel?.GuildId == e.Guild.Id)
 					{
-						await channel.AddOverwriteAsync(e.Member, Permissions.AccessChannels, Permissions.None);
-						DiscordEmbed message = new DiscordEmbedBuilder()
-							.WithColor(DiscordColor.Green)
-							.WithDescription("User '" + e.Member.Username + "#" + e.Member.Discriminator + "' has rejoined the server, and has been re-added to the ticket.");
-						await channel.SendMessageAsync(message);
+						await channel.SendMessageAsync(new DiscordEmbedBuilder
+						{
+							Color = DiscordColor.Green,
+							Description = "User '" + e.Member.Username + "#" + e.Member.Discriminator + "' has rejoined the server, and has been re-added to the ticket."
+						});
 					}
 				}
 				catch (Exception) { }
@@ -240,10 +230,11 @@ namespace SupportBoi
 						DiscordChannel channel = await client.GetChannelAsync(ticket.channelID);
 						if (channel?.GuildId == e.Guild.Id)
 						{
-							DiscordEmbed message = new DiscordEmbedBuilder()
-								.WithColor(DiscordColor.Red)
-								.WithDescription("User '" + e.Member.Username + "#" + e.Member.Discriminator + "' has left the server.");
-							await channel.SendMessageAsync(message);
+							await channel.SendMessageAsync(new DiscordEmbedBuilder
+							{
+								Color = DiscordColor.Red,
+								Description = "User '" + e.Member.Username + "#" + e.Member.Discriminator + "' has left the server."
+							});
 						}
 					}
 					catch (Exception) { }
@@ -262,10 +253,11 @@ namespace SupportBoi
 							DiscordChannel channel = await client.GetChannelAsync(ticket.channelID);
 							if (channel?.GuildId == e.Guild.Id)
 							{
-								DiscordEmbed message = new DiscordEmbedBuilder()
-									.WithColor(DiscordColor.Red)
-									.WithDescription("Assigned staff member '" + e.Member.Username + "#" + e.Member.Discriminator + "' has left the server: <#" + channel.Id + ">");
-								await logChannel.SendMessageAsync(message);
+								await logChannel.SendMessageAsync(new DiscordEmbedBuilder
+								{
+									Color = DiscordColor.Red,
+									Description = "Assigned staff member '" + e.Member.Username + "#" + e.Member.Discriminator + "' has left the server: <#" + channel.Id + ">"
+								});
 							}
 						}
 						catch (Exception) { }
@@ -274,25 +266,19 @@ namespace SupportBoi
 			}
 		}
 
-		private static string ParseFailedCheck(CheckBaseAttribute attr)
+		private static string ParseFailedCheck(SlashCheckBaseAttribute attr)
 		{
-			switch (attr)
+			return attr switch
 			{
-				case CooldownAttribute _:
-					return "You cannot use that so often!";
-				case RequireOwnerAttribute _:
-					return "Only the server owner can use that command!";
-				case RequirePermissionsAttribute _:
-					return "You don't have permission to do that!";
-				case RequireRolesAttribute _:
-					return "You do not have a required role!";
-				case RequireUserPermissionsAttribute _:
-					return "You don't have permission to do that!";
-				case RequireNsfwAttribute _:
-					return "This command can only be used in an NSFW channel!";
-				default:
-					return "Unknown Discord API error occured, please try again later.";
-			}
+				SlashRequireDirectMessageAttribute _ => "This command can only be used in direct messages!",
+				SlashRequireOwnerAttribute _ => "Only the server owner can use that command!",
+				SlashRequirePermissionsAttribute _ => "You don't have permission to do that!",
+				SlashRequireBotPermissionsAttribute _ => "The bot doesn't have the required permissions to do that!",
+				SlashRequireUserPermissionsAttribute _ => "You don't have permission to do that!",
+				SlashRequireGuildAttribute _ => "This command has to be used in a Discord server!",
+				Config.ConfigPermissionCheckAttribute _ => "You don't have permission to use this command!",
+				_ => "Unknown Discord API error occured, please try again later."
+			};
 		}
 	}
 }

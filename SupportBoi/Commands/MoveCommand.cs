@@ -2,92 +2,84 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Exceptions;
-using Microsoft.Extensions.Logging;
+using DSharpPlus.SlashCommands;
+using DSharpPlus.SlashCommands.Attributes;
 
 namespace SupportBoi.Commands
 {
-	public class MoveCommand : BaseCommandModule
+	public class MoveCommand : ApplicationCommandModule
 	{
-		[Command("move")]
-		[Description("Moves a ticket to another category.")]
-		public async Task OnExecute(CommandContext command, [RemainingText] string commandArgs)
+		[SlashRequireGuild]
+		[Config.ConfigPermissionCheckAttribute("move")]
+		[SlashCommand("move", "Moves a ticket to another category.")]
+		public async Task OnExecute(InteractionContext command, string category)
 		{
-			if (!await Utilities.VerifyPermission(command, "move")) return;
-
 			// Check if ticket exists in the database
 			if (!Database.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
 			{
-				DiscordEmbed error = new DiscordEmbedBuilder
+				await command.CreateResponseAsync(new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Red,
 					Description = "This channel is not a ticket."
-				};
-				await command.RespondAsync(error);
+				}, true);
 				return;
 			}
 
-			if (string.IsNullOrEmpty(command.RawArgumentString))
+			if (string.IsNullOrEmpty(category))
 			{
-				DiscordEmbed error = new DiscordEmbedBuilder
+				await command.CreateResponseAsync(new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Red,
 					Description = "Error: No category provided."
-				};
-				await command.RespondAsync(error);
+				}, true);
 				return;
 			}
 
 			IReadOnlyList<DiscordChannel> channels = await command.Guild.GetChannelsAsync();
 			IEnumerable<DiscordChannel> categories = channels.Where(x => x.IsCategory);
-			DiscordChannel category = categories.FirstOrDefault(x => x.Name.StartsWith(command.RawArgumentString.Trim(), StringComparison.OrdinalIgnoreCase));
+			DiscordChannel categoryChannel = categories.FirstOrDefault(x => x.Name.StartsWith(category.Trim(), StringComparison.OrdinalIgnoreCase));
 
-			if (category == null)
+			if (categoryChannel == null)
 			{
-				DiscordEmbed error = new DiscordEmbedBuilder
+				await command.CreateResponseAsync(new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Red,
 					Description = "Error: Could not find a category by that name."
-				};
-				await command.RespondAsync(error);
+				}, true);
 				return;
 			}
 
-			if (command.Channel.Id == category.Id)
+			if (command.Channel.Id == categoryChannel.Id)
 			{
-				DiscordEmbed error = new DiscordEmbedBuilder
+				await command.CreateResponseAsync(new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Red,
 					Description = "Error: The ticket is already in that category."
-				};
-				await command.RespondAsync(error);
+				}, true);
 				return;
 			}
 
 			try
 			{
-				await command.Channel.ModifyAsync(modifiedAttributes => modifiedAttributes.Parent = category);
+				await command.Channel.ModifyAsync(modifiedAttributes => modifiedAttributes.Parent = categoryChannel);
 			}
 			catch (UnauthorizedException)
 			{
-				DiscordEmbed error = new DiscordEmbedBuilder
+				await command.CreateResponseAsync(new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Red,
 					Description = "Error: Not authorized to move this ticket to that category."
-				};
-				await command.RespondAsync(error);
+				}, true);
 				return;
 			}
 
-			DiscordEmbed feedback = new DiscordEmbedBuilder
+			await command.CreateResponseAsync(new DiscordEmbedBuilder
 			{
 				Color = DiscordColor.Green,
-				Description = "Ticket was moved to " + category.Mention
-			};
-			await command.RespondAsync(feedback);
+				Description = "Ticket was moved to " + categoryChannel.Mention
+			}, false);
 		}
 	}
 }

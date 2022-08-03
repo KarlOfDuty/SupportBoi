@@ -1,19 +1,17 @@
 ﻿using System.Threading.Tasks;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
-using Microsoft.Extensions.Logging;
+using DSharpPlus.SlashCommands;
+using DSharpPlus.SlashCommands.Attributes;
 
 namespace SupportBoi.Commands
 {
-	public class SummaryCommand : BaseCommandModule
+	public class SummaryCommand : ApplicationCommandModule
 	{
-		[Command("summary")]
-		[Cooldown(1, 5, CooldownBucketType.User)]
-		public async Task OnExecute(CommandContext command, [RemainingText] string commandArgs)
+		[SlashRequireGuild]
+		[Config.ConfigPermissionCheckAttribute("summary")]
+		[SlashCommand("summary", "Lists tickets assigned to a user.")]
+		public async Task OnExecute(InteractionContext command)
 		{
-			if (!await Utilities.VerifyPermission(command, "summary")) return;
-
 			if (Database.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
 			{
 				DiscordEmbed channelInfo = new DiscordEmbedBuilder()
@@ -24,16 +22,15 @@ namespace SupportBoi.Commands
 					.AddField("Assigned staff:", ticket.assignedStaffID == 0 ? "Unassigned." : $"<@{ticket.assignedStaffID}>", true)
 					.AddField("Creation time:", ticket.createdTime.ToString(Config.timestampFormat), true)
 					.AddField("Summary:", string.IsNullOrEmpty(ticket.summary) ? "No summary." : ticket.summary, false);
-				await command.RespondAsync(channelInfo);
+				await command.CreateResponseAsync(channelInfo);
 			}
 			else
 			{
-				DiscordEmbed error = new DiscordEmbedBuilder
+				await command.CreateResponseAsync(new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Red,
 					Description = "This channel is not a ticket."
-				};
-				await command.RespondAsync(error);
+				}, true);
 			}
 		}
 	}

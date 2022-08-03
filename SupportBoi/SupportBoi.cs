@@ -3,7 +3,7 @@ using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using DSharpPlus;
-using DSharpPlus.CommandsNext;
+using DSharpPlus.SlashCommands;
 using Microsoft.Extensions.Logging;
 using SupportBoi.Commands;
 
@@ -13,7 +13,7 @@ namespace SupportBoi
 	{
 		// Sets up a dummy client to use for logging
 		public static DiscordClient discordClient = new DiscordClient(new DiscordConfiguration { Token = "DUMMY_TOKEN", TokenType = TokenType.Bot, MinimumLogLevel = LogLevel.Debug });
-		private static CommandsNextExtension commands = null;
+		private static SlashCommandsExtension commands = null;
 
 		static void Main(string[] _)
 		{
@@ -109,10 +109,7 @@ namespace SupportBoi
 			}
 			
 			Logger.Log(LogID.GENERAL, "Registering commands...");
-			commands = discordClient.UseCommandsNext(new CommandsNextConfiguration
-			{
-				StringPrefixes = new []{ Config.prefix }
-			});
+			commands = discordClient.UseSlashCommands();
 
 			commands.RegisterCommands<AddCommand>();
 			commands.RegisterCommands<AddMessageCommand>();
@@ -142,7 +139,7 @@ namespace SupportBoi
 			commands.RegisterCommands<UnsetTicketCommand>();
 
 			Logger.Log(LogID.GENERAL, "Hooking command events...");
-			commands.CommandErrored += EventHandler.OnCommandError;
+			commands.SlashCommandErrored += EventHandler.OnCommandError;
 
 			Logger.Log(LogID.GENERAL, "Connecting to Discord...");
 			await discordClient.ConnectAsync();

@@ -1,59 +1,53 @@
 ﻿using System.Threading.Tasks;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
-using Microsoft.Extensions.Logging;
+using DSharpPlus.SlashCommands;
+using DSharpPlus.SlashCommands.Attributes;
 
 namespace SupportBoi.Commands
 {
-	public class UnassignCommand : BaseCommandModule
+	public class UnassignCommand : ApplicationCommandModule
 	{
-		[Command("unassign")]
-		[Description("Unassigns a staff member from a ticket.")]
-		public async Task OnExecute(CommandContext command, [RemainingText] string commandArgs)
+		[SlashRequireGuild]
+		[Config.ConfigPermissionCheckAttribute("unassign")]
+		[SlashCommand("unassign", "Unassigns a staff member from a ticket.")]
+		public async Task OnExecute(InteractionContext command)
 		{
-			if (!await Utilities.VerifyPermission(command, "unassign")) return;
-
 			// Check if ticket exists in the database
 			if (!Database.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
 			{
-				DiscordEmbed error = new DiscordEmbedBuilder
+				await command.CreateResponseAsync(new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Red,
 					Description = "This channel is not a ticket."
-				};
-				await command.RespondAsync(error);
+				}, true);
 				return;
 			}
 
 			if (!Database.UnassignStaff(ticket))
 			{
-				DiscordEmbed error = new DiscordEmbedBuilder
+				await command.CreateResponseAsync(new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Red,
-					Description = "Error: Failed to unassign staff from ticket."
-				};
-				await command.RespondAsync(error);
+					Description = "Error: Failed to unassign staff member from ticket."
+				}, true);
 				return;
 			}
 
-			DiscordEmbed message = new DiscordEmbedBuilder
+			await command.CreateResponseAsync(new DiscordEmbedBuilder
 			{
 				Color = DiscordColor.Green,
-				Description = "Unassigned staff from ticket."
-			};
-			await command.RespondAsync(message);
+				Description = "Unassigned staff member from ticket."
+			});
 
 			// Log it if the log channel exists
 			DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
 			if (logChannel != null)
 			{
-				DiscordEmbed logMessage = new DiscordEmbedBuilder
+				await logChannel.SendMessageAsync(new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Green,
-					Description = "Staff was unassigned from " + command.Channel.Mention + " by " + command.Member.Mention + "."
-				};
-				await logChannel.SendMessageAsync(logMessage);
+					Description = "Staff member was unassigned from " + command.Channel.Mention + " by " + command.Member.Mention + "."
+				});
 			}
 		}
 	}

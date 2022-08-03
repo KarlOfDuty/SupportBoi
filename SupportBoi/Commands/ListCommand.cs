@@ -1,40 +1,22 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
-using Microsoft.Extensions.Logging;
+using DSharpPlus.SlashCommands;
+using DSharpPlus.SlashCommands.Attributes;
 
 namespace SupportBoi.Commands
 {
-	public class ListCommand : BaseCommandModule
+	public class ListCommand : ApplicationCommandModule
 	{
-		[Command("list")]
-		[Cooldown(1, 5, CooldownBucketType.User)]
-		public async Task OnExecute(CommandContext command, [RemainingText] string commandArgs)
+		[SlashRequireGuild]
+		[Config.ConfigPermissionCheckAttribute("list")]
+		[SlashCommand("list", "Lists tickets opened by a user.")]
+		public async Task OnExecute(InteractionContext command, DiscordUser user = null)
 		{
-			if (!await Utilities.VerifyPermission(command, "list")) return;
-
-			ulong userID;
-			string[] parsedMessage = Utilities.ParseIDs(command.RawArgumentString);
-
-			if (!parsedMessage.Any())
-			{
-				userID = command.Member.Id;
-			}
-			else if (!ulong.TryParse(parsedMessage[0], out userID))
-			{
-				DiscordEmbed error = new DiscordEmbedBuilder
-				{
-					Color = DiscordColor.Red,
-					Description = "Invalid ID/Mention. (Could not convert to numerical)"
-				};
-				await command.RespondAsync(error);
-				return;
-			}
-
-			if (Database.TryGetOpenTickets(userID, out List<Database.Ticket> openTickets))
+			bool replySent = false;
+			DiscordUser listUser = user == null ? command.User : user;
+			if (Database.TryGetOpenTickets(listUser.Id, out List<Database.Ticket> openTickets))
 			{
 				List<string> listItems = new List<string>();
 				foreach (Database.Ticket ticket in openTickets)
@@ -46,21 +28,33 @@ namespace SupportBoi.Commands
 				foreach (string message in messages)
 				{
 					DiscordEmbed channelInfo = new DiscordEmbedBuilder()
-						.WithTitle("Open tickets: ")
-						.WithColor(DiscordColor.Green)
-						.WithDescription(message);
-					await command.RespondAsync(channelInfo);
+					{
+						Title = "Open tickets: ",
+						Color = DiscordColor.Green,
+						Description = message
+					};
+					// We have to send exactly one reply to the interaction and all other messages as normal messages
+					if (replySent)
+					{
+						await command.Channel.SendMessageAsync(channelInfo);
+					}
+					else
+					{
+						await command.CreateResponseAsync(channelInfo);
+						replySent = true;
+					}
 				}
 			}
 			else
 			{
-				DiscordEmbed channelInfo = new DiscordEmbedBuilder()
-					.WithColor(DiscordColor.Green)
-					.WithDescription("User does not have any open tickets.");
-				await command.RespondAsync(channelInfo);
+				await command.CreateResponseAsync(new DiscordEmbedBuilder()
+				{
+					Color = DiscordColor.Green,
+					Description = "User does not have any open tickets."
+				});
 			}
 
-			if (Database.TryGetClosedTickets(userID, out List<Database.Ticket> closedTickets))
+			if (Database.TryGetClosedTickets(listUser.Id, out List<Database.Ticket> closedTickets))
 			{
 				List<string> listItems = new List<string>();
 				foreach (Database.Ticket ticket in closedTickets)
@@ -71,19 +65,21 @@ namespace SupportBoi.Commands
 				LinkedList<string> messages = Utilities.ParseListIntoMessages(listItems);
 				foreach (string message in messages)
 				{
-					DiscordEmbed channelInfo = new DiscordEmbedBuilder()
-						.WithTitle("Closed tickets: ")
-						.WithColor(DiscordColor.Red)
-						.WithDescription(message);
-					await command.RespondAsync(channelInfo);
+					await command.Channel.SendMessageAsync(new DiscordEmbedBuilder()
+					{
+						Title = "Closed tickets: ",
+						Color = DiscordColor.Red,
+						Description = message
+					});
 				}
 			}
 			else
 			{
-				DiscordEmbed channelInfo = new DiscordEmbedBuilder()
-					.WithColor(DiscordColor.Red)
-					.WithDescription("User does not have any closed tickets.");
-				await command.RespondAsync(channelInfo);
+				await command.CreateResponseAsync(new DiscordEmbedBuilder()
+				{
+					Color = DiscordColor.Red,
+					Description = "User does not have any closed tickets."
+				});
 			}
 		}
 	}

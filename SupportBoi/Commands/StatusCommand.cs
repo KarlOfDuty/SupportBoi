@@ -1,19 +1,17 @@
 ﻿using System.Threading.Tasks;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
-using Microsoft.Extensions.Logging;
+using DSharpPlus.SlashCommands;
+using DSharpPlus.SlashCommands.Attributes;
 
 namespace SupportBoi.Commands
 {
-	public class StatusCommand : BaseCommandModule
+	public class StatusCommand : ApplicationCommandModule
 	{
-		[Command("status")]
-		[Cooldown(1, 5, CooldownBucketType.User)]
-		public async Task OnExecute(CommandContext command, [RemainingText] string commandArgs)
+		[SlashRequireGuild]
+		[Config.ConfigPermissionCheckAttribute("status")]
+		[SlashCommand("status", "Shows bot status and information.")]
+		public async Task OnExecute(InteractionContext command)
 		{
-			if (!await Utilities.VerifyPermission(command, "status")) return;
-
 			long openTickets = Database.GetNumberOfTickets();
 			long closedTickets = Database.GetNumberOfClosedTickets();
 
@@ -24,7 +22,7 @@ namespace SupportBoi.Commands
 				.AddField("Version:", SupportBoi.GetVersion(), false)
 				.AddField("Open tickets:", openTickets + "", true)
 				.AddField("Closed tickets:", closedTickets + " ", true);
-			await command.RespondAsync(botInfo);
+			await command.CreateResponseAsync(botInfo);
 		}
 	}
 }

@@ -1,42 +1,25 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
-using Microsoft.Extensions.Logging;
+using DSharpPlus.SlashCommands;
+using DSharpPlus.SlashCommands.Attributes;
 
 namespace SupportBoi.Commands
 {
-	public class ListOldestCommand : BaseCommandModule
+	public class ListOldestCommand : ApplicationCommandModule
 	{
-		[Command("listoldest")]
-		[Aliases("lo")]
-		[Cooldown(1, 5, CooldownBucketType.User)]
-		public async Task OnExecute(CommandContext command, [RemainingText] string commandArgs)
+		[SlashRequireGuild]
+		[Config.ConfigPermissionCheckAttribute("listoldest")]
+		[SlashCommand("listoldest", "Lists the oldest open tickets.")]
+		public async Task OnExecute(InteractionContext command, int limit = 20)
 		{
-			if (!await Utilities.VerifyPermission(command, "listoldest")) return;
-
-			int listLimit = 20;
-			if (!string.IsNullOrEmpty(command.RawArgumentString?.Trim() ?? ""))
+			if (!Database.TryGetOldestTickets(command.Member.Id, out List<Database.Ticket> openTickets, limit))
 			{
-				if (!int.TryParse(command.RawArgumentString?.Trim(), out listLimit) || listLimit < 5 || listLimit > 100)
+				await command.CreateResponseAsync(new DiscordEmbedBuilder()
 				{
-					DiscordEmbed error = new DiscordEmbedBuilder
-					{
-						Color = DiscordColor.Red,
-						Description = "Invalid list amount. (Must be integer between 5 and 100)"
-					};
-					await command.RespondAsync(error);
-					return;
-				}
-			}
-
-			if (!Database.TryGetOldestTickets(command.Member.Id, out List<Database.Ticket> openTickets, listLimit))
-			{
-				DiscordEmbed channelInfo = new DiscordEmbedBuilder()
-					.WithColor(DiscordColor.Red)
-					.WithDescription("Could not fetch any open tickets.");
-				await command.RespondAsync(channelInfo);
+					Color = DiscordColor.Red,
+					Description = "Could not fetch any open tickets."
+				});
 				return;
 			}
 
@@ -46,14 +29,27 @@ namespace SupportBoi.Commands
 				listItems.Add("**" + ticket.FormattedCreatedTime() + ":** <#" + ticket.channelID + "> by <@" + ticket.creatorID + ">\n");
 			}
 
+			bool replySent = false;
 			LinkedList<string> messages = Utilities.ParseListIntoMessages(listItems);
 			foreach (string message in messages)
 			{
 				DiscordEmbed channelInfo = new DiscordEmbedBuilder()
-					.WithTitle("The " + openTickets.Count + " oldest open tickets: ")
-					.WithColor(DiscordColor.Green)
-					.WithDescription(message?.Trim());
-				await command.RespondAsync(channelInfo);
+				{
+					Title = "The " + openTickets.Count + " oldest open tickets: ",
+					Color = DiscordColor.Green,
+					Description = message?.Trim()
+				};
+				
+				// We have to send exactly one reply to the interaction and all other messages as normal messages
+				if (replySent)
+				{
+					await command.Channel.SendMessageAsync(channelInfo);
+				}
+				else
+				{
+					await command.CreateResponseAsync(channelInfo);
+					replySent = true;
+				}
 			}
 		}
 	}
