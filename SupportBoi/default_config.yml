@@ -5,8 +5,6 @@
     log-channel: 000000000000000000
     # Category where the ticket will be created, it will have the same permissions of that ticket plus read permissions for the user opening the ticket (recommended)
     ticket-category: 000000000000000000
-    # A message which will open new tickets when users react to it (optional)
-    reaction-message: 000000000000000000
     # Message posted when a ticket is opened.
     welcome-message: "Please describe your issue below, and include all information needed for us to take action. This is an example ticket message and can be changed in the config."
     # Decides what messages are shown in console

@@ -17,12 +17,11 @@ namespace SupportBoi
 		internal static string token = "";
 		internal static ulong logChannel;
 		internal static ulong ticketCategory;
-		internal static ulong reactionMessage;
 		internal static string welcomeMessage = "";
 		internal static string logLevel = "Information";
 		internal static string timestampFormat = "yyyy-MMM-dd HH:mm";
 		internal static bool randomAssignment = false;
-		internal static bool randomAssignRoleOverride = false; // TODO: Implement
+		internal static bool randomAssignRoleOverride = false;
 		internal static string presenceType = "Playing";
 		internal static string presenceText = "";
 
@@ -93,7 +92,6 @@ namespace SupportBoi
 			token = json.SelectToken("bot.token").Value<string>() ?? "";
 			logChannel = json.SelectToken("bot.log-channel").Value<ulong>();
 			ticketCategory = json.SelectToken("bot.ticket-category")?.Value<ulong>() ?? 0;
-			reactionMessage = json.SelectToken("bot.reaction-message")?.Value<ulong>() ?? 0;
 			welcomeMessage = json.SelectToken("bot.welcome-message").Value<string>() ?? "";
 			logLevel = json.SelectToken("bot.console-log-level").Value<string>() ?? "";
 			timestampFormat = json.SelectToken("bot.timestamp-format").Value<string>() ?? "yyyy-MM-dd HH:mm";
