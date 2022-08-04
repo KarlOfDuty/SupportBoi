@@ -13,9 +13,32 @@ namespace SupportBoi.Commands
 		[SlashRequireGuild]
 		[Config.ConfigPermissionCheckAttribute("addstaff")]
 		[SlashCommand("addstaff", "Adds a new staff member.")]
-		public async Task OnExecute(InteractionContext command, DiscordMember user)
+		public async Task OnExecute(InteractionContext command, [Option("User", "User to add to staff.")] DiscordUser user)
 		{
-			DiscordMember staffMember = user == null ? command.Member : user;
+			DiscordMember staffMember = null;
+			try
+			{
+				staffMember = user == null ? command.Member : await command.Guild.GetMemberAsync(user.Id);
+
+				if (staffMember == null)
+				{
+					await command.CreateResponseAsync(new DiscordEmbedBuilder
+					{
+						Color = DiscordColor.Red,
+						Description = "Could not find that user in this server."
+					}, true);
+					return;
+				}
+			}
+			catch (Exception)
+			{
+				await command.CreateResponseAsync(new DiscordEmbedBuilder
+				{
+					Color = DiscordColor.Red,
+					Description = "Could not find that user in this server."
+				}, true);
+				return;
+			}
 
 			await using MySqlConnection c = Database.GetConnection();
 			MySqlCommand cmd = Database.IsStaff(staffMember.Id) ? new MySqlCommand(@"UPDATE staff SET name = @name WHERE user_id = @user_id", c) : new MySqlCommand(@"INSERT INTO staff (user_id, name) VALUES (@user_id, @name);", c);

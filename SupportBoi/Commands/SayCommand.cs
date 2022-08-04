@@ -12,7 +12,7 @@ namespace SupportBoi.Commands
 		[SlashRequireGuild]
 		[Config.ConfigPermissionCheckAttribute("say")]
 		[SlashCommand("say", "Prints a message with information from staff.")]
-		public async Task OnExecute(InteractionContext command, string identifier = null)
+		public async Task OnExecute(InteractionContext command, [Option("Identifier", "The identifier word to summon a message. Use without identifier to list all identifiers.")] string identifier = null)
 		{
 			// Print list of all messages if no identifier is provided
 			if (identifier == null)
@@ -42,7 +42,7 @@ namespace SupportBoi.Commands
 						Title = "Available messages: ",
 						Color = DiscordColor.Green,
 						Description = listMessage
-					});
+					}, true);
 				}
 			}
 			else

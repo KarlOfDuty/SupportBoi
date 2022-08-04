@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
@@ -11,9 +12,11 @@ namespace SupportBoi.Commands
 		[SlashRequireGuild]
 		[Config.ConfigPermissionCheckAttribute("listoldest")]
 		[SlashCommand("listoldest", "Lists the oldest open tickets.")]
-		public async Task OnExecute(InteractionContext command, int limit = 20)
+		public async Task OnExecute(InteractionContext command, [Option("Limit", "(Optional) Limit of how many tickets to list.")] long limit = 20)
 		{
-			if (!Database.TryGetOldestTickets(command.Member.Id, out List<Database.Ticket> openTickets, limit))
+			int clampedLimit = Math.Clamp((int)limit, 1, 200);
+			
+			if (!Database.TryGetOldestTickets(command.Member.Id, out List<Database.Ticket> openTickets, clampedLimit))
 			{
 				await command.CreateResponseAsync(new DiscordEmbedBuilder()
 				{

@@ -250,13 +250,19 @@ namespace SupportBoi
 			results.Close();
 			return true;
 		}
-		public static bool TryGetAssignedTickets(ulong staffID, out List<Ticket> tickets)
+		public static bool TryGetAssignedTickets(ulong staffID, out List<Ticket> tickets, uint listLimit = 0)
 		{
+			if (listLimit < 1)
+			{
+				listLimit = 10000;
+			}
+			
 			tickets = null;
 			using MySqlConnection c = GetConnection();
 			c.Open();
-			using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM tickets WHERE assigned_staff_id=@assigned_staff_id", c);
+			using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM tickets WHERE assigned_staff_id=@assigned_staff_id LIMIT @limit", c);
 			selection.Parameters.AddWithValue("@assigned_staff_id", staffID);
+			selection.Parameters.AddWithValue("@limit", listLimit);
 			selection.Prepare();
 			MySqlDataReader results = selection.ExecuteReader();
 

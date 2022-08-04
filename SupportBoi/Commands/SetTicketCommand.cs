@@ -10,8 +10,8 @@ namespace SupportBoi.Commands
 	{
 		[SlashRequireGuild]
 		[Config.ConfigPermissionCheckAttribute("setticket")]
-		[SlashCommand("setticket", "Turns a channel into a ticket, warning: this will let anyone with write access delete the channel using the close command.")]
-		public async Task OnExecute(InteractionContext command, DiscordUser user = null)
+		[SlashCommand("setticket", "Turns a channel into a ticket WARNING: Anyone will be able to delete the channel using /close.")]
+		public async Task OnExecute(InteractionContext command, [Option("User", "(Optional) The owner of the ticket.")] DiscordUser user = null)
 		{
 			// Check if ticket exists in the database
 			if (Database.IsOpenTicket(command.Channel.Id))

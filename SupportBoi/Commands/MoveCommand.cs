@@ -14,7 +14,7 @@ namespace SupportBoi.Commands
 		[SlashRequireGuild]
 		[Config.ConfigPermissionCheckAttribute("move")]
 		[SlashCommand("move", "Moves a ticket to another category.")]
-		public async Task OnExecute(InteractionContext command, string category)
+		public async Task OnExecute(InteractionContext command, [Option("Category", "The category to move the ticket to. Only has to be the beginning of the name.")] string category)
 		{
 			// Check if ticket exists in the database
 			if (!Database.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))

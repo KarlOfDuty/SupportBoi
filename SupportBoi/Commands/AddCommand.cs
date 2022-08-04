@@ -12,10 +12,8 @@ namespace SupportBoi.Commands
 		[SlashRequireGuild]
 		[Config.ConfigPermissionCheckAttribute("add")]
 		[SlashCommand("add", "Adds a user to a ticket")]
-		public async Task OnExecute(InteractionContext command, DiscordMember user)
+		public async Task OnExecute(InteractionContext command, [Option("User", "User to add to ticket.")] DiscordUser user)
 		{
-			DiscordMember member = user == null ? command.Member : user;
-			
 			// Check if ticket exists in the database
 			if (!Database.IsOpenTicket(command.Channel.Id))
 			{
@@ -23,6 +21,31 @@ namespace SupportBoi.Commands
 				{
 					Color = DiscordColor.Red,
 					Description = "This channel is not a ticket."
+				}, true);
+				return;
+			}
+
+			DiscordMember member = null;
+			try
+			{
+				member = user == null ? command.Member : await command.Guild.GetMemberAsync(user.Id);
+
+				if (member == null)
+				{
+					await command.CreateResponseAsync(new DiscordEmbedBuilder
+					{
+						Color = DiscordColor.Red,
+						Description = "Could not find that user in this server."
+					}, true);
+					return;
+				}
+			}
+			catch (Exception)
+			{
+				await command.CreateResponseAsync(new DiscordEmbedBuilder
+				{
+					Color = DiscordColor.Red,
+					Description = "Could not find that user in this server."
 				}, true);
 				return;
 			}

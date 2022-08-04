@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
@@ -11,9 +12,11 @@ namespace SupportBoi.Commands
 		[SlashRequireGuild]
 		[Config.ConfigPermissionCheckAttribute("listunassigned")]
 		[SlashCommand("listunassigned", "Lists unassigned tickets.")]
-		public async Task OnExecute(InteractionContext command, int limit = 20)
+		public async Task OnExecute(InteractionContext command, [Option("Limit", "(Optional) Limit of how many tickets to list.")] long limit = 20)
 		{
-			if (!Database.TryGetAssignedTickets(0, out List<Database.Ticket> unassignedTickets))
+			uint clampedLimit = Math.Clamp((uint)limit, 1, 200);
+			
+			if (!Database.TryGetAssignedTickets(0, out List<Database.Ticket> unassignedTickets, clampedLimit))
 			{
 				await command.CreateResponseAsync(new DiscordEmbedBuilder()
 				{

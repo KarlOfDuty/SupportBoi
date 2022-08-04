@@ -14,7 +14,7 @@ namespace SupportBoi.Commands
 		[SlashRequireGuild]
 		[Config.ConfigPermissionCheckAttribute("transcript")]
 		[SlashCommand("transcript", "Creates a transcript of a ticket.")]
-		public async Task OnExecute(InteractionContext command, int ticketID = 0)
+		public async Task OnExecute(InteractionContext command, [Option("Limit", "(Optional) Ticket to get transcript of.")] long ticketID = 0)
 		{
 			Database.Ticket ticket;
 			if (ticketID == 0) // If there are no arguments use current channel
@@ -37,11 +37,6 @@ namespace SupportBoi.Commands
 				}
 				else
 				{
-					DiscordEmbed error = new DiscordEmbedBuilder
-					{
-						Color = DiscordColor.Red,
-						Description = "This channel is not a ticket."
-					};
 					await command.CreateResponseAsync(new DiscordEmbedBuilder
 					{
 						Color = DiscordColor.Red,

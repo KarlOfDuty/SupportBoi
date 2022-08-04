@@ -13,7 +13,7 @@ namespace SupportBoi.Commands
 		[SlashRequireGuild]
 		[Config.ConfigPermissionCheckAttribute("listassigned")]
 		[SlashCommand("listassigned", "Lists tickets assigned to a user.")]
-		public async Task OnExecute(InteractionContext command, DiscordUser user = null)
+		public async Task OnExecute(InteractionContext command, [Option("User", "(Optional) User to list tickets for.")] DiscordUser user = null)
 		{
 			DiscordUser listUser = user == null ? command.User : user;
 			

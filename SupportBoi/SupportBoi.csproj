@@ -20,6 +20,10 @@
     <PackageVersion>2.7.0</PackageVersion>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugType>full</DebugType>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="DSharpPlus" Version="4.3.0-nightly-01160" />
     <PackageReference Include="DSharpPlus.Interactivity" Version="4.3.0-nightly-01160" />

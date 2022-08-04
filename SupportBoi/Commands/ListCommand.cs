@@ -12,7 +12,7 @@ namespace SupportBoi.Commands
 		[SlashRequireGuild]
 		[Config.ConfigPermissionCheckAttribute("list")]
 		[SlashCommand("list", "Lists tickets opened by a user.")]
-		public async Task OnExecute(InteractionContext command, DiscordUser user = null)
+		public async Task OnExecute(InteractionContext command, [Option("User", "(Optional) The user to get tickets by.")] DiscordUser user = null)
 		{
 			bool replySent = false;
 			DiscordUser listUser = user == null ? command.User : user;

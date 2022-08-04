@@ -10,7 +10,7 @@ namespace SupportBoi.Commands
 		[SlashRequireGuild]
 		[Config.ConfigPermissionCheckAttribute("removemessage")]
 		[SlashCommand("removemessage", "Removes a message from the 'say' command.")]
-		public async Task OnExecute(InteractionContext command, string identifier)
+		public async Task OnExecute(InteractionContext command, [Option("Identifier", "The identifier word used in the /say command.")] string identifier)
 		{
 			if (!Database.TryGetMessage(identifier.ToLower(), out Database.Message _))
 			{

@@ -10,7 +10,9 @@ namespace SupportBoi.Commands
 		[SlashRequireGuild]
 		[Config.ConfigPermissionCheckAttribute("addmessage")]
 		[SlashCommand("addmessage", "Adds a new message for the 'say' command.")]
-		public async Task OnExecute(InteractionContext command, string identifier, string message)
+		public async Task OnExecute(InteractionContext command, 
+			[Option("Identifier", "The identifier word used in the /say command.")] string identifier, 
+			[Option("Message", "The message the /say command will return.")] string message)
 		{
 			if (string.IsNullOrEmpty(message))
 			{

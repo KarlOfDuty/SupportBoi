@@ -11,7 +11,7 @@ namespace SupportBoi.Commands
 		[SlashRequireGuild]
 		[Config.ConfigPermissionCheckAttribute("removestaff")]
 		[SlashCommand("removestaff", "Removes a staff member.")]
-		public async Task OnExecute(InteractionContext command, DiscordUser user)
+		public async Task OnExecute(InteractionContext command, [Option("User", "User to remove from staff.")] DiscordUser user)
 		{
 			if (!Database.IsStaff(user.Id))
 			{

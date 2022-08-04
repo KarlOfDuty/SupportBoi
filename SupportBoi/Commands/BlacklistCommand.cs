@@ -11,7 +11,7 @@ namespace SupportBoi.Commands
 		[SlashRequireGuild]
 		[Config.ConfigPermissionCheckAttribute("blacklist")]
 		[SlashCommand("blacklist", "Blacklists a user from opening tickets.")]
-		public async Task OnExecute(InteractionContext command, DiscordUser user)
+		public async Task OnExecute(InteractionContext command, [Option("User", "User to blacklist.")] DiscordUser user)
 		{
 			try
 			{

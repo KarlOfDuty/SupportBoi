@@ -11,7 +11,7 @@ namespace SupportBoi.Commands
 		[SlashRequireGuild]
 		[Config.ConfigPermissionCheckAttribute("setsummary")]
 		[SlashCommand("setsummary", "Sets a ticket's summary for the summary command.")]
-		public async Task OnExecute(InteractionContext command, string summary)
+		public async Task OnExecute(InteractionContext command, [Option("Summary", "The ticket summary text.")] string summary)
 		{
 			ulong channelID = command.Channel.Id;
 			// Check if ticket exists in the database

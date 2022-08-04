@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using DSharpPlus.Entities;
 using DSharpPlus.Exceptions;
@@ -11,10 +12,33 @@ namespace SupportBoi.Commands
 	{
 		[SlashRequireGuild]
 		[Config.ConfigPermissionCheckAttribute("assign")]
-		[SlashCommand("assign", "Assigns a staff member to a ticket.")]
-		public async Task OnExecute(InteractionContext command, DiscordMember user)
+		[SlashCommand("assign", "Assigns a staff member to this ticket.")]
+		public async Task OnExecute(InteractionContext command, [Option("User", "User to assign to this ticket.")] DiscordUser user)
 		{
-			DiscordMember assignUser = user == null ? command.Member : user;
+			DiscordMember member = null;
+			try
+			{
+				member = user == null ? command.Member : await command.Guild.GetMemberAsync(user.Id);
+
+				if (member == null)
+				{
+					await command.CreateResponseAsync(new DiscordEmbedBuilder
+					{
+						Color = DiscordColor.Red,
+						Description = "Could not find that user in this server."
+					}, true);
+					return;
+				}
+			}
+			catch (Exception)
+			{
+				await command.CreateResponseAsync(new DiscordEmbedBuilder
+				{
+					Color = DiscordColor.Red,
+					Description = "Could not find that user in this server."
+				}, true);
+				return;
+			}
 			
 			// Check if ticket exists in the database
 			if (!Database.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
@@ -27,7 +51,7 @@ namespace SupportBoi.Commands
 				return;
 			}
 
-			if (!Database.IsStaff(assignUser.Id))
+			if (!Database.IsStaff(member.Id))
 			{
 				await command.CreateResponseAsync(new DiscordEmbedBuilder
 				{
@@ -37,12 +61,12 @@ namespace SupportBoi.Commands
 				return;
 			}
 
-			if (!Database.AssignStaff(ticket, assignUser.Id))
+			if (!Database.AssignStaff(ticket, member.Id))
 			{
 				await command.CreateResponseAsync(new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Red,
-					Description = "Error: Failed to assign " + assignUser.Mention + " to ticket."
+					Description = "Error: Failed to assign " + member.Mention + " to ticket."
 				}, true);
 				return;
 			}
@@ -50,14 +74,14 @@ namespace SupportBoi.Commands
 			await command.CreateResponseAsync(new DiscordEmbedBuilder
 			{
 				Color = DiscordColor.Green,
-				Description = "Assigned " + assignUser.Mention + " to ticket."
+				Description = "Assigned " + member.Mention + " to ticket."
 			});
 
 			if (Config.assignmentNotifications)
 			{
 				try
 				{
-					await assignUser.SendMessageAsync(new DiscordEmbedBuilder
+					await member.SendMessageAsync(new DiscordEmbedBuilder
 					{
 						Color = DiscordColor.Green,
 						Description = "You have been assigned to a support ticket: " + command.Channel.Mention
@@ -73,7 +97,7 @@ namespace SupportBoi.Commands
 				await logChannel.SendMessageAsync(new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Green,
-					Description = assignUser.Mention + " was assigned to " + command.Channel.Mention + " by " + command.Member.Mention + "."
+					Description = member.Mention + " was assigned to " + command.Channel.Mention + " by " + command.Member.Mention + "."
 				});
 			}
 		}

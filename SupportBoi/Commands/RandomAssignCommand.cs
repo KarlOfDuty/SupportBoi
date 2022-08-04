@@ -15,7 +15,7 @@ namespace SupportBoi.Commands
 		[SlashRequireGuild]
 		[Config.ConfigPermissionCheckAttribute("rassign")]
 		[SlashCommand("rassign", "Randomly assigns a staff member to a ticket.")]
-		public async Task OnExecute(InteractionContext command, DiscordRole role = null)
+		public async Task OnExecute(InteractionContext command, [Option("Role", "(Optional) Limit the random assignment to a specific role.")] DiscordRole role = null)
 		{
 			// Check if ticket exists in the database
 			if (!Database.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
