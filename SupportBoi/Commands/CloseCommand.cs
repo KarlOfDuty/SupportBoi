@@ -16,17 +16,18 @@ namespace SupportBoi.Commands
 		[SlashCommand("close", "Closes a ticket.")]
 		public async Task OnExecute(InteractionContext command)
 		{
+			await command.DeferAsync(true);
 			ulong channelID = command.Channel.Id;
 			string channelName = command.Channel.Name;
 
 			// Check if ticket exists in the database
 			if (!Database.TryGetOpenTicket(channelID, out Database.Ticket ticket))
 			{
-				await command.CreateResponseAsync(new DiscordEmbedBuilder
+				await command.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Red,
 					Description = "This channel is not a ticket."
-				}, true);
+				}));
 				return;
 			}
 
@@ -37,11 +38,11 @@ namespace SupportBoi.Commands
 			}
 			catch (Exception)
 			{
-				await command.CreateResponseAsync(new DiscordEmbedBuilder
+				await command.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Red,
 					Description = "ERROR: Could not save transcript file. Aborting..."
-				});
+				}));
 				throw;
 			}
 
@@ -56,14 +57,12 @@ namespace SupportBoi.Commands
 					Footer = new DiscordEmbedBuilder.EmbedFooter { Text = '#' + channelName }
 				};
 
-				using (FileStream file = new FileStream(Transcriber.GetPath(ticket.id), FileMode.Open, FileAccess.Read))
-				{
-					DiscordMessageBuilder message = new DiscordMessageBuilder();
-					message.WithEmbed(embed);
-					message.WithFiles(new Dictionary<string, Stream>() { { Transcriber.GetFilename(ticket.id), file } });
+				await using FileStream file = new FileStream(Transcriber.GetPath(ticket.id), FileMode.Open, FileAccess.Read);
+				DiscordMessageBuilder message = new DiscordMessageBuilder();
+				message.WithEmbed(embed);
+				message.WithFiles(new Dictionary<string, Stream>() { { Transcriber.GetFilename(ticket.id), file } });
 
-					await logChannel.SendMessageAsync(message);
-				}
+				await logChannel.SendMessageAsync(message);
 			}
 
 			if (Config.closingNotifications)
@@ -78,21 +77,27 @@ namespace SupportBoi.Commands
 				try
 				{
 					DiscordMember staffMember = await command.Guild.GetMemberAsync(ticket.creatorID);
+					await using FileStream file = new FileStream(Transcriber.GetPath(ticket.id), FileMode.Open, FileAccess.Read);
+					
+					DiscordMessageBuilder message = new DiscordMessageBuilder();
+					message.WithEmbed(embed);
+					message.WithFiles(new Dictionary<string, Stream>() { { Transcriber.GetFilename(ticket.id), file } });
 
-					using (FileStream file = new FileStream(Transcriber.GetPath(ticket.id), FileMode.Open, FileAccess.Read))
-					{
-						DiscordMessageBuilder message = new DiscordMessageBuilder();
-						message.WithEmbed(embed);
-						message.WithFiles(new Dictionary<string, Stream>() { { Transcriber.GetFilename(ticket.id), file } });
-
-						await staffMember.SendMessageAsync(message);
-					}
+					await staffMember.SendMessageAsync(message);
 				}
 				catch (NotFoundException) { }
 				catch (UnauthorizedException) { }
 			}
 
 			Database.ArchiveTicket(ticket);
+			
+			await command.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
+			{
+				Color = DiscordColor.Green,
+				Description = "Channel will be deleted in 3 seconds..."
+			}));
+
+			await Task.Delay(3000);
 
 			// Delete the channel and database entry
 			await command.Channel.DeleteAsync("Ticket closed.");
