@@ -11,8 +11,8 @@ namespace SupportBoi.Commands
 	{
 		[SlashRequireGuild]
 		[Config.ConfigPermissionCheckAttribute("say")]
-		[SlashCommand("say", "Prints a message with information from staff.")]
-		public async Task OnExecute(InteractionContext command, [Option("Identifier", "The identifier word to summon a message. Use without identifier to list all identifiers.")] string identifier = null)
+		[SlashCommand("say", "Prints a message with information from staff. Use without identifier to list all identifiers.")]
+		public async Task OnExecute(InteractionContext command, [Option("Identifier", "(Optional) The identifier word to summon a message.")] string identifier = null)
 		{
 			// Print list of all messages if no identifier is provided
 			if (identifier == null)
@@ -45,6 +45,7 @@ namespace SupportBoi.Commands
 					}, true);
 				}
 			}
+			// Print specific message
 			else
 			{
 				if (!Database.TryGetMessage(identifier.ToLower(), out Database.Message message))
@@ -59,8 +60,8 @@ namespace SupportBoi.Commands
 				
 				await command.CreateResponseAsync(new DiscordEmbedBuilder
 				{
-					Color = DiscordColor.Red,
-					Description = message.message
+					Color = DiscordColor.Cyan,
+					Description = message.message.Replace("\\n", "\n")
 				});				
 			}
 		}
