@@ -13,7 +13,7 @@ namespace SupportBoi.Commands
 		[SlashRequireGuild]
 		[Config.ConfigPermissionCheckAttribute("assign")]
 		[SlashCommand("assign", "Assigns a staff member to this ticket.")]
-		public async Task OnExecute(InteractionContext command, [Option("User", "User to assign to this ticket.")] DiscordUser user)
+		public async Task OnExecute(InteractionContext command, [Option("User", "(Optional) User to assign to this ticket.")] DiscordUser user = null)
 		{
 			DiscordMember member = null;
 			try
