@@ -22,7 +22,7 @@ namespace SupportBoi
 
 		private static async Task MainAsync()
 		{
-			Logger.Log(LogID.GENERAL,"Starting SupportBoi version " + GetVersion() + "...");
+			Logger.Log("Starting " + Assembly.GetEntryAssembly().GetName().Name + " version " + GetVersion() + "...");
 			try
 			{
 				Reload();
@@ -32,7 +32,7 @@ namespace SupportBoi
 			}
 			catch (Exception e)
 			{
-				Logger.Fatal(LogID.GENERAL,"Fatal error:\n" + e);
+				Logger.Fatal("Fatal error:\n" + e);
 				Console.ReadLine();
 			}
 		}
@@ -49,38 +49,38 @@ namespace SupportBoi
 			{
 				await discordClient.DisconnectAsync();
 				discordClient.Dispose();
-				Logger.Log(LogID.GENERAL, "Discord client disconnected.");
+				Logger.Log("Discord client disconnected.");
 			}
 			
-			Logger.Log(LogID.CONFIG, "Loading config \"" + Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar + "config.yml\"");
+			Logger.Log("Loading config \"" + Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar + "config.yml\"");
 			Config.LoadConfig();
 			
 			// Check if token is unset
 			if (Config.token == "<add-token-here>" || Config.token == "")
 			{
-				Logger.Fatal(LogID.CONFIG, "You need to set your bot token in the config and start the bot again.");
+				Logger.Fatal("You need to set your bot token in the config and start the bot again.");
 				throw new ArgumentException("Invalid Discord bot token");
 			}
 
 			// Database connection and setup
 			try
 			{
-				Logger.Log(LogID.DATABASE, "Connecting to database... (" + Config.hostName + ":" + Config.port + ")");
+				Logger.Log("Connecting to database... (" + Config.hostName + ":" + Config.port + ")");
 				Database.SetConnectionString(Config.hostName, Config.port, Config.database, Config.username, Config.password);
 				Database.SetupTables();
 			}
 			catch (Exception e)
 			{
-				Logger.Fatal(LogID.DATABASE, "Could not set up database tables, please confirm connection settings, status of the server and permissions of MySQL user. Error: " + e);
+				Logger.Fatal("Could not set up database tables, please confirm connection settings, status of the server and permissions of MySQL user. Error: " + e);
 				throw;
 			}
 			
-			Logger.Log(LogID.GENERAL, "Setting up Discord client...");
+			Logger.Log("Setting up Discord client...");
 			
 			// Checking log level
 			if (!Enum.TryParse(Config.logLevel, true, out LogLevel logLevel))
 			{
-				Logger.Warn(LogID.CONFIG, "Log level '" + Config.logLevel + "' invalid, using 'Information' instead.");
+				Logger.Warn("Log level '" + Config.logLevel + "' invalid, using 'Information' instead.");
 				logLevel = LogLevel.Information;
 			}
 			
@@ -96,7 +96,7 @@ namespace SupportBoi
 			
 			discordClient = new DiscordClient(cfg);
 			
-			Logger.Log(LogID.GENERAL, "Hooking events...");
+			Logger.Log("Hooking events...");
 			discordClient.Ready += EventHandler.OnReady;
 			discordClient.GuildAvailable += EventHandler.OnGuildAvailable;
 			discordClient.ClientErrored += EventHandler.OnClientError;
@@ -104,7 +104,7 @@ namespace SupportBoi
 			discordClient.GuildMemberAdded += EventHandler.OnMemberAdded;
 			discordClient.GuildMemberRemoved += EventHandler.OnMemberRemoved;
 			
-			Logger.Log(LogID.GENERAL, "Registering commands...");
+			Logger.Log("Registering commands...");
 			commands = discordClient.UseSlashCommands();
 
 			commands.RegisterCommands<AddCommand>();
@@ -134,10 +134,10 @@ namespace SupportBoi
 			commands.RegisterCommands<UnblacklistCommand>();
 			commands.RegisterCommands<UnsetTicketCommand>();
 
-			Logger.Log(LogID.GENERAL, "Hooking command events...");
+			Logger.Log("Hooking command events...");
 			commands.SlashCommandErrored += EventHandler.OnCommandError;
 
-			Logger.Log(LogID.GENERAL, "Connecting to Discord...");
+			Logger.Log("Connecting to Discord...");
 			await discordClient.ConnectAsync();
 		}
 	}

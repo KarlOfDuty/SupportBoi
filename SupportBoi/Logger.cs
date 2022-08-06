@@ -1,36 +1,17 @@
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace SupportBoi
 {
-	public enum LogID
-	{
-		GENERAL,
-		CONFIG,
-		GITHUB,
-		COMMAND,
-		DISCORD,
-		DATABASE
-	};
-
 	public static class Logger
 	{
-		private static Dictionary<LogID, EventId> eventIDs = new Dictionary<LogID, EventId>
-		{
-			{ LogID.GENERAL,  new EventId(500, "General")  },
-			{ LogID.CONFIG,   new EventId(501, "Config")   },
-			{ LogID.GITHUB,   new EventId(502, "Github")   },
-			{ LogID.COMMAND,  new EventId(503, "Command")  },
-			{ LogID.DISCORD,  new EventId(504, "Discord")  },
-			{ LogID.DATABASE, new EventId(505, "Database") },
-		};
-
-		public static void Debug(LogID logID, string Message)
+		public static void Debug(string Message)
 		{
 			try
 			{
-				SupportBoi.discordClient.Logger.Log(LogLevel.Debug, eventIDs[logID], Message);
+				SupportBoi.discordClient.Logger.Log(LogLevel.Debug, new EventId(420, Assembly.GetEntryAssembly()?.GetName().Name), Message);
 			}
 			catch (NullReferenceException)
 			{
@@ -38,11 +19,11 @@ namespace SupportBoi
 			}
 		}
 
-		public static void Log(LogID logID, string Message)
+		public static void Log(string Message)
 		{
 			try
 			{
-				SupportBoi.discordClient.Logger.Log(LogLevel.Information, eventIDs[logID], Message);
+				SupportBoi.discordClient.Logger.Log(LogLevel.Information, new EventId(420, Assembly.GetEntryAssembly()?.GetName().Name), Message);
 			}
 			catch (NullReferenceException)
 			{
@@ -50,11 +31,11 @@ namespace SupportBoi
 			}
 		}
 
-		public static void Warn(LogID logID, string Message)
+		public static void Warn(string Message)
 		{
 			try
 			{
-				SupportBoi.discordClient.Logger.Log(LogLevel.Warning, eventIDs[logID], Message);
+				SupportBoi.discordClient.Logger.Log(LogLevel.Warning, new EventId(420, Assembly.GetEntryAssembly()?.GetName().Name), Message);
 			}
 			catch (NullReferenceException)
 			{
@@ -62,11 +43,11 @@ namespace SupportBoi
 			}
 		}
 
-		public static void Error(LogID logID, string Message)
+		public static void Error(string Message)
 		{
 			try
 			{
-				SupportBoi.discordClient.Logger.Log(LogLevel.Error, eventIDs[logID], Message);
+				SupportBoi.discordClient.Logger.Log(LogLevel.Error, new EventId(420, Assembly.GetEntryAssembly()?.GetName().Name), Message);
 			}
 			catch (NullReferenceException)
 			{
@@ -74,11 +55,11 @@ namespace SupportBoi
 			}
 		}
 
-		public static void Fatal(LogID logID, string Message)
+		public static void Fatal(string Message)
 		{
 			try
 			{
-				SupportBoi.discordClient.Logger.Log(LogLevel.Critical, eventIDs[logID], Message);
+				SupportBoi.discordClient.Logger.Log(LogLevel.Critical, new EventId(420, Assembly.GetEntryAssembly()?.GetName().Name), Message);
 			}
 			catch (NullReferenceException)
 			{

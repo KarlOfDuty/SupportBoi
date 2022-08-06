@@ -15,7 +15,7 @@ namespace SupportBoi.Commands
 				Color = DiscordColor.Green,
 				Description = "Reloading bot application..."
 			});
-			Logger.Log(LogID.DISCORD, "Reloading bot...");
+			Logger.Log("Reloading bot...");
 			SupportBoi.Reload();
 		}
 	}

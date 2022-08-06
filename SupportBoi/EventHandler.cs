@@ -18,12 +18,12 @@ namespace SupportBoi
 
 		internal static Task OnReady(DiscordClient client, ReadyEventArgs e)
 		{
-			Logger.Log(LogID.DISCORD, "Client is ready to process events.");
+			Logger.Log("Client is ready to process events.");
 
 			// Checking activity type
 			if (!Enum.TryParse(Config.presenceType, true, out ActivityType activityType))
 			{
-				Logger.Log(LogID.CONFIG, "Presence type '" + Config.presenceType + "' invalid, using 'Playing' instead.");
+				Logger.Log("Presence type '" + Config.presenceType + "' invalid, using 'Playing' instead.");
 				activityType = ActivityType.Playing;
 			}
 
@@ -33,20 +33,20 @@ namespace SupportBoi
 
 		internal static Task OnGuildAvailable(DiscordClient _, GuildCreateEventArgs e)
 		{
-			Logger.Log(LogID.DISCORD, "Guild available: " + e.Guild.Name);
+			Logger.Log("Guild available: " + e.Guild.Name);
 
 			IReadOnlyDictionary<ulong, DiscordRole> roles = e.Guild.Roles;
 
 			foreach ((ulong roleID, DiscordRole role) in roles)
 			{
-				Logger.Log(LogID.DISCORD, role.Name.PadRight(40, '.') + roleID);
+				Logger.Log(role.Name.PadRight(40, '.') + roleID);
 			}
 			return Task.CompletedTask;
 		}
 
 		internal static Task OnClientError(DiscordClient _, ClientErrorEventArgs e)
 		{
-			Logger.Error(LogID.DISCORD, "Exception occured:\n" + e.Exception);
+			Logger.Error("Exception occured:\n" + e.Exception);
 			return Task.CompletedTask;
 		}
 
@@ -100,7 +100,7 @@ namespace SupportBoi
 
 				default:
 				{
-					Logger.Error(LogID.COMMAND, "Exception occured: " + e.Exception.GetType() + ": " + e.Exception);
+					Logger.Error("Exception occured: " + e.Exception.GetType() + ": " + e.Exception);
 					e.Context?.Channel?.SendMessageAsync(new DiscordEmbedBuilder
 					{
 						Color = DiscordColor.Red,

@@ -122,7 +122,7 @@ namespace SupportBoi
 				}
 				catch (ArgumentNullException)
 				{
-					Logger.Warn(LogID.CONFIG, "Permission node '" + node.Key + "' was not found in the config, using default value: []");
+					Logger.Warn("Permission node '" + node.Key + "' was not found in the config, using default value: []");
 				}
 			}
 		}
@@ -161,7 +161,7 @@ namespace SupportBoi
 				}
 				catch (Exception e)
 				{
-					Logger.Error(LogID.COMMAND, "Exception occured: " + e.GetType() + ": " + e);
+					Logger.Error("Exception occured: " + e.GetType() + ": " + e);
 					await command.CreateResponseAsync(new DiscordEmbedBuilder
 					{
 						Color = DiscordColor.Red,

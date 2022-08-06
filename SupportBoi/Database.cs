@@ -34,7 +34,7 @@ namespace SupportBoi
 			}
 			catch (Exception e)
 			{
-				Logger.Error(LogID.DATABASE, "Error occured when attempting to count number of open tickets: " + e);
+				Logger.Error("Error occured when attempting to count number of open tickets: " + e);
 			}
 
 			return -1;
@@ -50,7 +50,7 @@ namespace SupportBoi
 			}
 			catch (Exception e)
 			{
-				Logger.Error(LogID.DATABASE, "Error occured when attempting to count number of open tickets: " + e);
+				Logger.Error("Error occured when attempting to count number of open tickets: " + e);
 			}
 
 			return -1;
@@ -619,12 +619,12 @@ namespace SupportBoi
 
 			public Ticket(MySqlDataReader reader)
 			{
-				this.id = reader.GetUInt32("id");
-				this.createdTime = reader.GetDateTime("created_time");
-				this.creatorID = reader.GetUInt64("creator_id");
-				this.assignedStaffID = reader.GetUInt64("assigned_staff_id");
-				this.summary = reader.GetString("summary");
-				this.channelID = reader.GetUInt64("channel_id");
+				id = reader.GetUInt32("id");
+				createdTime = reader.GetDateTime("created_time");
+				creatorID = reader.GetUInt64("creator_id");
+				assignedStaffID = reader.GetUInt64("assigned_staff_id");
+				summary = reader.GetString("summary");
+				channelID = reader.GetUInt64("channel_id");
 			}
 
 			public string FormattedCreatedTime()
@@ -640,9 +640,9 @@ namespace SupportBoi
 
 			public StaffMember(MySqlDataReader reader)
 			{
-				this.userID = reader.GetUInt64("user_id");
-				this.name = reader.GetString("name");
-				this.active = reader.GetBoolean("active");
+				userID = reader.GetUInt64("user_id");
+				name = reader.GetString("name");
+				active = reader.GetBoolean("active");
 			}
 		}
 
@@ -654,9 +654,9 @@ namespace SupportBoi
 
 			public Message(MySqlDataReader reader)
 			{
-				this.identifier = reader.GetString("identifier");
-				this.userID = reader.GetUInt64("user_id");
-				this.message = reader.GetString("message");
+				identifier = reader.GetString("identifier");
+				userID = reader.GetUInt64("user_id");
+				message = reader.GetString("message");
 			}
 		}
 	}
