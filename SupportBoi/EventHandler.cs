@@ -206,15 +206,21 @@ namespace SupportBoi
 						{
 							case "supportboi_closeconfirm":
 								await CloseCommand.OnConfirmed(client, e);
-								break;
+								return;
 							default:
 								Logger.Warn("Unknown button press received! '" + e.Id + "'");
-								break;
+								return;
 						}
-						break;
 					case ComponentType.Select:
-						Logger.Warn("Unknown selection box option received! '" + e.Id + "'");
-						return;
+						switch (e.Id)
+						{
+							case {} when e.Id.StartsWith("supportboi_newticketselector"):
+								await CreateSelectionBoxPanelCommand.OnSelectionMenuUsed(client, e.Interaction);
+								return;
+							default:
+								Logger.Warn("Unknown selection box option received! '" + e.Id + "'");
+								return;
+						}
 					case ComponentType.ActionRow:
 						Logger.Warn("Unknown action row received! '" + e.Id + "'");
 						return;
@@ -226,13 +232,14 @@ namespace SupportBoi
 						break;
 				}
 			}
-			catch (UnauthorizedException)
+			catch (UnauthorizedException ex)
 			{
-				await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder
+				Logger.Error("Exception occured: " + ex.GetType() + ": " + ex);
+				/*await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Red,
 					Description = "The bot doesn't have the required permissions to do that!"
-				}).AsEphemeral());
+				}).AsEphemeral());*/
 			}
 			catch (BadRequestException ex)
 			{
@@ -242,11 +249,11 @@ namespace SupportBoi
 			catch (Exception ex)
 			{
 				Logger.Error("Exception occured: " + ex.GetType() + ": " + ex);
-				await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AddEmbed( new DiscordEmbedBuilder
+				/*await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AddEmbed( new DiscordEmbedBuilder
                 {
                 	Color = DiscordColor.Red,
                 	Description = "Internal interaction error occured, please report this to the developer."
-                }).AsEphemeral());
+                }).AsEphemeral());*/
 			}
 		}
 		

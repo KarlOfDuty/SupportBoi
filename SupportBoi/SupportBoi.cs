@@ -114,6 +114,7 @@ namespace SupportBoi
 			commands.RegisterCommands<AssignCommand>();
 			commands.RegisterCommands<BlacklistCommand>();
 			commands.RegisterCommands<CloseCommand>();
+			commands.RegisterCommands<CreateSelectionBoxPanelCommand>();
 			commands.RegisterCommands<ListAssignedCommand>();
 			commands.RegisterCommands<ListCommand>();
 			commands.RegisterCommands<ListOldestCommand>();
