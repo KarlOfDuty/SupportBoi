@@ -174,10 +174,12 @@ namespace SupportBoi
 			if (results.Read())
 			{
 				ticket = new Ticket(results);
+				results.Close();
 				return true;
 			}
 
 			ticket = null;
+			results.Close();
 			return false;
 		}
 		public static bool TryGetOpenTickets(ulong userID, out List<Ticket> tickets)
