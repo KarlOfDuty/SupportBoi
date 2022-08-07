@@ -432,23 +432,32 @@ namespace SupportBoi
          		return false;
          	}
         }
-		public static StaffMember GetRandomActiveStaff(ulong currentStaffID)
+		public static StaffMember GetRandomActiveStaff(params ulong[] ignoredUserIDs)
 		{
-			List<StaffMember> staffMembers = GetActiveStaff(currentStaffID);
-			if (!staffMembers.Any())
-			{
-				return null;
-			}
-
-			return staffMembers[random.Next(staffMembers.Count)];
+			List<StaffMember> staffMembers = GetActiveStaff(ignoredUserIDs);
+			return staffMembers.Any() ? staffMembers[random.Next(staffMembers.Count)] : null;
 		}
 
-		public static List<StaffMember> GetActiveStaff(ulong currentStaffID = 0)
+		public static List<StaffMember> GetActiveStaff(params ulong[] ignoredUserIDs)
 		{
+			bool first = true;
+			string filterString = "";
+			foreach (ulong userID in ignoredUserIDs)
+			{
+				if (first)
+				{
+					first = false;
+					filterString += "AND user_id != " + userID;
+				}
+				else
+				{
+					filterString += "&& user_id != " + userID;
+				}
+			}
+			
 			using MySqlConnection c = GetConnection();
 			c.Open();
-			using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM staff WHERE active = true AND user_id != @user_id", c);
-			selection.Parameters.AddWithValue("@user_id", currentStaffID);
+			using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM staff WHERE active = true " + filterString, c);
 			selection.Prepare();
 			MySqlDataReader results = selection.ExecuteReader();
 
@@ -468,12 +477,28 @@ namespace SupportBoi
 			return staffMembers;
 		}
 		
-		public static List<StaffMember> GetAllStaff(ulong currentStaffID = 0)
+		public static List<StaffMember> GetAllStaff(params ulong[] ignoredUserIDs)
 		{
+			bool first = true;
+			string filterString = "";
+			foreach (ulong userID in ignoredUserIDs)
+			{
+				if (first)
+				{
+					first = false;
+					filterString += "WHERE user_id != " + userID;
+				}
+				else
+				{
+					filterString += "&& user_id != " + userID;
+				}
+				
+			}
+			
+			
 			using MySqlConnection c = GetConnection();
 			c.Open();
-			using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM staff WHERE user_id != @user_id", c);
-			selection.Parameters.AddWithValue("@user_id", currentStaffID);
+			using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM staff " + filterString, c);
 			selection.Prepare();
 			MySqlDataReader results = selection.ExecuteReader();
 
