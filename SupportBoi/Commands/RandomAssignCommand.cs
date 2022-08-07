@@ -74,7 +74,7 @@ namespace SupportBoi.Commands
 				await logChannel.SendMessageAsync(new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Green,
-					Description = staffMember.Mention + " was assigned to " + command.Channel.Mention + " by " + command.Member.Mention + "."
+					Description = staffMember.Mention + " was randomly assigned to " + command.Channel.Mention + " by " + command.Member.Mention + "."
 				});
 			}
 		}
@@ -85,8 +85,8 @@ namespace SupportBoi.Commands
 			{
 				// Check if role rassign should override staff's active status
 				List<Database.StaffMember> staffMembers = Config.randomAssignRoleOverride
-					? Database.GetAllStaff(ticket.assignedStaffID)
-					: Database.GetActiveStaff(ticket.assignedStaffID);
+					? Database.GetAllStaff(ticket.assignedStaffID, ticket.creatorID)
+					: Database.GetActiveStaff(ticket.assignedStaffID, ticket.creatorID);
 
 				// Randomize the list before checking for roles in order to reduce number of API calls
 				staffMembers = Utilities.RandomizeList(staffMembers);
@@ -110,7 +110,7 @@ namespace SupportBoi.Commands
 			}
 			else // No role was specified, any active staff will be picked
 			{
-				Database.StaffMember staffEntry = Database.GetRandomActiveStaff(ticket.assignedStaffID);
+				Database.StaffMember staffEntry = Database.GetRandomActiveStaff(ticket.assignedStaffID, ticket.creatorID);
 				if (staffEntry == null)
 				{
 					await command.CreateResponseAsync(new DiscordEmbedBuilder
