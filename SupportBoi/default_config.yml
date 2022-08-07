@@ -74,6 +74,9 @@ permissions:
     unblacklist: []
     # Admin commands
     addcategory: []
+    removecategory: []
+    createbuttonpanel: []
+    createselectionboxpanel: []
     addstaff: []
     reload: []
     removestaff: []

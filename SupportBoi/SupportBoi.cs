@@ -122,6 +122,7 @@ namespace SupportBoi
 			commands.RegisterCommands<NewCommand>();
 			commands.RegisterCommands<RandomAssignCommand>();
 			commands.RegisterCommands<ReloadCommand>();
+			commands.RegisterCommands<RemoveCategoryCommand>();
 			commands.RegisterCommands<RemoveMessageCommand>();
 			commands.RegisterCommands<RemoveStaffCommand>();
 			commands.RegisterCommands<SayCommand>();
