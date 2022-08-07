@@ -98,12 +98,18 @@ namespace SupportBoi
 				"user_id BIGINT UNSIGNED NOT NULL," +
 				"message VARCHAR(5000) NOT NULL)",
 				c);
+			using MySqlCommand createCategories = new MySqlCommand(
+				"CREATE TABLE IF NOT EXISTS categories(" +
+				"name VARCHAR(256) NOT NULL UNIQUE," +
+				"category_id BIGINT UNSIGNED NOT NULL PRIMARY KEY)",
+				c);
 			c.Open();
 			createTickets.ExecuteNonQuery();
 			createBlacklisted.ExecuteNonQuery();
 			createTicketHistory.ExecuteNonQuery();
 			createStaffList.ExecuteNonQuery();
 			createMessages.ExecuteNonQuery();
+			createCategories.ExecuteNonQuery();
 		}
 		public static bool IsOpenTicket(ulong channelID)
 		{
@@ -634,6 +640,67 @@ namespace SupportBoi
 				return false;
 			}
 		}
+		
+		public static List<Category> GetAllCategories()
+		{
+			using MySqlConnection c = GetConnection();
+			c.Open();
+			using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM categories", c);
+			selection.Prepare();
+			MySqlDataReader results = selection.ExecuteReader();
+
+			// Check if messages exist in the database
+			if (!results.Read())
+			{
+				return new List<Category>();
+			}
+
+			List<Category> categories = new List<Category> { new Category(results) };
+			while (results.Read())
+			{
+				categories.Add(new Category(results));
+			}
+			results.Close();
+
+			return categories;
+		}
+		
+		public static bool TryGetCategory(ulong categoryID, out Category message)
+		{
+			using MySqlConnection c = GetConnection();
+			c.Open();
+			using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM categories WHERE category_id=@category_id", c);
+			selection.Parameters.AddWithValue("@category_id", categoryID);
+			selection.Prepare();
+			MySqlDataReader results = selection.ExecuteReader();
+
+			// Check if ticket exists in the database
+			if (!results.Read())
+			{
+				message = null;
+				return false;
+			}
+			message = new Category(results);
+			results.Close();
+			return true;
+		}
+
+		public static bool RemoveCategory(ulong categoryID)
+		{
+			try
+			{
+				using MySqlConnection c = GetConnection();
+				c.Open();
+				using MySqlCommand cmd = new MySqlCommand(@"DELETE FROM categories WHERE category_id=@category_id", c);
+				cmd.Parameters.AddWithValue("@category_id", categoryID);
+				cmd.Prepare();
+				return cmd.ExecuteNonQuery() > 0;
+			}
+			catch (MySqlException)
+			{
+				return false;
+			}
+		}
 
 		public class Ticket
 		{
@@ -684,6 +751,18 @@ namespace SupportBoi
 				identifier = reader.GetString("identifier");
 				userID = reader.GetUInt64("user_id");
 				message = reader.GetString("message");
+			}
+		}
+
+		public class Category
+		{
+			public string name;
+			public ulong id;
+
+			public Category(MySqlDataReader reader)
+			{
+				name = reader.GetString("name");
+				id = reader.GetUInt64("category_id");
 			}
 		}
 	}
