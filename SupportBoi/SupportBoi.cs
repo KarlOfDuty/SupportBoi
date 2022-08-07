@@ -103,7 +103,7 @@ namespace SupportBoi
 			discordClient.MessageCreated += EventHandler.OnMessageCreated;
 			discordClient.GuildMemberAdded += EventHandler.OnMemberAdded;
 			discordClient.GuildMemberRemoved += EventHandler.OnMemberRemoved;
-			
+			discordClient.ComponentInteractionCreated += EventHandler.OnComponentInteractionCreated;
 			Logger.Log("Registering commands...");
 			commands = discordClient.UseSlashCommands();
 

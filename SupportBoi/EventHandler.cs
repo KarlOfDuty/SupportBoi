@@ -8,6 +8,7 @@ using DSharpPlus.Exceptions;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
 using DSharpPlus.SlashCommands.EventArgs;
+using SupportBoi.Commands;
 
 namespace SupportBoi
 {
@@ -46,7 +47,13 @@ namespace SupportBoi
 
 		internal static Task OnClientError(DiscordClient _, ClientErrorEventArgs e)
 		{
-			Logger.Error("Exception occured:\n" + e.Exception);
+			Logger.Error("Client exception occured:\n" + e.Exception);
+			switch (e.Exception)
+			{
+				case BadRequestException ex:
+					Logger.Error("JSON Message: " + ex.JsonMessage);
+					break;
+			}
 			return Task.CompletedTask;
 		}
 
@@ -81,7 +88,7 @@ namespace SupportBoi
 			}
 		}
 
-		internal static Task OnCommandError(SlashCommandsExtension commandSystem, SlashCommandErrorEventArgs e)
+		internal static async Task OnCommandError(SlashCommandsExtension commandSystem, SlashCommandErrorEventArgs e)
 		{
 			switch (e.Exception)
 			{
@@ -89,24 +96,29 @@ namespace SupportBoi
 				{
 					foreach (SlashCheckBaseAttribute attr in checksFailedException.FailedChecks)
 					{
-						e.Context?.Channel?.SendMessageAsync(new DiscordEmbedBuilder
+						await e.Context.Channel.SendMessageAsync(new DiscordEmbedBuilder
 						{
 							Color = DiscordColor.Red,
 							Description = ParseFailedCheck(attr)
 						});
 					}
-					return Task.CompletedTask;
+					return;
 				}
+				
+				case BadRequestException ex:
+					Logger.Error("Command exception occured:\n" + e.Exception);
+					Logger.Error("JSON Message: " + ex.JsonMessage);
+					return;
 
 				default:
 				{
 					Logger.Error("Exception occured: " + e.Exception.GetType() + ": " + e.Exception);
-					e.Context?.Channel?.SendMessageAsync(new DiscordEmbedBuilder
+					await e.Context.Channel.SendMessageAsync(new DiscordEmbedBuilder
 					{
 						Color = DiscordColor.Red,
 						Description = "Internal error occured, please report this to the developer."
 					});
-					return Task.CompletedTask;
+					return;
 				}
 			}
 		}
@@ -183,6 +195,61 @@ namespace SupportBoi
 			}
 		}
 
+		internal static async Task OnComponentInteractionCreated(DiscordClient client, ComponentInteractionCreateEventArgs e)
+		{
+			try
+			{
+				switch (e.Interaction.Data.ComponentType)
+				{
+					case ComponentType.Button:
+						switch (e.Id)
+						{
+							case "supportboi_closeconfirm":
+								await CloseCommand.OnConfirmed(client, e);
+								break;
+							default:
+								Logger.Warn("Unknown button press received! '" + e.Id + "'");
+								break;
+						}
+						break;
+					case ComponentType.Select:
+						Logger.Warn("Unknown selection box option received! '" + e.Id + "'");
+						return;
+					case ComponentType.ActionRow:
+						Logger.Warn("Unknown action row received! '" + e.Id + "'");
+						return;
+					case ComponentType.FormInput:
+						Logger.Warn("Unknown form input received! '" + e.Id + "'");
+						return;
+					default:
+						Logger.Warn("Unknown interaction type received! '" + e.Interaction.Data.ComponentType + "'");
+						break;
+				}
+			}
+			catch (UnauthorizedException)
+			{
+				await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder
+				{
+					Color = DiscordColor.Red,
+					Description = "The bot doesn't have the required permissions to do that!"
+				}).AsEphemeral());
+			}
+			catch (BadRequestException ex)
+			{
+				Logger.Error("Interaction exception occured:\n" + ex);
+				Logger.Error("JSON Message: " + ex.JsonMessage);
+			}
+			catch (Exception ex)
+			{
+				Logger.Error("Exception occured: " + ex.GetType() + ": " + ex);
+				await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AddEmbed( new DiscordEmbedBuilder
+                {
+                	Color = DiscordColor.Red,
+                	Description = "Internal interaction error occured, please report this to the developer."
+                }).AsEphemeral());
+			}
+		}
+		
 		private static string ParseFailedCheck(SlashCheckBaseAttribute attr)
 		{
 			return attr switch
