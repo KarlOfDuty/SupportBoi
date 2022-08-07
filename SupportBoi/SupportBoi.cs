@@ -107,6 +107,7 @@ namespace SupportBoi
 			Logger.Log("Registering commands...");
 			commands = discordClient.UseSlashCommands();
 
+			commands.RegisterCommands<AddCategoryCommand>();
 			commands.RegisterCommands<AddCommand>();
 			commands.RegisterCommands<AddMessageCommand>();
 			commands.RegisterCommands<AddStaffCommand>();

@@ -684,7 +684,45 @@ namespace SupportBoi
 			results.Close();
 			return true;
 		}
+		
+		public static bool TryGetCategory(string name, out Category message)
+		{
+			using MySqlConnection c = GetConnection();
+			c.Open();
+			using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM categories WHERE name=@name", c);
+			selection.Parameters.AddWithValue("@name", name);
+			selection.Prepare();
+			MySqlDataReader results = selection.ExecuteReader();
 
+			// Check if ticket exists in the database
+			if (!results.Read())
+			{
+				message = null;
+				return false;
+			}
+			message = new Category(results);
+			results.Close();
+			return true;
+		}
+
+		public static bool AddCategory(string name, ulong categoryID)
+		{
+			try
+			{
+				using MySqlConnection c = GetConnection();
+				c.Open();
+				using MySqlCommand cmd = new MySqlCommand(@"INSERT INTO categories (name,category_id) VALUES (@name, @category_id);", c);
+				cmd.Parameters.AddWithValue("@name", name);
+				cmd.Parameters.AddWithValue("@category_id", categoryID);
+				cmd.Prepare();
+				return cmd.ExecuteNonQuery() > 0;
+			}
+			catch (MySqlException)
+			{
+				return false;
+			}
+		}
+		
 		public static bool RemoveCategory(ulong categoryID)
 		{
 			try

@@ -62,6 +62,7 @@ namespace SupportBoi
 			{ "unassign",					new ulong[]{ } },
 			{ "unblacklist",				new ulong[]{ } },
 			// Admin commands
+			{ "addcategory",				new ulong[]{ } },
 			{ "addstaff",					new ulong[]{ } },
 			{ "reload",						new ulong[]{ } },
 			{ "removestaff",				new ulong[]{ } },

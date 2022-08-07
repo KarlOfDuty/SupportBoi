@@ -73,6 +73,7 @@ permissions:
     unassign: []
     unblacklist: []
     # Admin commands
+    addcategory: []
     addstaff: []
     reload: []
     removestaff: []
