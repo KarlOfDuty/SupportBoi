@@ -20,8 +20,6 @@ public class NewCommand : ApplicationCommandModule
 
 	public static async Task OpenNewTicket(DiscordInteraction interaction, ulong categoryID)
 	{
-		//await interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
-		
 		// Check if user is blacklisted
 		if (Database.IsBlacklisted(interaction.User.Id))
 		{

@@ -71,7 +71,7 @@ public class CreateSelectionBoxPanelCommand : ApplicationCommandModule
 		return selectionComponents;
 	}
 
-	public static async Task OnSelectionMenuUsed(DiscordClient client, DiscordInteraction interaction)
+	public static async Task OnSelectionMenuUsed(DiscordInteraction interaction)
 	{
 		await interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
 		foreach (string stringID in interaction.Data.Values)

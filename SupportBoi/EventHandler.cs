@@ -215,7 +215,7 @@ namespace SupportBoi
 						switch (e.Id)
 						{
 							case {} when e.Id.StartsWith("supportboi_newticketselector"):
-								await CreateSelectionBoxPanelCommand.OnSelectionMenuUsed(client, e.Interaction);
+								await CreateSelectionBoxPanelCommand.OnSelectionMenuUsed(e.Interaction);
 								return;
 							default:
 								Logger.Warn("Unknown selection box option received! '" + e.Id + "'");
