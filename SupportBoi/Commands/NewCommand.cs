@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.Entities;
@@ -15,30 +16,37 @@ public class NewCommand : ApplicationCommandModule
 	public async Task OnExecute(InteractionContext command)
 	{
 		await command.DeferAsync(true);
-		await OpenNewTicket(command.Interaction, Config.ticketCategory);
+		(bool success, string message) = await OpenNewTicket(command.User.Id, command.Channel.Id, Config.ticketCategory);
+		
+		if (success)
+		{
+			await command.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(new DiscordEmbedBuilder
+			{
+				Color = DiscordColor.Green,
+				Description = message
+			}).AsEphemeral());
+		}
+		else
+		{
+			await command.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(new DiscordEmbedBuilder
+			{
+				Color = DiscordColor.Red,
+				Description = message
+			}).AsEphemeral());
+		}
 	}
 
-	public static async Task OpenNewTicket(DiscordInteraction interaction, ulong categoryID)
+	public static async Task<(bool, string)> OpenNewTicket(ulong userID, ulong commandChannelID, ulong categoryID)
 	{
 		// Check if user is blacklisted
-		if (Database.IsBlacklisted(interaction.User.Id))
+		if (Database.IsBlacklisted(userID))
 		{
-			await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
-			{
-				Color = DiscordColor.Red,
-				Description = "You are banned from opening tickets."
-			}));
-			return;
+			return (false, "You are banned from opening tickets.");
 		}
 
-		if (Database.IsOpenTicket(interaction.Channel.Id))
+		if (Database.IsOpenTicket(commandChannelID))
 		{
-			await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
-			{
-				Color = DiscordColor.Red,
-				Description = "You cannot use this command in a ticket channel."
-			}));
-			return;
+			return (false, "You cannot use this command in a ticket channel.");
 		}
 
 		DiscordChannel category = null;
@@ -50,29 +58,19 @@ public class NewCommand : ApplicationCommandModule
 
 		if (category == null)
 		{
-			await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
-			{
-				Color = DiscordColor.Red,
-				Description = "Error: Could not find the category to place the ticket in."
-			}));
-			return;
+			return (false, "Error: Could not find the category to place the ticket in.");
 		}
 
 		DiscordMember member = null;
 		try
 		{
-			member = await category.Guild.GetMemberAsync(interaction.User.Id);
+			member = await category.Guild.GetMemberAsync(userID);
 		}
 		catch (Exception) { /*ignored*/ }
 
 		if (member == null)
 		{
-			await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
-			{
-				Color = DiscordColor.Red,
-				Description = "Error: Could not find you on the Discord server."
-			}));
-			return;
+			return (false, "Error: Could not find you on the Discord server.");
 		}
 		
 		DiscordChannel ticketChannel;
@@ -83,24 +81,14 @@ public class NewCommand : ApplicationCommandModule
 		}
 		catch (Exception)
 		{
-			await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
-			{
-				Color = DiscordColor.Red,
-				Description = "Error occured while creating ticket, " + interaction.User.Mention +
-							  "!\nIs the channel limit reached in the server or ticket category?"
-			}));
-			return;
+			return (false, "Error occured while creating ticket, " + member.Mention + 
+						   "!\nIs the channel limit reached in the server or ticket category?");
 		}
 
 		if (ticketChannel == null)
 		{
-			await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
-			{
-				Color = DiscordColor.Red,
-				Description = "Error occured while creating ticket, " + interaction.User.Mention +
-							  "!\nIs the channel limit reached in the server or ticket category?"
-			}));
-			return;
+			return (false, "Error occured while creating ticket, " + member.Mention +
+						   "!\nIs the channel limit reached in the server or ticket category?");
 		}
 
 		ulong staffID = 0;
@@ -109,12 +97,12 @@ public class NewCommand : ApplicationCommandModule
 			staffID = Database.GetRandomActiveStaff(0)?.userID ?? 0;
 		}
 
-		long id = Database.NewTicket(interaction.User.Id, staffID, ticketChannel.Id);
+		long id = Database.NewTicket(member.Id, staffID, ticketChannel.Id);
 		string ticketID = id.ToString("00000");
 		await ticketChannel.ModifyAsync(modifiedAttributes => modifiedAttributes.Name = "ticket-" + ticketID);
 		await ticketChannel.AddOverwriteAsync(member, Permissions.AccessChannels);
 
-		await ticketChannel.SendMessageAsync("Hello, " + interaction.User.Mention + "!\n" + Config.welcomeMessage);
+		await ticketChannel.SendMessageAsync("Hello, " + member.Mention + "!\n" + Config.welcomeMessage);
 
 		// Refreshes the channel as changes were made to it above
 		ticketChannel = await SupportBoi.discordClient.GetChannelAsync(ticketChannel.Id);
@@ -143,13 +131,7 @@ public class NewCommand : ApplicationCommandModule
 				catch (UnauthorizedException) {}
 			}
 		}
-
-		await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
-		{
-			Color = DiscordColor.Green,
-			Description = "Ticket opened, " + interaction.User.Mention + "!\n" + ticketChannel.Mention
-		}));
-
+		
 		// Log it if the log channel exists
 		DiscordChannel logChannel = category.Guild.GetChannel(Config.logChannel);
 		if (logChannel != null)
@@ -157,10 +139,12 @@ public class NewCommand : ApplicationCommandModule
 			DiscordEmbed logMessage = new DiscordEmbedBuilder
 			{
 				Color = DiscordColor.Green,
-				Description = "Ticket " + ticketChannel.Mention + " opened by " + interaction.User.Mention + ".\n",
+				Description = "Ticket " + ticketChannel.Mention + " opened by " + member.Mention + ".\n",
 				Footer = new DiscordEmbedBuilder.EmbedFooter {Text = "Ticket " + ticketID}
 			};
 			await logChannel.SendMessageAsync(logMessage);
 		}
+		
+		return (true, "Ticket opened, " + member.Mention + "!\n" + ticketChannel.Mention);
 	}
 }

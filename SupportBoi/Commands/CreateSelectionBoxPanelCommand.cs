@@ -6,6 +6,7 @@ using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
+using Tyrrrz.Extensions;
 
 namespace SupportBoi.Commands;
 
@@ -13,14 +14,11 @@ public class CreateSelectionBoxPanelCommand : ApplicationCommandModule
 {
 	[SlashRequireGuild]
 	[SlashCommand("createselectionboxpanel", "Creates a selection box which users can use to open new tickets in specific categories.")]
-	public async Task OnExecute(InteractionContext command)
+	public async Task OnExecute(InteractionContext command, [Option("Message", "(Optional) The message to show above the selection box (required by Discord API).")] string message = null)
 	{
-		DiscordMessageBuilder builder = new DiscordMessageBuilder().WithContent("Open a new support ticket here:");
-
-		foreach (DiscordSelectComponent component in await GetSelectComponents(command))
-		{
-			builder.AddComponents(component);
-		}
+		DiscordMessageBuilder builder = new DiscordMessageBuilder()
+			.WithContent(message ?? "Open a new support ticket here:")
+			.AddComponents(await GetSelectComponents(command));;
 		
 		await command.Channel.SendMessageAsync(builder);
 		await command.CreateResponseAsync(new DiscordEmbedBuilder
@@ -59,13 +57,13 @@ public class CreateSelectionBoxPanelCommand : ApplicationCommandModule
 		int selectionOptions = 0;
 		for (int selectionBoxes = 0; selectionBoxes < 5 && selectionOptions < verifiedCategories.Count; selectionBoxes++)
 		{
-			List<DiscordSelectComponentOption> roleOptions = new List<DiscordSelectComponentOption>();
+			List<DiscordSelectComponentOption> categoryOptions = new List<DiscordSelectComponentOption>();
 			
 			for (; selectionOptions < 25 * (selectionBoxes + 1) && selectionOptions < verifiedCategories.Count; selectionOptions++)
 			{
-				roleOptions.Add(new DiscordSelectComponentOption(verifiedCategories[selectionOptions].name, verifiedCategories[selectionOptions].id.ToString()));
+				categoryOptions.Add(new DiscordSelectComponentOption(verifiedCategories[selectionOptions].name, verifiedCategories[selectionOptions].id.ToString()));
 			}
-			selectionComponents.Add(new DiscordSelectComponent("supportboi_newticketselector" + selectionBoxes, "Open new ticket...", roleOptions, false, 0, 1));
+			selectionComponents.Add(new DiscordSelectComponent("supportboi_newticketselector" + selectionBoxes, "Open new ticket...", categoryOptions, false, 0, 1));
 		}
 
 		return selectionComponents;
@@ -73,12 +71,29 @@ public class CreateSelectionBoxPanelCommand : ApplicationCommandModule
 
 	public static async Task OnSelectionMenuUsed(DiscordInteraction interaction)
 	{
-		await interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
-		foreach (string stringID in interaction.Data.Values)
+		if (interaction.Data.Values == null || interaction.Data.Values.Length <= 0) return;
+		
+		if (!ulong.TryParse(interaction.Data.Values[0], out ulong categoryID) || categoryID == 0) return;
+
+		await interaction.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral());
+
+		(bool success, string message) = await NewCommand.OpenNewTicket(interaction.User.Id, interaction.ChannelId, categoryID);
+
+		if (success)
 		{
-			if (!ulong.TryParse(stringID, out ulong categoryID) || categoryID == 0) continue;
-			
-			await NewCommand.OpenNewTicket(interaction, categoryID);
+			await interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().AddEmbed(new DiscordEmbedBuilder
+			{
+				Color = DiscordColor.Green,
+				Description = message
+			}).AsEphemeral());
+		}
+		else
+		{
+			await interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().AddEmbed(new DiscordEmbedBuilder
+			{
+				Color = DiscordColor.Red,
+				Description = message
+			}).AsEphemeral());
 		}
 	}
 }
