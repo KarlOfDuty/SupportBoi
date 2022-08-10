@@ -174,17 +174,13 @@ public class NewCommand : ApplicationCommandModule
 			return (false, "Error: Could not find you on the Discord server.");
 		}
 		
-		DiscordChannel ticketChannel;
+		DiscordChannel ticketChannel = null;
 
 		try
 		{
 			ticketChannel = await category.Guild.CreateChannelAsync("ticket", ChannelType.Text, category);
 		}
-		catch (Exception)
-		{
-			return (false, "Error occured while creating ticket, " + member.Mention + 
-						   "!\nIs the channel limit reached in the server or ticket category?");
-		}
+		catch (Exception) { /* ignored */ }
 
 		if (ticketChannel == null)
 		{

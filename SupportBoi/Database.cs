@@ -19,10 +19,12 @@ namespace SupportBoi
 			                   ";userid=" + username + 
 			                   ";password=" + password;
 		}
+		
 		public static MySqlConnection GetConnection()
 		{
 			return new MySqlConnection(connectionString);
 		}
+		
 		public static long GetNumberOfTickets()
 		{
 			try
@@ -39,6 +41,7 @@ namespace SupportBoi
 
 			return -1;
 		}
+		
 		public static long GetNumberOfClosedTickets()
 		{
 			try
@@ -55,6 +58,7 @@ namespace SupportBoi
 
 			return -1;
 		}
+		
 		public static void SetupTables()
 		{
 			using MySqlConnection c = GetConnection();
@@ -111,6 +115,7 @@ namespace SupportBoi
 			createMessages.ExecuteNonQuery();
 			createCategories.ExecuteNonQuery();
 		}
+		
 		public static bool IsOpenTicket(ulong channelID)
 		{
 			using MySqlConnection c = GetConnection();
@@ -128,6 +133,7 @@ namespace SupportBoi
 			results.Close();
 			return true;
 		}
+		
 		public static bool TryGetOpenTicket(ulong channelID, out Ticket ticket)
 		{
 			using MySqlConnection c = GetConnection();
@@ -148,6 +154,7 @@ namespace SupportBoi
 			results.Close();
 			return true;
 		}
+		
 		public static bool TryGetOpenTicketByID(uint id, out Ticket ticket)
 		{
 			using MySqlConnection c = GetConnection();
@@ -161,12 +168,15 @@ namespace SupportBoi
 			if (results.Read())
 			{
 				ticket = new Ticket(results);
+				results.Close();
 				return true;
 			}
 
+			results.Close();
 			ticket = null;
 			return false;
 		}
+		
 		public static bool TryGetClosedTicket(uint id, out Ticket ticket)
 		{
 			using MySqlConnection c = GetConnection();
@@ -188,6 +198,7 @@ namespace SupportBoi
 			results.Close();
 			return false;
 		}
+		
 		public static bool TryGetOpenTickets(ulong userID, out List<Ticket> tickets)
 		{
 			tickets = null;
@@ -211,6 +222,30 @@ namespace SupportBoi
 			results.Close();
 			return true;
 		}
+		
+		public static bool TryGetOpenTickets(out List<Ticket> tickets)
+		{
+			tickets = null;
+			using MySqlConnection c = GetConnection();
+			c.Open();
+			using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM tickets", c);
+			selection.Prepare();
+			MySqlDataReader results = selection.ExecuteReader();
+
+			if (!results.Read())
+			{
+				return false;
+			}
+
+			tickets = new List<Ticket> { new Ticket(results) };
+			while (results.Read())
+			{
+				tickets.Add(new Ticket(results));
+			}
+			results.Close();
+			return true;
+		}
+		
 		public static bool TryGetOldestTickets(ulong userID, out List<Ticket> tickets, int listLimit)
 		{
 			tickets = null;
@@ -235,6 +270,7 @@ namespace SupportBoi
 			results.Close();
 			return true;
 		}
+		
 		public static bool TryGetClosedTickets(ulong userID, out List<Ticket> tickets)
 		{
 			tickets = null;
@@ -258,6 +294,7 @@ namespace SupportBoi
 			results.Close();
 			return true;
 		}
+		
 		public static bool TryGetAssignedTickets(ulong staffID, out List<Ticket> tickets, uint listLimit = 0)
 		{
 			if (listLimit < 1)
@@ -287,6 +324,7 @@ namespace SupportBoi
 			results.Close();
 			return true;
 		}
+		
 		public static long NewTicket(ulong memberID, ulong staffID, ulong ticketID)
 		{
 			using MySqlConnection c = GetConnection();
@@ -366,6 +404,7 @@ namespace SupportBoi
 
 			return false;
 		}
+		
 		public static bool Blacklist(ulong blacklistedID, ulong staffID)
 		{
 			try
@@ -383,6 +422,7 @@ namespace SupportBoi
 				return false;
 			}
 		}
+		
 		public static bool Unblacklist(ulong blacklistedID)
 		{
 			try
@@ -399,6 +439,7 @@ namespace SupportBoi
 				return false;
 			}
 		}
+		
 		public static bool AssignStaff(Ticket ticket, ulong staffID)
 		{
 			try
@@ -416,6 +457,7 @@ namespace SupportBoi
 				return false;
 			}
 		}
+		
 		public static bool UnassignStaff(Ticket ticket)
 		{
 			return AssignStaff(ticket, 0);
@@ -438,6 +480,7 @@ namespace SupportBoi
          		return false;
          	}
         }
+		
 		public static StaffMember GetRandomActiveStaff(params ulong[] ignoredUserIDs)
 		{
 			List<StaffMember> staffMembers = GetActiveStaff(ignoredUserIDs);
@@ -541,6 +584,7 @@ namespace SupportBoi
 			results.Close();
 			return true;
 		}
+		
 		public static bool TryGetStaff(ulong staffID, out StaffMember staffMember)
 		{
 			using MySqlConnection c = GetConnection();

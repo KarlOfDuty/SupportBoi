@@ -82,3 +82,4 @@ permissions:
     removestaff: []
     setticket: []
     unsetticket: []
+    listinvalid: []

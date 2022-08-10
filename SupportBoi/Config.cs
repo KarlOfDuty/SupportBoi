@@ -71,6 +71,7 @@ namespace SupportBoi
 			{ "removestaff",				new ulong[]{ } },
 			{ "setticket",					new ulong[]{ } },
 			{ "unsetticket",				new ulong[]{ } },
+			{ "listinvalid",				new ulong[]{ } },
 		};
 		
 		public static void LoadConfig()

@@ -123,20 +123,18 @@ namespace SupportBoi
 			commands.RegisterCommands<MoveCommand>();
 			commands.RegisterCommands<NewCommand>();
 			commands.RegisterCommands<RandomAssignCommand>();
-			commands.RegisterCommands<ReloadCommand>();
 			commands.RegisterCommands<RemoveCategoryCommand>();
 			commands.RegisterCommands<RemoveMessageCommand>();
 			commands.RegisterCommands<RemoveStaffCommand>();
 			commands.RegisterCommands<SayCommand>();
 			commands.RegisterCommands<SetSummaryCommand>();
-			commands.RegisterCommands<SetTicketCommand>();
 			commands.RegisterCommands<StatusCommand>();
 			commands.RegisterCommands<SummaryCommand>();
 			commands.RegisterCommands<ToggleActiveCommand>();
 			commands.RegisterCommands<TranscriptCommand>();
 			commands.RegisterCommands<UnassignCommand>();
 			commands.RegisterCommands<UnblacklistCommand>();
-			commands.RegisterCommands<UnsetTicketCommand>();
+			commands.RegisterCommands<AdminCommands>();
 
 			Logger.Log("Hooking command events...");
 			commands.SlashCommandErrored += EventHandler.OnCommandError;
