@@ -44,16 +44,16 @@ namespace SupportBoi.Commands
 			await command.CreateResponseAsync(dfmb);
 		}
 
-		public static async Task OnConfirmed(DiscordClient client, ComponentInteractionCreateEventArgs buttonEvent)
+		public static async Task OnConfirmed(DiscordInteraction interaction)
 		{
-			await buttonEvent.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
-			ulong channelID = buttonEvent.Channel.Id;
-			string channelName = buttonEvent.Channel.Name;
+			await interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
+			ulong channelID = interaction.Channel.Id;
+			string channelName = interaction.Channel.Name;
 			
 			// Check if ticket exists in the database
 			if (!Database.TryGetOpenTicket(channelID, out Database.Ticket ticket))
 			{
-				await buttonEvent.Interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
+				await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Red,
 					Description = "This channel is not a ticket."
@@ -64,11 +64,11 @@ namespace SupportBoi.Commands
 			// Build transcript
 			try
 			{
-				await Transcriber.ExecuteAsync(buttonEvent.Channel.Id, ticket.id);
+				await Transcriber.ExecuteAsync(interaction.Channel.Id, ticket.id);
 			}
 			catch (Exception)
 			{
-				await buttonEvent.Interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
+				await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Red,
 					Description = "ERROR: Could not save transcript file. Aborting..."
@@ -77,13 +77,13 @@ namespace SupportBoi.Commands
 			}
 
 			// Log it if the log channel exists
-			DiscordChannel logChannel = buttonEvent.Guild.GetChannel(Config.logChannel);
+			DiscordChannel logChannel = interaction.Guild.GetChannel(Config.logChannel);
 			if (logChannel != null)
 			{
 				DiscordEmbed embed = new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Green,
-					Description = "Ticket " + ticket.id.ToString("00000") + " closed by " + buttonEvent.User.Mention + ".\n",
+					Description = "Ticket " + ticket.id.ToString("00000") + " closed by " + interaction.User.Mention + ".\n",
 					Footer = new DiscordEmbedBuilder.EmbedFooter { Text = '#' + channelName }
 				};
 
@@ -106,7 +106,7 @@ namespace SupportBoi.Commands
 
 				try
 				{
-					DiscordMember staffMember = await buttonEvent.Guild.GetMemberAsync(ticket.creatorID);
+					DiscordMember staffMember = await interaction.Guild.GetMemberAsync(ticket.creatorID);
 					await using FileStream file = new FileStream(Transcriber.GetPath(ticket.id), FileMode.Open, FileAccess.Read);
 					
 					DiscordMessageBuilder message = new DiscordMessageBuilder();
@@ -121,7 +121,7 @@ namespace SupportBoi.Commands
 			
 			Database.ArchiveTicket(ticket);
 
-			await buttonEvent.Interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
+			await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
 			{
 				Color = DiscordColor.Green,
 				Description = "Channel will be deleted in 3 seconds..."
@@ -130,7 +130,7 @@ namespace SupportBoi.Commands
 			await Task.Delay(3000);
 
 			// Delete the channel and database entry
-			await buttonEvent.Channel.DeleteAsync("Ticket closed.");
+			await interaction.Channel.DeleteAsync("Ticket closed.");
 
 			Database.DeleteOpenTicket(ticket.id);
 		}

@@ -205,7 +205,10 @@ namespace SupportBoi
 						switch (e.Id)
 						{
 							case "supportboi_closeconfirm":
-								await CloseCommand.OnConfirmed(client, e);
+								await CloseCommand.OnConfirmed(e.Interaction);
+								return;
+							case {} when e.Id.StartsWith("supportboi_newcommandbutton"):
+								await NewCommand.OnCategorySelection(e.Interaction);
 								return;
 							case {} when e.Id.StartsWith("supportboi_newticketbutton"):
 								await CreateButtonPanelCommand.OnButtonUsed(e.Interaction);
@@ -217,6 +220,9 @@ namespace SupportBoi
 					case ComponentType.Select:
 						switch (e.Id)
 						{
+							case {} when e.Id.StartsWith("supportboi_newcommandselector"):
+								await NewCommand.OnCategorySelection(e.Interaction);
+								return;
 							case {} when e.Id.StartsWith("supportboi_newticketselector"):
 								await CreateSelectionBoxPanelCommand.OnSelectionMenuUsed(e.Interaction);
 								return;
@@ -238,11 +244,6 @@ namespace SupportBoi
 			catch (UnauthorizedException ex)
 			{
 				Logger.Error("Exception occured: " + ex.GetType() + ": " + ex);
-				/*await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder
-				{
-					Color = DiscordColor.Red,
-					Description = "The bot doesn't have the required permissions to do that!"
-				}).AsEphemeral());*/
 			}
 			catch (BadRequestException ex)
 			{
@@ -252,11 +253,6 @@ namespace SupportBoi
 			catch (Exception ex)
 			{
 				Logger.Error("Exception occured: " + ex.GetType() + ": " + ex);
-				/*await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AddEmbed( new DiscordEmbedBuilder
-                {
-                	Color = DiscordColor.Red,
-                	Description = "Internal interaction error occured, please report this to the developer."
-                }).AsEphemeral());*/
 			}
 		}
 		

@@ -16,7 +16,6 @@ namespace SupportBoi
 	{
 		internal static string token = "";
 		internal static ulong logChannel;
-		internal static ulong ticketCategory;
 		internal static string welcomeMessage = "";
 		internal static string logLevel = "Information";
 		internal static string timestampFormat = "yyyy-MMM-dd HH:mm";
@@ -24,6 +23,7 @@ namespace SupportBoi
 		internal static bool randomAssignRoleOverride = false;
 		internal static string presenceType = "Playing";
 		internal static string presenceText = "";
+		internal static bool newCommandUsesSelector = false;
 
 		internal static bool ticketUpdatedNotifications = false;
 		internal static double ticketUpdatedNotificationDelay = 0.0;
@@ -95,7 +95,6 @@ namespace SupportBoi
 			// Sets up the bot
 			token = json.SelectToken("bot.token").Value<string>() ?? "";
 			logChannel = json.SelectToken("bot.log-channel").Value<ulong>();
-			ticketCategory = json.SelectToken("bot.ticket-category")?.Value<ulong>() ?? 0;
 			welcomeMessage = json.SelectToken("bot.welcome-message").Value<string>() ?? "";
 			logLevel = json.SelectToken("bot.console-log-level").Value<string>() ?? "";
 			timestampFormat = json.SelectToken("bot.timestamp-format").Value<string>() ?? "yyyy-MM-dd HH:mm";
@@ -103,6 +102,7 @@ namespace SupportBoi
 			randomAssignRoleOverride = json.SelectToken("bot.random-assign-role-override")?.Value<bool>() ?? false;
 			presenceType = json.SelectToken("bot.presence-type")?.Value<string>() ?? "Playing";
 			presenceText = json.SelectToken("bot.presence-text")?.Value<string>() ?? "";
+			newCommandUsesSelector = json.SelectToken("bot.new-command-uses-selector")?.Value<bool>() ?? false;
 
 			ticketUpdatedNotifications = json.SelectToken("notifications.ticket-updated")?.Value<bool>() ?? false;
 			ticketUpdatedNotificationDelay = json.SelectToken("notifications.ticket-updated-delay")?.Value<double>() ?? 0.0;

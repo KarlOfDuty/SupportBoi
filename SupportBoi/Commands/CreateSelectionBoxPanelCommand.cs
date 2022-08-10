@@ -14,11 +14,11 @@ public class CreateSelectionBoxPanelCommand : ApplicationCommandModule
 {
 	[SlashRequireGuild]
 	[SlashCommand("createselectionboxpanel", "Creates a selection box which users can use to open new tickets in specific categories.")]
-	public async Task OnExecute(InteractionContext command, [Option("Message", "(Optional) The message to show above the selection box (required by Discord API).")] string message = null)
+	public async Task OnExecute(InteractionContext command, [Option("Message", "(Optional) The message to show in the selection box.")] string message = null)
 	{
 		DiscordMessageBuilder builder = new DiscordMessageBuilder()
-			.WithContent(message ?? "Open a new support ticket here:")
-			.AddComponents(await GetSelectComponents(command));;
+			.WithContent(" ")
+			.AddComponents(await GetSelectComponents(command, message ?? "Open new ticket..."));;
 		
 		await command.Channel.SendMessageAsync(builder);
 		await command.CreateResponseAsync(new DiscordEmbedBuilder
@@ -28,29 +28,11 @@ public class CreateSelectionBoxPanelCommand : ApplicationCommandModule
 		}, true);
 	}
 	
-	public static async Task<List<DiscordSelectComponent>> GetSelectComponents(InteractionContext command)
+	public static async Task<List<DiscordSelectComponent>> GetSelectComponents(InteractionContext command, string placeholder)
 	{
-		List<Database.Category> categories = Database.GetAllCategories();
-		List<Database.Category> verifiedCategories = new List<Database.Category>();
+		List<Database.Category> verifiedCategories = await Utilities.GetVerifiedChannels();
 
-		foreach (Database.Category category in categories)
-		{
-			DiscordChannel channel = null;
-			try
-			{
-				channel = await command.Client.GetChannelAsync(category.id);
-			}
-			catch (Exception) { /*ignored*/ }
-
-			if (channel != null)
-			{
-				verifiedCategories.Add(category);
-			}
-			else
-			{
-				Logger.Warn("Category '" + category.name + "' (" + category.id + ") no longer exists! Ignoring...");
-			}
-		}
+		if (verifiedCategories.Count == 0) return new List<DiscordSelectComponent>();
 		
 		verifiedCategories = verifiedCategories.OrderBy(x => x.name).ToList();
 		List<DiscordSelectComponent> selectionComponents = new List<DiscordSelectComponent>();
@@ -63,7 +45,7 @@ public class CreateSelectionBoxPanelCommand : ApplicationCommandModule
 			{
 				categoryOptions.Add(new DiscordSelectComponentOption(verifiedCategories[selectionOptions].name, verifiedCategories[selectionOptions].id.ToString()));
 			}
-			selectionComponents.Add(new DiscordSelectComponent("supportboi_newticketselector" + selectionBoxes, "Open new ticket...", categoryOptions, false, 0, 1));
+			selectionComponents.Add(new DiscordSelectComponent("supportboi_newticketselector" + selectionBoxes, placeholder, categoryOptions, false, 0, 1));
 		}
 
 		return selectionComponents;

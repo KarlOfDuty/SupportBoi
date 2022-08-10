@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
 using DSharpPlus.Entities;
 
 namespace SupportBoi
@@ -43,6 +44,30 @@ namespace SupportBoi
 			}
 
 			return messages;
+		}
+
+		public static async Task<List<Database.Category>> GetVerifiedChannels()
+		{
+			List<Database.Category> verifiedCategories = new List<Database.Category>();
+			foreach (Database.Category category in Database.GetAllCategories())
+			{
+				DiscordChannel channel = null;
+				try
+				{
+					channel = await SupportBoi.discordClient.GetChannelAsync(category.id);
+				}
+				catch (Exception) { /*ignored*/ }
+
+				if (channel != null)
+				{
+					verifiedCategories.Add(category);
+				}
+				else
+				{
+					Logger.Warn("Category '" + category.name + "' (" + category.id + ") no longer exists! Ignoring...");
+				}
+			}
+			return verifiedCategories;
 		}
 	}
 }

@@ -13,29 +13,19 @@ public class CreateButtonPanelCommand : ApplicationCommandModule
 {
 	[SlashRequireGuild]
 	[SlashCommand("createbuttonpanel", "Creates a series of buttons which users can use to open new tickets in specific categories.")]
-	public async Task OnExecute(InteractionContext command, [Option("Message", "(Optional) The message to show above the buttons (required by Discord API).")] string message = null)
+	public async Task OnExecute(InteractionContext command)
 	{
-		DiscordMessageBuilder builder = new DiscordMessageBuilder().WithContent(message ?? "Open a ticket here:");
-		List<Database.Category> categories = Database.GetAllCategories();
-		List<Database.Category> verifiedCategories = new List<Database.Category>();
+		DiscordMessageBuilder builder = new DiscordMessageBuilder().WithContent(" ");
+		List<Database.Category> verifiedCategories = await Utilities.GetVerifiedChannels();
 
-		foreach (Database.Category category in categories)
+		if (verifiedCategories.Count == 0)
 		{
-			DiscordChannel channel = null;
-			try
+			await command.CreateResponseAsync(new DiscordEmbedBuilder
 			{
-				channel = await command.Client.GetChannelAsync(category.id);
-			}
-			catch (Exception) { /*ignored*/ }
-
-			if (channel != null)
-			{
-				verifiedCategories.Add(category);
-			}
-			else
-			{
-				Logger.Warn("Category '" + category.name + "' (" + category.id + ") no longer exists! Ignoring...");
-			}
+				Color = DiscordColor.Red,
+				Description = "Error: No registered categories found."
+			}, true);
+			return;
 		}
 		
 		verifiedCategories = verifiedCategories.OrderBy(x => x.name).ToList();

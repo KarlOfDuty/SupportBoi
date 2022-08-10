@@ -3,8 +3,6 @@
     token: "<add-token-here>"
     # Channel where ticket logs are posted (recommended)
     log-channel: 000000000000000000
-    # Category where the ticket will be created, it will have the same permissions of that ticket plus read permissions for the user opening the ticket (recommended)
-    ticket-category: 000000000000000000
     # Message posted when a ticket is opened.
     welcome-message: "Please describe your issue below, and include all information needed for us to take action. This is an example ticket message and can be changed in the config."
     # Decides what messages are shown in console
@@ -15,13 +13,15 @@
     # Whether or not staff members should be randomly assigned tickets when they are made. Individual staff members can opt out using the toggleactive command.
     random-assignment: true
     # If set to true the rasssign command will include staff members set as inactive if a specific role is specified in the command.
-    # This can be useful if you have admins set as inactive to not automatically recieve tickets and then have moderators elevate tickets when needed.
+    # This can be useful if you have admins set as inactive to not automatically receive tickets and then have moderators elevate tickets when needed.
     random-assign-role-override: true
     # Sets the type of activity for the bot to display in its presence status
     # Possible values are: Playing, Streaming, ListeningTo, Watching, Competing
     presence-type: "ListeningTo"
     # Sets the activity text shown in the bot's status
     presence-text: "/new"
+    # Set to true if you want the /new command to show a selection box instead of a series of buttons
+    new-command-uses-selector: false
 
 notifications:
     # Notifies the assigned staff member when a new message is posted in a ticket if the ticket has been silent for a configurable amount of time
