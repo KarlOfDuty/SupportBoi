@@ -207,6 +207,9 @@ namespace SupportBoi
 							case "supportboi_closeconfirm":
 								await CloseCommand.OnConfirmed(client, e);
 								return;
+							case {} when e.Id.StartsWith("supportboi_newticketbutton"):
+								await CreateButtonPanelCommand.OnButtonUsed(e.Interaction);
+								return;
 							default:
 								Logger.Warn("Unknown button press received! '" + e.Id + "'");
 								return;
