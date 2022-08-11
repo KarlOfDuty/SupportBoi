@@ -22,6 +22,8 @@
     presence-text: "/new"
     # Set to true if you want the /new command to show a selection box instead of a series of buttons
     new-command-uses-selector: false
+    # Number of tickets a single user can have open at a time, staff members are excluded from this
+    ticket-limit: 5
 
 notifications:
     # Notifies the assigned staff member when a new message is posted in a ticket if the ticket has been silent for a configurable amount of time

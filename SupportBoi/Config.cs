@@ -24,6 +24,7 @@ namespace SupportBoi
 		internal static string presenceType = "Playing";
 		internal static string presenceText = "";
 		internal static bool newCommandUsesSelector = false;
+		internal static int ticketLimit = 5;
 
 		internal static bool ticketUpdatedNotifications = false;
 		internal static double ticketUpdatedNotificationDelay = 0.0;
@@ -56,16 +57,17 @@ namespace SupportBoi
 			JObject json = JObject.Parse(serializer.Serialize(yamlObject));
 
 			// Sets up the bot
-			token = json.SelectToken("bot.token").Value<string>() ?? "";
-			logChannel = json.SelectToken("bot.log-channel").Value<ulong>();
-			welcomeMessage = json.SelectToken("bot.welcome-message").Value<string>() ?? "";
-			logLevel = json.SelectToken("bot.console-log-level").Value<string>() ?? "";
-			timestampFormat = json.SelectToken("bot.timestamp-format").Value<string>() ?? "yyyy-MM-dd HH:mm";
+			token = json.SelectToken("bot.token")?.Value<string>() ?? "";
+			logChannel = json.SelectToken("bot.log-channel")?.Value<ulong>() ?? 0;
+			welcomeMessage = json.SelectToken("bot.welcome-message")?.Value<string>() ?? "";
+			logLevel = json.SelectToken("bot.console-log-level")?.Value<string>() ?? "";
+			timestampFormat = json.SelectToken("bot.timestamp-format")?.Value<string>() ?? "yyyy-MM-dd HH:mm";
 			randomAssignment = json.SelectToken("bot.random-assignment")?.Value<bool>() ?? false;
 			randomAssignRoleOverride = json.SelectToken("bot.random-assign-role-override")?.Value<bool>() ?? false;
 			presenceType = json.SelectToken("bot.presence-type")?.Value<string>() ?? "Playing";
 			presenceText = json.SelectToken("bot.presence-text")?.Value<string>() ?? "";
 			newCommandUsesSelector = json.SelectToken("bot.new-command-uses-selector")?.Value<bool>() ?? false;
+			ticketLimit =json.SelectToken("bot.ticket-limit")?.Value<int>() ?? 5;
 
 			ticketUpdatedNotifications = json.SelectToken("notifications.ticket-updated")?.Value<bool>() ?? false;
 			ticketUpdatedNotificationDelay = json.SelectToken("notifications.ticket-updated-delay")?.Value<double>() ?? 0.0;

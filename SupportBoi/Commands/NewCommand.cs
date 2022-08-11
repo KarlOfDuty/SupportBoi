@@ -149,6 +149,11 @@ public class NewCommand : ApplicationCommandModule
 			return (false, "You cannot use this command in a ticket channel.");
 		}
 
+		if (!Database.IsStaff(userID) && Database.TryGetOpenTickets(userID, out List<Database.Ticket> ownTickets) && ownTickets.Count >= Config.ticketLimit)
+		{
+			return (false, "You have reached the limit for maximum open tickets.");
+		}
+
 		DiscordChannel category = null;
 		try
 		{
