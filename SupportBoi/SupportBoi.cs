@@ -3,6 +3,9 @@ using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using DSharpPlus;
+using DSharpPlus.Interactivity;
+using DSharpPlus.Interactivity.Enums;
+using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using Microsoft.Extensions.Logging;
 using SupportBoi.Commands;
@@ -104,6 +107,15 @@ namespace SupportBoi
 			discordClient.GuildMemberAdded += EventHandler.OnMemberAdded;
 			discordClient.GuildMemberRemoved += EventHandler.OnMemberRemoved;
 			discordClient.ComponentInteractionCreated += EventHandler.OnComponentInteractionCreated;
+			
+			discordClient.UseInteractivity(new InteractivityConfiguration() 
+			{
+				AckPaginationButtons = true,
+				PaginationBehaviour = PaginationBehaviour.Ignore,
+				PaginationDeletion = PaginationDeletion.DeleteMessage,
+				Timeout = TimeSpan.FromMinutes(15)
+			});
+			
 			Logger.Log("Registering commands...");
 			commands = discordClient.UseSlashCommands();
 

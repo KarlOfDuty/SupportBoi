@@ -5,6 +5,7 @@ using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using DSharpPlus.Exceptions;
+using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
 using DSharpPlus.SlashCommands.EventArgs;
@@ -212,6 +213,14 @@ namespace SupportBoi
 								return;
 							case {} when e.Id.StartsWith("supportboi_newticketbutton"):
 								await CreateButtonPanelCommand.OnButtonUsed(e.Interaction);
+								return;
+							case "right":
+								return;
+							case "left":
+								return;
+							case "rightskip":
+								return;
+							case "leftskip":
 								return;
 							default:
 								Logger.Warn("Unknown button press received! '" + e.Id + "'");

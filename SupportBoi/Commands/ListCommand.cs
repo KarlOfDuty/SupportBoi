@@ -2,6 +2,9 @@
 using System.Linq;
 using System.Threading.Tasks;
 using DSharpPlus.Entities;
+using DSharpPlus.Interactivity;
+using DSharpPlus.Interactivity.EventHandling;
+using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
 
@@ -14,8 +17,9 @@ namespace SupportBoi.Commands
 		[SlashCommand("list", "Lists tickets opened by a user.")]
 		public async Task OnExecute(InteractionContext command, [Option("User", "(Optional) The user to get tickets by.")] DiscordUser user = null)
 		{
-			bool replySent = false;
 			DiscordUser listUser = user == null ? command.User : user;
+
+			List<DiscordEmbedBuilder> openEmbeds = new List<DiscordEmbedBuilder>();
 			if (Database.TryGetOpenTickets(listUser.Id, out List<Database.Ticket> openTickets))
 			{
 				List<string> listItems = new List<string>();
@@ -23,37 +27,24 @@ namespace SupportBoi.Commands
 				{
 					listItems.Add("**" + ticket.FormattedCreatedTime() + ":** <#" + ticket.channelID + ">\n");
 				}
-
-				LinkedList<string> messages = Utilities.ParseListIntoMessages(listItems);
-				foreach (string message in messages)
+				
+				foreach (string message in Utilities.ParseListIntoMessages(listItems))
 				{
-					DiscordEmbed channelInfo = new DiscordEmbedBuilder()
+					openEmbeds.Add(new DiscordEmbedBuilder()
 					{
-						Title = "Open tickets: ",
 						Color = DiscordColor.Green,
 						Description = message
-					};
-					// We have to send exactly one reply to the interaction and all other messages as normal messages
-					if (replySent)
-					{
-						await command.Channel.SendMessageAsync(channelInfo);
-					}
-					else
-					{
-						await command.CreateResponseAsync(channelInfo);
-						replySent = true;
-					}
+					});
+				}
+				
+				// Add the titles
+				for (int i = 0; i < openEmbeds.Count; i++)
+				{
+					openEmbeds[i].Title = $"Open tickets ({i+1}/{openEmbeds.Count})";
 				}
 			}
-			else
-			{
-				await command.CreateResponseAsync(new DiscordEmbedBuilder()
-				{
-					Color = DiscordColor.Green,
-					Description = "User does not have any open tickets."
-				});
-			}
 
+			List<DiscordEmbedBuilder> closedEmbeds = new List<DiscordEmbedBuilder>();
 			if (Database.TryGetClosedTickets(listUser.Id, out List<Database.Ticket> closedTickets))
 			{
 				List<string> listItems = new List<string>();
@@ -61,26 +52,52 @@ namespace SupportBoi.Commands
 				{
 					listItems.Add("**" + ticket.FormattedCreatedTime() + ":** Ticket " + ticket.id.ToString("00000") + "\n");
 				}
-
-				LinkedList<string> messages = Utilities.ParseListIntoMessages(listItems);
-				foreach (string message in messages)
+				
+				foreach (string message in Utilities.ParseListIntoMessages(listItems))
 				{
-					await command.Channel.SendMessageAsync(new DiscordEmbedBuilder()
+					closedEmbeds.Add(new DiscordEmbedBuilder()
 					{
-						Title = "Closed tickets: ",
 						Color = DiscordColor.Red,
 						Description = message
 					});
 				}
+
+				// Add the titles
+				for (int i = 0; i < closedEmbeds.Count; i++)
+				{
+					closedEmbeds[i].Title = $"Closed tickets ({i+1}/{closedEmbeds.Count})";
+				}
 			}
-			else
+
+			// Merge the embed lists and add the footers
+			List<DiscordEmbedBuilder> embeds = new List<DiscordEmbedBuilder>();
+			embeds.AddRange(openEmbeds);
+			embeds.AddRange(closedEmbeds);
+			for (int i = 0; i < embeds.Count; i++)
+			{
+				embeds[i].Footer = new DiscordEmbedBuilder.EmbedFooter
+				{
+					Text = $"Page {i + 1} / {embeds.Count}"
+				};
+			}
+			
+			if (embeds.Count == 0)
 			{
 				await command.CreateResponseAsync(new DiscordEmbedBuilder()
 				{
-					Color = DiscordColor.Red,
-					Description = "User does not have any closed tickets."
+					Color = DiscordColor.Cyan,
+					Description = "User does not have any open or closed tickets."
 				});
+				return;
 			}
+			
+			List<Page> listPages = new List<Page>();
+			foreach (DiscordEmbedBuilder embed in embeds)
+			{
+				listPages.Add(new Page("", embed));
+			}
+
+			await command.Interaction.SendPaginatedResponseAsync(true, command.User, listPages);
 		}
 	}
 }
