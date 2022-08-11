@@ -57,7 +57,8 @@ namespace SupportBoi.Commands
 				{
 					Color = DiscordColor.Green,
 					Description = "All tickets are valid!"
-				});
+				}, true);
+				return;
 			}
 			
 			List<DiscordEmbedBuilder> embeds = new List<DiscordEmbedBuilder>();
