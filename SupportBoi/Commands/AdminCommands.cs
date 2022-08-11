@@ -125,7 +125,7 @@ namespace SupportBoi.Commands
 		[SlashCommand("unsetticket", "Deletes a ticket from the ticket system without deleting the channel.")]
 		public async Task UnsetTicket(InteractionContext command, [Option("TicketID", "(Optional) Ticket to unset. Uses the channel you are in by default.")] long ticketID = 0)
 		{
-			Database.Ticket ticket = null;
+			Database.Ticket ticket;
 
 			if (ticketID == 0)
 			{

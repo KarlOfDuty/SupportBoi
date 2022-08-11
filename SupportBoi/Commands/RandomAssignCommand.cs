@@ -89,7 +89,7 @@ namespace SupportBoi.Commands
 					: Database.GetActiveStaff(ticket.assignedStaffID, ticket.creatorID);
 
 				// Randomize the list before checking for roles in order to reduce number of API calls
-				staffMembers = Utilities.RandomizeList(staffMembers);
+				staffMembers.Shuffle();
 
 				// Get the first staff member that has the role
 				foreach (Database.StaffMember sm in staffMembers)
