@@ -17,11 +17,8 @@ namespace SupportBoi.Commands
 		[SlashCommand("close", "Closes a ticket.")]
 		public async Task OnExecute(InteractionContext command)
 		{
-			ulong channelID = command.Channel.Id;
-			string channelName = command.Channel.Name;
-
 			// Check if ticket exists in the database
-			if (!Database.TryGetOpenTicket(channelID, out Database.Ticket ticket))
+			if (!Database.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
 			{
 				await command.CreateResponseAsync(new DiscordEmbedBuilder
 				{
@@ -65,8 +62,9 @@ namespace SupportBoi.Commands
 			{
 				await Transcriber.ExecuteAsync(interaction.Channel.Id, ticket.id);
 			}
-			catch (Exception)
+			catch (Exception e)
 			{
+				Logger.Error("Exception occured when trying to save transcript while closing ticket: " + e);
 				await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
 				{
 					Color = DiscordColor.Red,
