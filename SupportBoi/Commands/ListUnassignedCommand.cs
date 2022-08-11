@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using DSharpPlus.Entities;
+using DSharpPlus.Interactivity;
+using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
 
@@ -10,19 +12,17 @@ namespace SupportBoi.Commands
 	public class ListUnassignedCommand : ApplicationCommandModule
 	{
 		[SlashRequireGuild]
-		[Config.ConfigPermissionCheckAttribute("listunassigned")]
 		[SlashCommand("listunassigned", "Lists unassigned tickets.")]
-		public async Task OnExecute(InteractionContext command, [Option("Limit", "(Optional) Limit of how many tickets to list.")] long limit = 20)
+		public async Task OnExecute(InteractionContext command)
 		{
-			uint clampedLimit = Math.Clamp((uint)limit, 1, 200);
-			
-			if (!Database.TryGetAssignedTickets(0, out List<Database.Ticket> unassignedTickets, clampedLimit))
+			if (!Database.TryGetAssignedTickets(0, out List<Database.Ticket> unassignedTickets))
 			{
 				await command.CreateResponseAsync(new DiscordEmbedBuilder()
 				{
 					Color = DiscordColor.Green,
 					Description = "There are no unassigned tickets."
 				});
+				return;
 			}
 
 			List<string> listItems = new List<string>();
@@ -31,28 +31,33 @@ namespace SupportBoi.Commands
 				listItems.Add("**" + ticket.FormattedCreatedTime() + ":** <#" + ticket.channelID + "> by <@" + ticket.creatorID + ">\n");
 			}
 
-			bool replySent = false;
-			LinkedList<string> messages = Utilities.ParseListIntoMessages(listItems);
-			foreach (string message in messages)
+			List<DiscordEmbedBuilder> embeds = new List<DiscordEmbedBuilder>();
+			foreach (string message in Utilities.ParseListIntoMessages(listItems))
 			{
-				DiscordEmbed channelInfo = new DiscordEmbedBuilder()
+				embeds.Add(new DiscordEmbedBuilder()
 				{
 					Title = "Unassigned tickets: ",
 					Color = DiscordColor.Green,
-					Description = message?.Trim()
-				};
-
-				// We have to send exactly one reply to the interaction and all other messages as normal messages
-				if (replySent)
-				{
-					await command.Channel.SendMessageAsync(channelInfo);
-				}
-				else
-				{
-					await command.CreateResponseAsync(channelInfo);
-					replySent = true;
-				}
+					Description = message
+				});
 			}
+			
+			// Add the footers
+			for (int i = 0; i < embeds.Count; i++)
+			{
+				embeds[i].Footer = new DiscordEmbedBuilder.EmbedFooter
+				{
+					Text = $"Page {i + 1} / {embeds.Count}"
+				};
+			}
+			
+			List<Page> listPages = new List<Page>();
+			foreach (DiscordEmbedBuilder embed in embeds)
+			{
+				listPages.Add(new Page("", embed));
+			}
+
+			await command.Interaction.SendPaginatedResponseAsync(true, command.User, listPages);
 		}
 	}
 }

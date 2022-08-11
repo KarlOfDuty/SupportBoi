@@ -2,6 +2,8 @@
 using System.Linq;
 using System.Threading.Tasks;
 using DSharpPlus.Entities;
+using DSharpPlus.Interactivity;
+using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
 using Microsoft.Extensions.Logging;
@@ -11,7 +13,6 @@ namespace SupportBoi.Commands
 	public class ListAssignedCommand : ApplicationCommandModule
 	{
 		[SlashRequireGuild]
-		[Config.ConfigPermissionCheckAttribute("listassigned")]
 		[SlashCommand("listassigned", "Lists tickets assigned to a user.")]
 		public async Task OnExecute(InteractionContext command, [Option("User", "(Optional) User to list tickets for.")] DiscordUser user = null)
 		{
@@ -33,26 +34,33 @@ namespace SupportBoi.Commands
 				listItems.Add("**" + ticket.FormattedCreatedTime() + ":** <#" + ticket.channelID + "> by <@" + ticket.creatorID + ">\n");
 			}
 
-			bool replySent = false;
-			LinkedList<string> messages = Utilities.ParseListIntoMessages(listItems);
-			foreach (string message in messages)
+			List<DiscordEmbedBuilder> embeds = new List<DiscordEmbedBuilder>();
+			foreach (string message in Utilities.ParseListIntoMessages(listItems))
 			{
-				DiscordEmbed channelInfo = new DiscordEmbedBuilder()
-					.WithTitle("Assigned tickets: ")
-					.WithColor(DiscordColor.Green)
-					.WithDescription(message);
-				
-				// We have to send exactly one reply to the interaction and all other messages as normal messages
-				if (replySent)
+				embeds.Add(new DiscordEmbedBuilder()
 				{
-					await command.Channel.SendMessageAsync(channelInfo);
-				}
-				else
-				{
-					await command.CreateResponseAsync(channelInfo);
-					replySent = true;
-				}
+					Title = "Assigned tickets: ",
+					Color = DiscordColor.Green,
+					Description = message
+				});
 			}
+			
+			// Add the footers
+			for (int i = 0; i < embeds.Count; i++)
+			{
+				embeds[i].Footer = new DiscordEmbedBuilder.EmbedFooter
+				{
+					Text = $"Page {i + 1} / {embeds.Count}"
+				};
+			}
+			
+			List<Page> listPages = new List<Page>();
+			foreach (DiscordEmbedBuilder embed in embeds)
+			{
+				listPages.Add(new Page("", embed));
+			}
+
+			await command.Interaction.SendPaginatedResponseAsync(true, command.User, listPages);
 		}
 	}
 }

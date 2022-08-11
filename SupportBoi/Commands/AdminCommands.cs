@@ -7,6 +7,8 @@ using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using DSharpPlus.Exceptions;
+using DSharpPlus.Interactivity;
+using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
 
@@ -16,7 +18,6 @@ namespace SupportBoi.Commands
 	public class AdminCommands : ApplicationCommandModule
 	{
 		[SlashRequireGuild]
-		[Config.ConfigPermissionCheckAttribute("listinvalid")]
 		[SlashCommand("listinvalid", "List tickets which channels have been deleted. Use /admin unsetticket <id> to remove them.")]
 		public async Task ListInvalid(InteractionContext command)
 		{
@@ -59,31 +60,36 @@ namespace SupportBoi.Commands
 				});
 			}
 			
-			bool replySent = false;
-			LinkedList<string> messages = Utilities.ParseListIntoMessages(listItems);
-			foreach (string message in messages)
+			List<DiscordEmbedBuilder> embeds = new List<DiscordEmbedBuilder>();
+			foreach (string message in Utilities.ParseListIntoMessages(listItems))
 			{
-				DiscordEmbed channelInfo = new DiscordEmbedBuilder()
+				embeds.Add(new DiscordEmbedBuilder()
 				{
-					Title = "Invalid tickets: ",
+					Title = "Invalid tickets:",
 					Color = DiscordColor.Red,
 					Description = message
-				};
-				// We have to send exactly one reply to the interaction and all other messages as normal messages
-				if (replySent)
-				{
-					await command.Channel.SendMessageAsync(channelInfo);
-				}
-				else
-				{
-					await command.CreateResponseAsync(channelInfo);
-					replySent = true;
-				}
+				});
 			}
+			
+			// Add the footers
+			for (int i = 0; i < embeds.Count; i++)
+			{
+				embeds[i].Footer = new DiscordEmbedBuilder.EmbedFooter
+				{
+					Text = $"Page {i + 1} / {embeds.Count}"
+				};
+			}
+			
+			List<Page> listPages = new List<Page>();
+			foreach (DiscordEmbedBuilder embed in embeds)
+			{
+				listPages.Add(new Page("", embed));
+			}
+
+			await command.Interaction.SendPaginatedResponseAsync(true, command.User, listPages);
 		}
 		
 		[SlashRequireGuild]
-		[Config.ConfigPermissionCheckAttribute("setticket")]
 		[SlashCommand("setticket", "Turns a channel into a ticket WARNING: Anyone will be able to delete the channel using /close.")]
 		public async Task SetTicket(InteractionContext command, [Option("User", "(Optional) The owner of the ticket.")] DiscordUser user = null)
 		{
@@ -121,7 +127,6 @@ namespace SupportBoi.Commands
 		}
 		
 		[SlashRequireGuild]
-		[Config.ConfigPermissionCheckAttribute("unsetticket")]
 		[SlashCommand("unsetticket", "Deletes a ticket from the ticket system without deleting the channel.")]
 		public async Task UnsetTicket(InteractionContext command, [Option("TicketID", "(Optional) Ticket to unset. Uses the channel you are in by default.")] long ticketID = 0)
 		{
@@ -184,7 +189,6 @@ namespace SupportBoi.Commands
 			}
 		}
 		
-		[Config.ConfigPermissionCheckAttribute("reload")]
 		[SlashCommand("reload", "Reloads the bot config.")]
 		public async Task Reload(InteractionContext command)
 		{

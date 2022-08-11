@@ -130,7 +130,7 @@ namespace SupportBoi
 			commands.RegisterCommands<CreateSelectionBoxPanelCommand>();
 			commands.RegisterCommands<ListAssignedCommand>();
 			commands.RegisterCommands<ListCommand>();
-			commands.RegisterCommands<ListOldestCommand>();
+			commands.RegisterCommands<ListOpen>();
 			commands.RegisterCommands<ListUnassignedCommand>();
 			commands.RegisterCommands<MoveCommand>();
 			commands.RegisterCommands<NewCommand>();

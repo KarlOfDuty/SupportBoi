@@ -228,32 +228,7 @@ namespace SupportBoi
 			tickets = null;
 			using MySqlConnection c = GetConnection();
 			c.Open();
-			using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM tickets", c);
-			selection.Prepare();
-			MySqlDataReader results = selection.ExecuteReader();
-
-			if (!results.Read())
-			{
-				return false;
-			}
-
-			tickets = new List<Ticket> { new Ticket(results) };
-			while (results.Read())
-			{
-				tickets.Add(new Ticket(results));
-			}
-			results.Close();
-			return true;
-		}
-		
-		public static bool TryGetOldestTickets(ulong userID, out List<Ticket> tickets, int listLimit)
-		{
-			tickets = null;
-			using MySqlConnection c = GetConnection();
-			c.Open();
-			using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM tickets ORDER BY created_time ASC LIMIT @limit", c);
-			selection.Parameters.AddWithValue("@creator_id", userID);
-			selection.Parameters.AddWithValue("@limit", listLimit);
+			using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM tickets ORDER BY created_time ASC", c);
 			selection.Prepare();
 			MySqlDataReader results = selection.ExecuteReader();
 
@@ -295,19 +270,13 @@ namespace SupportBoi
 			return true;
 		}
 		
-		public static bool TryGetAssignedTickets(ulong staffID, out List<Ticket> tickets, uint listLimit = 0)
+		public static bool TryGetAssignedTickets(ulong staffID, out List<Ticket> tickets)
 		{
-			if (listLimit < 1)
-			{
-				listLimit = 10000;
-			}
-			
 			tickets = null;
 			using MySqlConnection c = GetConnection();
 			c.Open();
-			using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM tickets WHERE assigned_staff_id=@assigned_staff_id LIMIT @limit", c);
+			using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM tickets WHERE assigned_staff_id=@assigned_staff_id", c);
 			selection.Parameters.AddWithValue("@assigned_staff_id", staffID);
-			selection.Parameters.AddWithValue("@limit", listLimit);
 			selection.Prepare();
 			MySqlDataReader results = selection.ExecuteReader();
 
