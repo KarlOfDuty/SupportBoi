@@ -8,7 +8,6 @@ namespace SupportBoi.Commands
 	public class ToggleActiveCommand : ApplicationCommandModule
 	{
 		[SlashRequireGuild]
-		[Config.ConfigPermissionCheckAttribute("toggleactive")]
 		[SlashCommand("toggleactive", "Toggles active status for a staff member.")]
 		public async Task OnExecute(InteractionContext command, [Option("User", "(Optional) Staff member to toggle activity for.")] DiscordUser user = null)
 		{

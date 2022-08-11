@@ -12,7 +12,6 @@ namespace SupportBoi.Commands
 	public class MoveCommand : ApplicationCommandModule
 	{
 		[SlashRequireGuild]
-		[Config.ConfigPermissionCheckAttribute("move")]
 		[SlashCommand("move", "Moves a ticket to another category.")]
 		public async Task OnExecute(InteractionContext command, [Option("Category", "The category to move the ticket to. Only has to be the beginning of the name.")] string category)
 		{

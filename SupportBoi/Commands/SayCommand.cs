@@ -10,7 +10,6 @@ namespace SupportBoi.Commands
 	public class SayCommand : ApplicationCommandModule
 	{
 		[SlashRequireGuild]
-		[Config.ConfigPermissionCheckAttribute("say")]
 		[SlashCommand("say", "Prints a message with information from staff. Use without identifier to list all identifiers.")]
 		public async Task OnExecute(InteractionContext command, [Option("Identifier", "(Optional) The identifier word to summon a message.")] string identifier = null)
 		{

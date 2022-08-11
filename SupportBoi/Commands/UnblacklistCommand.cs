@@ -9,7 +9,6 @@ namespace SupportBoi.Commands
 	public class UnblacklistCommand : ApplicationCommandModule
 	{
 		[SlashRequireGuild]
-		[Config.ConfigPermissionCheckAttribute("unblacklist")]
 		[SlashCommand("unblacklist", "Unblacklists a user from opening tickets.")]
 		public async Task OnExecute(InteractionContext command, [Option("User", "User to remove from blacklist.")] DiscordUser user)
 		{

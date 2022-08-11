@@ -11,7 +11,6 @@ namespace SupportBoi.Commands
 	public class AddStaffCommand : ApplicationCommandModule
 	{
 		[SlashRequireGuild]
-		[Config.ConfigPermissionCheckAttribute("addstaff")]
 		[SlashCommand("addstaff", "Adds a new staff member.")]
 		public async Task OnExecute(InteractionContext command, [Option("User", "User to add to staff.")] DiscordUser user)
 		{

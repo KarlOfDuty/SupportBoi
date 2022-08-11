@@ -13,7 +13,6 @@ namespace SupportBoi.Commands
 	public class RandomAssignCommand : ApplicationCommandModule
 	{
 		[SlashRequireGuild]
-		[Config.ConfigPermissionCheckAttribute("rassign")]
 		[SlashCommand("rassign", "Randomly assigns a staff member to a ticket.")]
 		public async Task OnExecute(InteractionContext command, [Option("Role", "(Optional) Limit the random assignment to a specific role.")] DiscordRole role = null)
 		{

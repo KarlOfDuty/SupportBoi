@@ -8,7 +8,6 @@ namespace SupportBoi.Commands
 	public class AddMessageCommand : ApplicationCommandModule
 	{
 		[SlashRequireGuild]
-		[Config.ConfigPermissionCheckAttribute("addmessage")]
 		[SlashCommand("addmessage", "Adds a new message for the 'say' command.")]
 		public async Task OnExecute(InteractionContext command, 
 			[Option("Identifier", "The identifier word used in the /say command.")] string identifier, 

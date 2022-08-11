@@ -9,7 +9,6 @@ namespace SupportBoi.Commands
 	public class SetSummaryCommand : ApplicationCommandModule
 	{
 		[SlashRequireGuild]
-		[Config.ConfigPermissionCheckAttribute("setsummary")]
 		[SlashCommand("setsummary", "Sets a ticket's summary for the summary command.")]
 		public async Task OnExecute(InteractionContext command, [Option("Summary", "The ticket summary text.")] string summary)
 		{

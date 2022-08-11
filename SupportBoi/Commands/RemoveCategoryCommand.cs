@@ -8,7 +8,6 @@ namespace SupportBoi.Commands;
 public class RemoveCategoryCommand : ApplicationCommandModule
 {
 	[SlashRequireGuild]
-	[Config.ConfigPermissionCheckAttribute("removecategory")]
 	[SlashCommand("removecategory", "Removes the ability for users to open tickets in a specific category.")]
 	public async Task OnExecute(InteractionContext command, [Option("Category", "The category to remove.")] DiscordChannel channel)
 	{

@@ -12,7 +12,6 @@ namespace SupportBoi.Commands;
 public class AddCategoryCommand : ApplicationCommandModule
 {
 	[SlashRequireGuild]
-	[Config.ConfigPermissionCheckAttribute("addcategory")]
 	[SlashCommand("addcategory", "Adds a category to the ticket bot letting users open tickets in them.")]
 	public async Task OnExecute(InteractionContext command, [Option("Title", "The name to display on buttons and in selection boxes.")] string title, [Option("Category", "The category to add.")] DiscordChannel category)
 	{

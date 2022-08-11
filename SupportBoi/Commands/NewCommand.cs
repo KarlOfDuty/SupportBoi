@@ -12,7 +12,6 @@ namespace SupportBoi.Commands;
 public class NewCommand : ApplicationCommandModule
 {
 	[SlashRequireGuild]
-	[Config.ConfigPermissionCheckAttribute("new")]
 	[SlashCommand("new", "Opens a new ticket.")]
 	public async Task OnExecute(InteractionContext command)
 	{

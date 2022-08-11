@@ -11,7 +11,6 @@ namespace SupportBoi.Commands
 	public class AssignCommand : ApplicationCommandModule
 	{
 		[SlashRequireGuild]
-		[Config.ConfigPermissionCheckAttribute("assign")]
 		[SlashCommand("assign", "Assigns a staff member to this ticket.")]
 		public async Task OnExecute(InteractionContext command, [Option("User", "(Optional) User to assign to this ticket.")] DiscordUser user = null)
 		{

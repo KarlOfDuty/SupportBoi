@@ -8,7 +8,6 @@ namespace SupportBoi.Commands
 	public class SummaryCommand : ApplicationCommandModule
 	{
 		[SlashRequireGuild]
-		[Config.ConfigPermissionCheckAttribute("summary")]
 		[SlashCommand("summary", "Lists tickets assigned to a user.")]
 		public async Task OnExecute(InteractionContext command)
 		{

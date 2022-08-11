@@ -35,44 +35,6 @@ namespace SupportBoi
 		internal static string database = "supportbot";
 		internal static string username = "supportbot";
 		internal static string password = "";
-
-		private static readonly Dictionary<string, ulong[]> permissions = new Dictionary<string, ulong[]>
-		{
-			// Public commands
-			{ "close",						new ulong[]{ } },
-			{ "list",						new ulong[]{ } },
-            { "new",						new ulong[]{ } },
-			{ "say",                        new ulong[]{ } },
-			{ "status",						new ulong[]{ } },
-			{ "summary",					new ulong[]{ } },
-            { "transcript",					new ulong[]{ } },
-			// Moderator commands
-			{ "add",						new ulong[]{ } },
-			{ "addmessage",                 new ulong[]{ } },
-			{ "assign",						new ulong[]{ } },
-			{ "blacklist",					new ulong[]{ } },
-			{ "listassigned",				new ulong[]{ } },
-			{ "listoldest",					new ulong[]{ } },
-			{ "listunassigned",				new ulong[]{ } },
-			{ "move",						new ulong[]{ } },
-			{ "rassign",					new ulong[]{ } },
-			{ "removemessage",              new ulong[]{ } },
-			{ "setsummary",					new ulong[]{ } },
-			{ "toggleactive",				new ulong[]{ } },
-			{ "unassign",					new ulong[]{ } },
-			{ "unblacklist",				new ulong[]{ } },
-			// Admin commands
-			{ "addcategory",				new ulong[]{ } },
-			{ "removecategory",				new ulong[]{ } },
-			{ "createbuttonpanel",			new ulong[]{ } },
-			{ "createselectionboxpanel",	new ulong[]{ } },
-			{ "addstaff",					new ulong[]{ } },
-			{ "reload",						new ulong[]{ } },
-			{ "removestaff",				new ulong[]{ } },
-			{ "setticket",					new ulong[]{ } },
-			{ "unsetticket",				new ulong[]{ } },
-			{ "listinvalid",				new ulong[]{ } },
-		};
 		
 		public static void LoadConfig()
 		{
@@ -118,63 +80,6 @@ namespace SupportBoi
 			password = json.SelectToken("database.password")?.Value<string>() ?? "";
 
 			timestampFormat = timestampFormat.Trim();
-
-			foreach (KeyValuePair<string, ulong[]> node in permissions.ToList())
-			{
-				try
-				{
-					permissions[node.Key] = json.SelectToken("permissions." + node.Key).Value<JArray>().Values<ulong>().ToArray();
-				}
-				catch (ArgumentNullException)
-				{
-					Logger.Warn("Permission node '" + node.Key + "' was not found in the config, using default value: []");
-				}
-			}
-		}
-
-		/// <summary>
-		/// Checks whether a user has a specific permission.
-		/// </summary>
-		/// <param name="member">The Discord user to check.</param>
-		/// <param name="permission">The permission name to check.</param>
-		/// <returns></returns>
-		public static bool HasPermission(DiscordMember member, string permission)
-		{
-			return member.Roles.Any(role => permissions[permission].Contains(role.Id)) || permissions[permission].Contains(member.Guild.Id);
-		}
-		
-		public class ConfigPermissionCheckAttribute : SlashCheckBaseAttribute
-		{
-			public string permissionName { get; }
-
-			public ConfigPermissionCheckAttribute(string permission)
-			{
-				permissionName = permission;
-			}
-			
-			public override async Task<bool> ExecuteChecksAsync(InteractionContext command)
-			{
-				try
-				{
-					// Check if the user has permission to use this command.
-					if (!HasPermission(command.Member, permissionName))
-					{
-						return false;
-					}
-
-					return true;
-				}
-				catch (Exception e)
-				{
-					Logger.Error("Exception occured: " + e.GetType() + ": " + e);
-					await command.CreateResponseAsync(new DiscordEmbedBuilder
-					{
-						Color = DiscordColor.Red,
-						Description = "Error occured when checking permissions, please report this to the developer."
-					});
-					return false;
-				}
-			}
 		}
 	}
 }

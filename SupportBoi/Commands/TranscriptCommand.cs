@@ -13,7 +13,6 @@ namespace SupportBoi.Commands
 	public class TranscriptCommand : ApplicationCommandModule
 	{
 		[SlashRequireGuild]
-		[Config.ConfigPermissionCheckAttribute("transcript")]
 		[SlashCommand("transcript", "Creates a transcript of a ticket.")]
 		public async Task OnExecute(InteractionContext command, [Option("Ticket", "(Optional) Ticket number to get transcript of.")] long ticketID = 0)
 		{
@@ -73,7 +72,7 @@ namespace SupportBoi.Commands
 					await command.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
 					{
 						Color = DiscordColor.Red,
-						Description = "Could not find a closed ticket with that number which you opened." + (Config.HasPermission(command.Member, "list") ? "\n(Use the /list command to see all your tickets)" : "")
+						Description = "Could not find a closed ticket with that number which you opened.\n(Use the /list command to see all your tickets)"
 					}));
 					return;
 				}

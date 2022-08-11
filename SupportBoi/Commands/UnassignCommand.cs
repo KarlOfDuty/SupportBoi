@@ -8,7 +8,6 @@ namespace SupportBoi.Commands
 	public class UnassignCommand : ApplicationCommandModule
 	{
 		[SlashRequireGuild]
-		[Config.ConfigPermissionCheckAttribute("unassign")]
 		[SlashCommand("unassign", "Unassigns a staff member from a ticket.")]
 		public async Task OnExecute(InteractionContext command)
 		{

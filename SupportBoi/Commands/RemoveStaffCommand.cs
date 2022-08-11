@@ -9,7 +9,6 @@ namespace SupportBoi.Commands
 	public class RemoveStaffCommand : ApplicationCommandModule
 	{
 		[SlashRequireGuild]
-		[Config.ConfigPermissionCheckAttribute("removestaff")]
 		[SlashCommand("removestaff", "Removes a staff member.")]
 		public async Task OnExecute(InteractionContext command, [Option("User", "User to remove from staff.")] DiscordUser user)
 		{

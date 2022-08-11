@@ -14,7 +14,6 @@ namespace SupportBoi.Commands
 	public class CloseCommand : ApplicationCommandModule
 	{
 		[SlashRequireGuild]
-		[Config.ConfigPermissionCheckAttribute("close")]
 		[SlashCommand("close", "Closes a ticket.")]
 		public async Task OnExecute(InteractionContext command)
 		{

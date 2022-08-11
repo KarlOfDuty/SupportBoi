@@ -8,7 +8,6 @@ namespace SupportBoi.Commands
 	public class StatusCommand : ApplicationCommandModule
 	{
 		[SlashRequireGuild]
-		[Config.ConfigPermissionCheckAttribute("status")]
 		[SlashCommand("status", "Shows bot status and information.")]
 		public async Task OnExecute(InteractionContext command)
 		{

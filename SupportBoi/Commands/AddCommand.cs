@@ -10,7 +10,6 @@ namespace SupportBoi.Commands
 	public class AddCommand : ApplicationCommandModule
 	{
 		[SlashRequireGuild]
-		[Config.ConfigPermissionCheckAttribute("add")]
 		[SlashCommand("add", "Adds a user to a ticket")]
 		public async Task OnExecute(InteractionContext command, [Option("User", "User to add to ticket.")] DiscordUser user)
 		{
