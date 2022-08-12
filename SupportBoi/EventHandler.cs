@@ -252,18 +252,14 @@ namespace SupportBoi
 						break;
 				}
 			}
-			catch (UnauthorizedException ex)
+			catch (DiscordException ex)
 			{
-				Logger.Error("Exception occured: " + ex.GetType() + ": " + ex);
-			}
-			catch (BadRequestException ex)
-			{
-				Logger.Error("Interaction exception occured:\n" + ex);
-				Logger.Error("JSON Message: " + ex.JsonMessage);
+				Logger.Error("Interaction Exception occurred: " + ex);
+				Logger.Error("JsomMessage: " + ex.JsonMessage);
 			}
 			catch (Exception ex)
 			{
-				Logger.Error("Exception occured: " + ex.GetType() + ": " + ex);
+				Logger.Error("Interaction Exception occured: " + ex.GetType() + ": " + ex);
 			}
 		}
 		

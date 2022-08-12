@@ -200,8 +200,26 @@ public class NewCommand : ApplicationCommandModule
 
 		long id = Database.NewTicket(member.Id, staffID, ticketChannel.Id);
 		string ticketID = id.ToString("00000");
-		await ticketChannel.ModifyAsync(modifiedAttributes => modifiedAttributes.Name = "ticket-" + ticketID);
-		await ticketChannel.AddOverwriteAsync(member, Permissions.AccessChannels);
+
+		try
+		{
+			await ticketChannel.ModifyAsync(modifiedAttributes => modifiedAttributes.Name = "ticket-" + ticketID);
+		}
+		catch (DiscordException e)
+		{
+			Logger.Error("Exception occurred trying to modify channel: " + e);
+			Logger.Error("JsomMessage: " + e.JsonMessage);
+		}
+		
+		try
+		{
+			await ticketChannel.AddOverwriteAsync(member, Permissions.AccessChannels);
+		}
+		catch (DiscordException e)
+		{
+			Logger.Error("Exception occurred trying to add channel permissions: " + e);
+			Logger.Error("JsomMessage: " + e.JsonMessage);
+		}
 
 		await ticketChannel.SendMessageAsync("Hello, " + member.Mention + "!\n" + Config.welcomeMessage);
 
@@ -228,8 +246,11 @@ public class NewCommand : ApplicationCommandModule
 									  ticketChannel.Mention
 					});
 				}
-				catch (NotFoundException) {}
-				catch (UnauthorizedException) {}
+				catch (DiscordException e)
+				{
+					Logger.Error("Exception occurred assign random staff member: " + e);
+					Logger.Error("JsomMessage: " + e.JsonMessage);
+				}
 			}
 		}
 		
