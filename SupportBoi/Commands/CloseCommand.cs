@@ -118,11 +118,20 @@ namespace SupportBoi.Commands
 			
 			Database.ArchiveTicket(ticket);
 
-			await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
+			try
 			{
-				Color = DiscordColor.Green,
-				Description = "Channel will be deleted in 3 seconds..."
-			}));
+				await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
+				{
+					Color = DiscordColor.Green,
+					Description = "Channel will be deleted in 3 seconds..."
+				}));
+			}
+			catch (DiscordException e)
+			{
+				Logger.Error("Exception occurred trying to respond to close confirmation: " + e);
+				Logger.Error("JsomMessage: " + e.JsonMessage);
+			}
+
 
 			await Task.Delay(3000);
 
