@@ -229,7 +229,7 @@ public static class Database
 		tickets = null;
 		using MySqlConnection c = GetConnection();
 		c.Open();
-		using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM tickets ORDER BY created_time ASC", c);
+		using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM tickets ORDER BY channel_id ASC", c);
 		selection.Prepare();
 		MySqlDataReader results = selection.ExecuteReader();
 
