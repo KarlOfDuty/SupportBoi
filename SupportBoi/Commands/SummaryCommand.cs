@@ -19,7 +19,7 @@ namespace SupportBoi.Commands
 					.AddField("Ticket number:", ticket.id.ToString("00000"), true)
 					.AddField("Ticket creator:", $"<@{ticket.creatorID}>", true)
 					.AddField("Assigned staff:", ticket.assignedStaffID == 0 ? "Unassigned." : $"<@{ticket.assignedStaffID}>", true)
-					.AddField("Creation time:", ticket.createdTime.ToString(Config.timestampFormat), true)
+					.AddField("Creation time:", ticket.DiscordRelativeTime(), true)
 					.AddField("Summary:", string.IsNullOrEmpty(ticket.summary) ? "No summary." : ticket.summary.Replace("\\n", "\n"), false);
 				await command.CreateResponseAsync(channelInfo);
 			}

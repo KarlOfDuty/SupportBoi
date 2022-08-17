@@ -80,19 +80,12 @@ namespace SupportBoi
 			
 			Logger.Log("Setting up Discord client...");
 			
-			// Checking log level
-			if (!Enum.TryParse(Config.logLevel, true, out LogLevel logLevel))
-			{
-				Logger.Warn("Log level '" + Config.logLevel + "' invalid, using 'Information' instead.");
-				logLevel = LogLevel.Information;
-			}
-			
 			// Setting up client configuration
 			DiscordConfiguration cfg = new DiscordConfiguration
 			{
 				Token = Config.token,
 				TokenType = TokenType.Bot,
-				MinimumLogLevel = logLevel,
+				MinimumLogLevel = Config.logLevel,
 				AutoReconnect = true,
 				Intents = DiscordIntents.All
 			};

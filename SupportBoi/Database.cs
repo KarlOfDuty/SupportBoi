@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
+using DSharpPlus;
 using MySql.Data.MySqlClient;
 
 namespace SupportBoi
@@ -326,7 +327,7 @@ namespace SupportBoi
 			using MySqlConnection conn = GetConnection();
 			using MySqlCommand archiveTicket = new MySqlCommand(@"INSERT INTO ticket_history (id, created_time, closed_time, creator_id, assigned_staff_id, summary, channel_id) VALUES (@id, @created_time, UTC_TIMESTAMP(), @creator_id, @assigned_staff_id, @summary, @channel_id);", conn);
 			archiveTicket.Parameters.AddWithValue("@id", ticket.id);
-			archiveTicket.Parameters.AddWithValue("@created_time", ticket.createdTime);
+			archiveTicket.Parameters.AddWithValue("@created_time", ticket.channelID.GetSnowflakeTime());
 			archiveTicket.Parameters.AddWithValue("@creator_id", ticket.creatorID);
 			archiveTicket.Parameters.AddWithValue("@assigned_staff_id", ticket.assignedStaffID);
 			archiveTicket.Parameters.AddWithValue("@summary", ticket.summary);
@@ -756,7 +757,6 @@ namespace SupportBoi
 		public class Ticket
 		{
 			public uint id;
-			public DateTime createdTime;
 			public ulong creatorID;
 			public ulong assignedStaffID;
 			public string summary;
@@ -765,16 +765,15 @@ namespace SupportBoi
 			public Ticket(MySqlDataReader reader)
 			{
 				id = reader.GetUInt32("id");
-				createdTime = reader.GetDateTime("created_time");
 				creatorID = reader.GetUInt64("creator_id");
 				assignedStaffID = reader.GetUInt64("assigned_staff_id");
 				summary = reader.GetString("summary");
 				channelID = reader.GetUInt64("channel_id");
 			}
 
-			public string FormattedCreatedTime()
+			public string DiscordRelativeTime()
 			{
-				return this.createdTime.ToString(Config.timestampFormat);
+				return DSharpPlus.Formatter.Timestamp(channelID.GetSnowflakeTime(), Config.timestampFormat);
 			}
 		}
 		public class StaffMember

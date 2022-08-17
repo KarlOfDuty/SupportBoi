@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
@@ -28,7 +27,7 @@ namespace SupportBoi.Commands
 			List<string> listItems = new List<string>();
 			foreach (Database.Ticket ticket in unassignedTickets)
 			{
-				listItems.Add("**" + ticket.FormattedCreatedTime() + ":** <#" + ticket.channelID + "> by <@" + ticket.creatorID + ">\n");
+				listItems.Add("**" + ticket.DiscordRelativeTime() + ":** <#" + ticket.channelID + "> by <@" + ticket.creatorID + ">\n");
 			}
 
 			List<DiscordEmbedBuilder> embeds = new List<DiscordEmbedBuilder>();

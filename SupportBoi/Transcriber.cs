@@ -22,13 +22,7 @@ namespace SupportBoi
 			{
 				Directory.CreateDirectory("./transcripts");
 			}
-
-			string dateFormat = "yyyy-MMM-dd HH:mm";
-
-			// Configure settings
-			if (Config.timestampFormat != "")
-				dateFormat = Config.timestampFormat;
-
+			
 			Channel channel = await discordClient.GetChannelAsync(new Snowflake(channelID));
 			Guild guild = await discordClient.GetGuildAsync(channel.GuildId);
 
@@ -43,7 +37,7 @@ namespace SupportBoi
 				MessageFilter: MessageFilter.Null,
 				ShouldDownloadMedia: false,
 				ShouldReuseMedia: false,
-				DateFormat: dateFormat
+				DateFormat: "yyyy-MMM-dd HH:mm"
 			);
 
 			await Exporter.ExportChannelAsync(request);

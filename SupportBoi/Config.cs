@@ -4,8 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using SupportBoi.Properties;
 using YamlDotNet.Serialization;
@@ -17,8 +19,8 @@ namespace SupportBoi
 		internal static string token = "";
 		internal static ulong logChannel;
 		internal static string welcomeMessage = "";
-		internal static string logLevel = "Information";
-		internal static string timestampFormat = "yyyy-MMM-dd HH:mm";
+		internal static LogLevel logLevel = LogLevel.Information;
+		internal static TimestampFormat timestampFormat = TimestampFormat.RelativeTime;
 		internal static bool randomAssignment = false;
 		internal static bool randomAssignRoleOverride = false;
 		internal static string presenceType = "Playing";
@@ -50,7 +52,7 @@ namespace SupportBoi
 
 			// Converts the FileStream into a YAML object
 			IDeserializer deserializer = new DeserializerBuilder().Build();
-			object yamlObject = deserializer.Deserialize(new StreamReader(stream));
+			object yamlObject = deserializer.Deserialize(new StreamReader(stream)) ?? "";
 
 			// Converts the YAML object into a JSON object as the YAML ones do not support traversal or selection of nodes by name 
 			ISerializer serializer = new SerializerBuilder().JsonCompatible().Build();
@@ -60,8 +62,22 @@ namespace SupportBoi
 			token = json.SelectToken("bot.token")?.Value<string>() ?? "";
 			logChannel = json.SelectToken("bot.log-channel")?.Value<ulong>() ?? 0;
 			welcomeMessage = json.SelectToken("bot.welcome-message")?.Value<string>() ?? "";
-			logLevel = json.SelectToken("bot.console-log-level")?.Value<string>() ?? "";
-			timestampFormat = json.SelectToken("bot.timestamp-format")?.Value<string>() ?? "yyyy-MM-dd HH:mm";
+			string stringLogLevel = json.SelectToken("bot.console-log-level")?.Value<string>() ?? "";
+			
+			if (!Enum.TryParse(stringLogLevel, true, out logLevel))
+			{
+				logLevel = LogLevel.Information;
+				Logger.Warn("Log level '" + stringLogLevel + "' invalid, using 'Information' instead.");
+			}
+			
+			string stringTimestampFormat = json.SelectToken("bot.timestamp-format")?.Value<string>() ?? "RelativeTime";
+			
+			if (!Enum.TryParse(stringTimestampFormat, true, out timestampFormat))
+			{
+				timestampFormat = TimestampFormat.RelativeTime;
+				Logger.Warn("Timestamp '" + stringTimestampFormat + "' invalid, using 'RelativeTime' instead.");
+			}
+			
 			randomAssignment = json.SelectToken("bot.random-assignment")?.Value<bool>() ?? false;
 			randomAssignRoleOverride = json.SelectToken("bot.random-assign-role-override")?.Value<bool>() ?? false;
 			presenceType = json.SelectToken("bot.presence-type")?.Value<string>() ?? "Playing";
@@ -80,8 +96,6 @@ namespace SupportBoi
 			database = json.SelectToken("database.name")?.Value<string>() ?? "supportbot";
 			username = json.SelectToken("database.user")?.Value<string>() ?? "supportbot";
 			password = json.SelectToken("database.password")?.Value<string>() ?? "";
-
-			timestampFormat = timestampFormat.Trim();
 		}
 	}
 }

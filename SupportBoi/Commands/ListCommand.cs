@@ -24,7 +24,7 @@ namespace SupportBoi.Commands
 				List<string> listItems = new List<string>();
 				foreach (Database.Ticket ticket in openTickets)
 				{
-					listItems.Add("**" + ticket.FormattedCreatedTime() + ":** <#" + ticket.channelID + ">\n");
+					listItems.Add("**" + ticket.DiscordRelativeTime() + ":** <#" + ticket.channelID + ">\n");
 				}
 				
 				foreach (string message in Utilities.ParseListIntoMessages(listItems))
@@ -49,7 +49,7 @@ namespace SupportBoi.Commands
 				List<string> listItems = new List<string>();
 				foreach (Database.Ticket ticket in closedTickets)
 				{
-					listItems.Add("**" + ticket.FormattedCreatedTime() + ":** Ticket " + ticket.id.ToString("00000") + "\n");
+					listItems.Add("**" + ticket.DiscordRelativeTime() + ":** Ticket " + ticket.id.ToString("00000") + "\n");
 				}
 				
 				foreach (string message in Utilities.ParseListIntoMessages(listItems))

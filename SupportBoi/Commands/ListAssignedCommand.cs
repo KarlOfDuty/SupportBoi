@@ -31,7 +31,7 @@ namespace SupportBoi.Commands
 			List<string> listItems = new List<string>();
 			foreach (Database.Ticket ticket in assignedTickets)
 			{
-				listItems.Add("**" + ticket.FormattedCreatedTime() + ":** <#" + ticket.channelID + "> by <@" + ticket.creatorID + ">\n");
+				listItems.Add("**" + ticket.DiscordRelativeTime() + ":** <#" + ticket.channelID + "> by <@" + ticket.creatorID + ">\n");
 			}
 
 			List<DiscordEmbedBuilder> embeds = new List<DiscordEmbedBuilder>();
