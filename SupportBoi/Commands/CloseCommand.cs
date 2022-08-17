@@ -128,8 +128,8 @@ namespace SupportBoi.Commands
 			}
 			catch (DiscordException e)
 			{
-				Logger.Error("Exception occurred trying to respond to close confirmation: " + e);
-				Logger.Error("JsomMessage: " + e.JsonMessage);
+				Logger.Debug("Exception occurred trying to respond to close confirmation: " + e);
+				Logger.Debug("JsomMessage: " + e.JsonMessage);
 			}
 
 
