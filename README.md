@@ -53,31 +53,30 @@ A support ticket Discord bot. Uses a MySQL database for storage of ticket inform
 bot:
     # Bot token.
     token: "<add-token-here>"
-    # Command prefix.
-    prefix: "+"
     # Channel where ticket logs are posted (recommended)
     log-channel: 000000000000000000
-    # Category where the ticket will be created, it will have the same permissions of that ticket plus read permissions for the user opening the ticket (recommended)
-    ticket-category: 000000000000000000
-    # A message which will open new tickets when users react to it (optional)
-    reaction-message: 000000000000000000
     # Message posted when a ticket is opened.
     welcome-message: "Please describe your issue below, and include all information needed for us to take action. This is an example ticket message and can be changed in the config."
     # Decides what messages are shown in console
     # Possible values are: Critical, Error, Warning, Information, Debug.
     console-log-level: "Information"
-    # Format for timestamps in transcripts and google sheets if used
-    timestamp-format: "yyyy-MM-dd HH:mm"
+    # One of the following: LongDate, LongDateTime, LongTime, RelativeTime, ShortDate, ShortDateTime, ShortTime
+    # More info: https://dsharpplus.github.io/api/DSharpPlus.TimestampFormat.html
+    timestamp-format: "RelativeTime"
     # Whether or not staff members should be randomly assigned tickets when they are made. Individual staff members can opt out using the toggleactive command.
     random-assignment: true
     # If set to true the rasssign command will include staff members set as inactive if a specific role is specified in the command.
-    # This can be useful if you have admins set as inactive to not automatically recieve tickets and then have moderators elevate tickets when needed.
+    # This can be useful if you have admins set as inactive to not automatically receive tickets and then have moderators elevate tickets when needed.
     random-assign-role-override: true
     # Sets the type of activity for the bot to display in its presence status
     # Possible values are: Playing, Streaming, ListeningTo, Watching, Competing
     presence-type: "ListeningTo"
     # Sets the activity text shown in the bot's status
-    presence-text: "+new"
+    presence-text: "/new"
+    # Set to true if you want the /new command to show a selection box instead of a series of buttons
+    new-command-uses-selector: false
+    # Number of tickets a single user can have open at a time, staff members are excluded from this
+    ticket-limit: 5
 
 notifications:
     # Notifies the assigned staff member when a new message is posted in a ticket if the ticket has been silent for a configurable amount of time
@@ -99,39 +98,4 @@ database:
     # Username and password for authentication
     user: ""
     password: ""
-
-# Set up which roles are allowed to use different commands.
-# Example:
-#   new: [ 000000000000000000, 111111111111111111 ]
-# They are grouped into suggested command groups below for first time setup.
-permissions:
-    # Public commands
-    close: []
-    list: []
-    new: []
-    say: []
-    status: []
-    summary: []
-    transcript: []
-    # Moderator commands
-    add: []
-    addmessage: []
-    assign: []
-    blacklist: []
-    listassigned: []
-    listoldest: []
-    listunassigned: []
-    move: []
-    rassign: []
-    removemessage: []
-    setsummary: []
-    toggleactive: []
-    unassign: []
-    unblacklist: []
-    # Admin commands
-    addstaff: []
-    reload: []
-    removestaff: []
-    setticket: []
-    unsetticket: []
 ```
