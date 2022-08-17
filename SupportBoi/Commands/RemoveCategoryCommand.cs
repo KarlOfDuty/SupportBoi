@@ -11,7 +11,7 @@ public class RemoveCategoryCommand : ApplicationCommandModule
 	[SlashCommand("removecategory", "Removes the ability for users to open tickets in a specific category.")]
 	public async Task OnExecute(InteractionContext command, [Option("Category", "The category to remove.")] DiscordChannel channel)
 	{
-		if (!Database.TryGetCategory(channel.Id, out Database.Category category))
+		if (!Database.TryGetCategory(channel.Id, out Database.Category _))
 		{
 			await command.CreateResponseAsync(new DiscordEmbedBuilder
 			{

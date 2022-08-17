@@ -4,816 +4,815 @@ using System.Collections.Generic;
 using DSharpPlus;
 using MySql.Data.MySqlClient;
 
-namespace SupportBoi
+namespace SupportBoi;
+
+public static class Database
 {
-	public static class Database
+	private static string connectionString = "";
+
+	private static readonly Random random = new Random();
+
+	public static void SetConnectionString(string host, int port, string database, string username, string password)
 	{
-		private static string connectionString = "";
-
-		private static Random random = new Random();
-
-		public static void SetConnectionString(string host, int port, string database, string username, string password)
-		{
-			connectionString = "server=" + host + 
-			                   ";database=" + database + 
-			                   ";port=" + port + 
-			                   ";userid=" + username + 
-			                   ";password=" + password;
-		}
+		connectionString = "server=" + host + 
+						   ";database=" + database + 
+						   ";port=" + port + 
+						   ";userid=" + username + 
+						   ";password=" + password;
+	}
 		
-		public static MySqlConnection GetConnection()
-		{
-			return new MySqlConnection(connectionString);
-		}
+	public static MySqlConnection GetConnection()
+	{
+		return new MySqlConnection(connectionString);
+	}
 		
-		public static long GetNumberOfTickets()
-		{
-			try
-			{
-				using MySqlConnection c = GetConnection();
-				using MySqlCommand countTickets = new MySqlCommand("SELECT COUNT(*) FROM tickets", c);
-				c.Open();
-				return (long)countTickets.ExecuteScalar();
-			}
-			catch (Exception e)
-			{
-				Logger.Error("Error occured when attempting to count number of open tickets: " + e);
-			}
-
-			return -1;
-		}
-		
-		public static long GetNumberOfClosedTickets()
-		{
-			try
-			{
-				using MySqlConnection c = GetConnection();
-				using MySqlCommand countTickets = new MySqlCommand("SELECT COUNT(*) FROM ticket_history", c);
-				c.Open();
-				return (long)countTickets.ExecuteScalar();
-			}
-			catch (Exception e)
-			{
-				Logger.Error("Error occured when attempting to count number of open tickets: " + e);
-			}
-
-			return -1;
-		}
-		
-		public static void SetupTables()
+	public static long GetNumberOfTickets()
+	{
+		try
 		{
 			using MySqlConnection c = GetConnection();
-			using MySqlCommand createTickets = new MySqlCommand(
-				"CREATE TABLE IF NOT EXISTS tickets(" +
-				"id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT," +
-				"created_time DATETIME NOT NULL," +
-				"creator_id BIGINT UNSIGNED NOT NULL," +
-				"assigned_staff_id BIGINT UNSIGNED NOT NULL DEFAULT 0," +
-				"summary VARCHAR(5000) NOT NULL," +
-				"channel_id BIGINT UNSIGNED NOT NULL UNIQUE," +
-				"INDEX(created_time, assigned_staff_id, channel_id))",
-				c);
-			using MySqlCommand createTicketHistory = new MySqlCommand(
-				"CREATE TABLE IF NOT EXISTS ticket_history(" +
-				"id INT UNSIGNED NOT NULL PRIMARY KEY," +
-				"created_time DATETIME NOT NULL," +
-				"closed_time DATETIME NOT NULL," +
-				"creator_id BIGINT UNSIGNED NOT NULL," +
-				"assigned_staff_id BIGINT UNSIGNED NOT NULL DEFAULT 0," +
-				"summary VARCHAR(5000) NOT NULL," +
-				"channel_id BIGINT UNSIGNED NOT NULL UNIQUE," +
-				"INDEX(created_time, closed_time, channel_id))",
-				c);
-			using MySqlCommand createBlacklisted = new MySqlCommand(
-				"CREATE TABLE IF NOT EXISTS blacklisted_users(" +
-				"user_id BIGINT UNSIGNED NOT NULL PRIMARY KEY," +
-				"time DATETIME NOT NULL," +
-				"moderator_id BIGINT UNSIGNED NOT NULL," +
-				"INDEX(user_id, time))",
-				c);
-			using MySqlCommand createStaffList = new MySqlCommand(
-				"CREATE TABLE IF NOT EXISTS staff(" +
-				"user_id BIGINT UNSIGNED NOT NULL PRIMARY KEY," +
-				"name VARCHAR(256) NOT NULL," +
-				"active BOOLEAN NOT NULL DEFAULT true)",
-				c);
-			using MySqlCommand createMessages = new MySqlCommand(
-				"CREATE TABLE IF NOT EXISTS messages(" +
-				"identifier VARCHAR(256) NOT NULL PRIMARY KEY," +
-				"user_id BIGINT UNSIGNED NOT NULL," +
-				"message VARCHAR(5000) NOT NULL)",
-				c);
-			using MySqlCommand createCategories = new MySqlCommand(
-				"CREATE TABLE IF NOT EXISTS categories(" +
-				"name VARCHAR(256) NOT NULL UNIQUE," +
-				"category_id BIGINT UNSIGNED NOT NULL PRIMARY KEY)",
-				c);
+			using MySqlCommand countTickets = new MySqlCommand("SELECT COUNT(*) FROM tickets", c);
 			c.Open();
-			createTickets.ExecuteNonQuery();
-			createBlacklisted.ExecuteNonQuery();
-			createTicketHistory.ExecuteNonQuery();
-			createStaffList.ExecuteNonQuery();
-			createMessages.ExecuteNonQuery();
-			createCategories.ExecuteNonQuery();
+			return (long)countTickets.ExecuteScalar();
 		}
+		catch (Exception e)
+		{
+			Logger.Error("Error occured when attempting to count number of open tickets: " + e);
+		}
+
+		return -1;
+	}
 		
-		public static bool IsOpenTicket(ulong channelID)
+	public static long GetNumberOfClosedTickets()
+	{
+		try
 		{
 			using MySqlConnection c = GetConnection();
+			using MySqlCommand countTickets = new MySqlCommand("SELECT COUNT(*) FROM ticket_history", c);
 			c.Open();
-			using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM tickets WHERE channel_id=@channel_id", c);
-			selection.Parameters.AddWithValue("@channel_id", channelID);
-			selection.Prepare();
-			MySqlDataReader results = selection.ExecuteReader();
-
-			// Check if ticket exists in the database
-			if (!results.Read())
-			{
-				return false;
-			}
-			results.Close();
-			return true;
+			return (long)countTickets.ExecuteScalar();
 		}
-		
-		public static bool TryGetOpenTicket(ulong channelID, out Ticket ticket)
+		catch (Exception e)
 		{
-			using MySqlConnection c = GetConnection();
-			c.Open();
-			using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM tickets WHERE channel_id=@channel_id", c);
-			selection.Parameters.AddWithValue("@channel_id", channelID);
-			selection.Prepare();
-			MySqlDataReader results = selection.ExecuteReader();
+			Logger.Error("Error occured when attempting to count number of open tickets: " + e);
+		}
 
-			// Check if ticket exists in the database
-			if (!results.Read())
-			{
-				ticket = null;
-				return false;
-			}
+		return -1;
+	}
+		
+	public static void SetupTables()
+	{
+		using MySqlConnection c = GetConnection();
+		using MySqlCommand createTickets = new MySqlCommand(
+			"CREATE TABLE IF NOT EXISTS tickets(" +
+			"id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT," +
+			"created_time DATETIME NOT NULL," +
+			"creator_id BIGINT UNSIGNED NOT NULL," +
+			"assigned_staff_id BIGINT UNSIGNED NOT NULL DEFAULT 0," +
+			"summary VARCHAR(5000) NOT NULL," +
+			"channel_id BIGINT UNSIGNED NOT NULL UNIQUE," +
+			"INDEX(created_time, assigned_staff_id, channel_id))",
+			c);
+		using MySqlCommand createTicketHistory = new MySqlCommand(
+			"CREATE TABLE IF NOT EXISTS ticket_history(" +
+			"id INT UNSIGNED NOT NULL PRIMARY KEY," +
+			"created_time DATETIME NOT NULL," +
+			"closed_time DATETIME NOT NULL," +
+			"creator_id BIGINT UNSIGNED NOT NULL," +
+			"assigned_staff_id BIGINT UNSIGNED NOT NULL DEFAULT 0," +
+			"summary VARCHAR(5000) NOT NULL," +
+			"channel_id BIGINT UNSIGNED NOT NULL UNIQUE," +
+			"INDEX(created_time, closed_time, channel_id))",
+			c);
+		using MySqlCommand createBlacklisted = new MySqlCommand(
+			"CREATE TABLE IF NOT EXISTS blacklisted_users(" +
+			"user_id BIGINT UNSIGNED NOT NULL PRIMARY KEY," +
+			"time DATETIME NOT NULL," +
+			"moderator_id BIGINT UNSIGNED NOT NULL," +
+			"INDEX(user_id, time))",
+			c);
+		using MySqlCommand createStaffList = new MySqlCommand(
+			"CREATE TABLE IF NOT EXISTS staff(" +
+			"user_id BIGINT UNSIGNED NOT NULL PRIMARY KEY," +
+			"name VARCHAR(256) NOT NULL," +
+			"active BOOLEAN NOT NULL DEFAULT true)",
+			c);
+		using MySqlCommand createMessages = new MySqlCommand(
+			"CREATE TABLE IF NOT EXISTS messages(" +
+			"identifier VARCHAR(256) NOT NULL PRIMARY KEY," +
+			"user_id BIGINT UNSIGNED NOT NULL," +
+			"message VARCHAR(5000) NOT NULL)",
+			c);
+		using MySqlCommand createCategories = new MySqlCommand(
+			"CREATE TABLE IF NOT EXISTS categories(" +
+			"name VARCHAR(256) NOT NULL UNIQUE," +
+			"category_id BIGINT UNSIGNED NOT NULL PRIMARY KEY)",
+			c);
+		c.Open();
+		createTickets.ExecuteNonQuery();
+		createBlacklisted.ExecuteNonQuery();
+		createTicketHistory.ExecuteNonQuery();
+		createStaffList.ExecuteNonQuery();
+		createMessages.ExecuteNonQuery();
+		createCategories.ExecuteNonQuery();
+	}
+		
+	public static bool IsOpenTicket(ulong channelID)
+	{
+		using MySqlConnection c = GetConnection();
+		c.Open();
+		using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM tickets WHERE channel_id=@channel_id", c);
+		selection.Parameters.AddWithValue("@channel_id", channelID);
+		selection.Prepare();
+		MySqlDataReader results = selection.ExecuteReader();
 
+		// Check if ticket exists in the database
+		if (!results.Read())
+		{
+			return false;
+		}
+		results.Close();
+		return true;
+	}
+		
+	public static bool TryGetOpenTicket(ulong channelID, out Ticket ticket)
+	{
+		using MySqlConnection c = GetConnection();
+		c.Open();
+		using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM tickets WHERE channel_id=@channel_id", c);
+		selection.Parameters.AddWithValue("@channel_id", channelID);
+		selection.Prepare();
+		MySqlDataReader results = selection.ExecuteReader();
+
+		// Check if ticket exists in the database
+		if (!results.Read())
+		{
+			ticket = null;
+			return false;
+		}
+
+		ticket = new Ticket(results);
+		results.Close();
+		return true;
+	}
+		
+	public static bool TryGetOpenTicketByID(uint id, out Ticket ticket)
+	{
+		using MySqlConnection c = GetConnection();
+		c.Open();
+		using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM tickets WHERE id=@id", c);
+		selection.Parameters.AddWithValue("@id", id);
+		selection.Prepare();
+		MySqlDataReader results = selection.ExecuteReader();
+
+		// Check if open ticket exists in the database
+		if (results.Read())
+		{
 			ticket = new Ticket(results);
 			results.Close();
 			return true;
 		}
+
+		results.Close();
+		ticket = null;
+		return false;
+	}
 		
-		public static bool TryGetOpenTicketByID(uint id, out Ticket ticket)
+	public static bool TryGetClosedTicket(uint id, out Ticket ticket)
+	{
+		using MySqlConnection c = GetConnection();
+		c.Open();
+		using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM ticket_history WHERE id=@id", c);
+		selection.Parameters.AddWithValue("@id", id);
+		selection.Prepare();
+		MySqlDataReader results = selection.ExecuteReader();
+
+		// Check if closed ticket exists in the database
+		if (results.Read())
 		{
-			using MySqlConnection c = GetConnection();
-			c.Open();
-			using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM tickets WHERE id=@id", c);
-			selection.Parameters.AddWithValue("@id", id);
-			selection.Prepare();
-			MySqlDataReader results = selection.ExecuteReader();
-
-			// Check if open ticket exists in the database
-			if (results.Read())
-			{
-				ticket = new Ticket(results);
-				results.Close();
-				return true;
-			}
-
+			ticket = new Ticket(results);
 			results.Close();
-			ticket = null;
+			return true;
+		}
+
+		ticket = null;
+		results.Close();
+		return false;
+	}
+		
+	public static bool TryGetOpenTickets(ulong userID, out List<Ticket> tickets)
+	{
+		tickets = null;
+		using MySqlConnection c = GetConnection();
+		c.Open();
+		using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM tickets WHERE creator_id=@creator_id", c);
+		selection.Parameters.AddWithValue("@creator_id", userID);
+		selection.Prepare();
+		MySqlDataReader results = selection.ExecuteReader();
+
+		if (!results.Read())
+		{
 			return false;
 		}
-		
-		public static bool TryGetClosedTicket(uint id, out Ticket ticket)
+
+		tickets = new List<Ticket> { new Ticket(results) };
+		while (results.Read())
 		{
-			using MySqlConnection c = GetConnection();
-			c.Open();
-			using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM ticket_history WHERE id=@id", c);
-			selection.Parameters.AddWithValue("@id", id);
-			selection.Prepare();
-			MySqlDataReader results = selection.ExecuteReader();
+			tickets.Add(new Ticket(results));
+		}
+		results.Close();
+		return true;
+	}
+		
+	public static bool TryGetOpenTickets(out List<Ticket> tickets)
+	{
+		tickets = null;
+		using MySqlConnection c = GetConnection();
+		c.Open();
+		using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM tickets ORDER BY created_time ASC", c);
+		selection.Prepare();
+		MySqlDataReader results = selection.ExecuteReader();
 
-			// Check if closed ticket exists in the database
-			if (results.Read())
-			{
-				ticket = new Ticket(results);
-				results.Close();
-				return true;
-			}
-
-			ticket = null;
-			results.Close();
+		if (!results.Read())
+		{
 			return false;
 		}
-		
-		public static bool TryGetOpenTickets(ulong userID, out List<Ticket> tickets)
+
+		tickets = new List<Ticket> { new Ticket(results) };
+		while (results.Read())
 		{
-			tickets = null;
-			using MySqlConnection c = GetConnection();
-			c.Open();
-			using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM tickets WHERE creator_id=@creator_id", c);
-			selection.Parameters.AddWithValue("@creator_id", userID);
-			selection.Prepare();
-			MySqlDataReader results = selection.ExecuteReader();
-
-			if (!results.Read())
-			{
-				return false;
-			}
-
-			tickets = new List<Ticket> { new Ticket(results) };
-			while (results.Read())
-			{
-				tickets.Add(new Ticket(results));
-			}
-			results.Close();
-			return true;
+			tickets.Add(new Ticket(results));
 		}
+		results.Close();
+		return true;
+	}
 		
-		public static bool TryGetOpenTickets(out List<Ticket> tickets)
+	public static bool TryGetClosedTickets(ulong userID, out List<Ticket> tickets)
+	{
+		tickets = null;
+		using MySqlConnection c = GetConnection();
+		c.Open();
+		using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM ticket_history WHERE creator_id=@creator_id", c);
+		selection.Parameters.AddWithValue("@creator_id", userID);
+		selection.Prepare();
+		MySqlDataReader results = selection.ExecuteReader();
+
+		if (!results.Read())
 		{
-			tickets = null;
-			using MySqlConnection c = GetConnection();
-			c.Open();
-			using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM tickets ORDER BY created_time ASC", c);
-			selection.Prepare();
-			MySqlDataReader results = selection.ExecuteReader();
-
-			if (!results.Read())
-			{
-				return false;
-			}
-
-			tickets = new List<Ticket> { new Ticket(results) };
-			while (results.Read())
-			{
-				tickets.Add(new Ticket(results));
-			}
-			results.Close();
-			return true;
-		}
-		
-		public static bool TryGetClosedTickets(ulong userID, out List<Ticket> tickets)
-		{
-			tickets = null;
-			using MySqlConnection c = GetConnection();
-			c.Open();
-			using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM ticket_history WHERE creator_id=@creator_id", c);
-			selection.Parameters.AddWithValue("@creator_id", userID);
-			selection.Prepare();
-			MySqlDataReader results = selection.ExecuteReader();
-
-			if (!results.Read())
-			{
-				return false;
-			}
-
-			tickets = new List<Ticket> { new Ticket(results) };
-			while (results.Read())
-			{
-				tickets.Add(new Ticket(results));
-			}
-			results.Close();
-			return true;
-		}
-		
-		public static bool TryGetAssignedTickets(ulong staffID, out List<Ticket> tickets)
-		{
-			tickets = null;
-			using MySqlConnection c = GetConnection();
-			c.Open();
-			using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM tickets WHERE assigned_staff_id=@assigned_staff_id", c);
-			selection.Parameters.AddWithValue("@assigned_staff_id", staffID);
-			selection.Prepare();
-			MySqlDataReader results = selection.ExecuteReader();
-
-			if (!results.Read())
-			{
-				return false;
-			}
-
-			tickets = new List<Ticket> { new Ticket(results) };
-			while (results.Read())
-			{
-				tickets.Add(new Ticket(results));
-			}
-			results.Close();
-			return true;
-		}
-		
-		public static long NewTicket(ulong memberID, ulong staffID, ulong ticketID)
-		{
-			using MySqlConnection c = GetConnection();
-			c.Open();
-			using MySqlCommand cmd = new MySqlCommand(@"INSERT INTO tickets (created_time, creator_id, assigned_staff_id, summary, channel_id) VALUES (UTC_TIMESTAMP(), @creator_id, @assigned_staff_id, @summary, @channel_id);", c);
-			cmd.Parameters.AddWithValue("@creator_id", memberID);
-			cmd.Parameters.AddWithValue("@assigned_staff_id", staffID);
-			cmd.Parameters.AddWithValue("@summary", "");
-			cmd.Parameters.AddWithValue("@channel_id", ticketID);
-			cmd.ExecuteNonQuery();
-			return cmd.LastInsertedId;
+			return false;
 		}
 
-		public static void ArchiveTicket(Ticket ticket)
+		tickets = new List<Ticket> { new Ticket(results) };
+		while (results.Read())
 		{
-			// Check if ticket already exists in the archive
-			if (TryGetClosedTicket(ticket.id, out Ticket _))
-			{
-				using MySqlConnection c = GetConnection();
-				using MySqlCommand deleteTicket = new MySqlCommand(@"DELETE FROM ticket_history WHERE id=@id OR channel_id=@channel_id", c);
-				deleteTicket.Parameters.AddWithValue("@id", ticket.id);
-				deleteTicket.Parameters.AddWithValue("@channel_id", ticket.channelID);
+			tickets.Add(new Ticket(results));
+		}
+		results.Close();
+		return true;
+	}
+		
+	public static bool TryGetAssignedTickets(ulong staffID, out List<Ticket> tickets)
+	{
+		tickets = null;
+		using MySqlConnection c = GetConnection();
+		c.Open();
+		using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM tickets WHERE assigned_staff_id=@assigned_staff_id", c);
+		selection.Parameters.AddWithValue("@assigned_staff_id", staffID);
+		selection.Prepare();
+		MySqlDataReader results = selection.ExecuteReader();
 
-				c.Open();
-				deleteTicket.Prepare();
-				deleteTicket.ExecuteNonQuery();
-			}
+		if (!results.Read())
+		{
+			return false;
+		}
+
+		tickets = new List<Ticket> { new Ticket(results) };
+		while (results.Read())
+		{
+			tickets.Add(new Ticket(results));
+		}
+		results.Close();
+		return true;
+	}
+		
+	public static long NewTicket(ulong memberID, ulong staffID, ulong ticketID)
+	{
+		using MySqlConnection c = GetConnection();
+		c.Open();
+		using MySqlCommand cmd = new MySqlCommand(@"INSERT INTO tickets (created_time, creator_id, assigned_staff_id, summary, channel_id) VALUES (UTC_TIMESTAMP(), @creator_id, @assigned_staff_id, @summary, @channel_id);", c);
+		cmd.Parameters.AddWithValue("@creator_id", memberID);
+		cmd.Parameters.AddWithValue("@assigned_staff_id", staffID);
+		cmd.Parameters.AddWithValue("@summary", "");
+		cmd.Parameters.AddWithValue("@channel_id", ticketID);
+		cmd.ExecuteNonQuery();
+		return cmd.LastInsertedId;
+	}
+
+	public static void ArchiveTicket(Ticket ticket)
+	{
+		// Check if ticket already exists in the archive
+		if (TryGetClosedTicket(ticket.id, out Ticket _))
+		{
+			using MySqlConnection c = GetConnection();
+			using MySqlCommand deleteTicket = new MySqlCommand(@"DELETE FROM ticket_history WHERE id=@id OR channel_id=@channel_id", c);
+			deleteTicket.Parameters.AddWithValue("@id", ticket.id);
+			deleteTicket.Parameters.AddWithValue("@channel_id", ticket.channelID);
+
+			c.Open();
+			deleteTicket.Prepare();
+			deleteTicket.ExecuteNonQuery();
+		}
 			
-			// Create an entry in the ticket history database
-			using MySqlConnection conn = GetConnection();
-			using MySqlCommand archiveTicket = new MySqlCommand(@"INSERT INTO ticket_history (id, created_time, closed_time, creator_id, assigned_staff_id, summary, channel_id) VALUES (@id, @created_time, UTC_TIMESTAMP(), @creator_id, @assigned_staff_id, @summary, @channel_id);", conn);
-			archiveTicket.Parameters.AddWithValue("@id", ticket.id);
-			archiveTicket.Parameters.AddWithValue("@created_time", ticket.channelID.GetSnowflakeTime());
-			archiveTicket.Parameters.AddWithValue("@creator_id", ticket.creatorID);
-			archiveTicket.Parameters.AddWithValue("@assigned_staff_id", ticket.assignedStaffID);
-			archiveTicket.Parameters.AddWithValue("@summary", ticket.summary);
-			archiveTicket.Parameters.AddWithValue("@channel_id", ticket.channelID);
+		// Create an entry in the ticket history database
+		using MySqlConnection conn = GetConnection();
+		using MySqlCommand archiveTicket = new MySqlCommand(@"INSERT INTO ticket_history (id, created_time, closed_time, creator_id, assigned_staff_id, summary, channel_id) VALUES (@id, @created_time, UTC_TIMESTAMP(), @creator_id, @assigned_staff_id, @summary, @channel_id);", conn);
+		archiveTicket.Parameters.AddWithValue("@id", ticket.id);
+		archiveTicket.Parameters.AddWithValue("@created_time", ticket.channelID.GetSnowflakeTime());
+		archiveTicket.Parameters.AddWithValue("@creator_id", ticket.creatorID);
+		archiveTicket.Parameters.AddWithValue("@assigned_staff_id", ticket.assignedStaffID);
+		archiveTicket.Parameters.AddWithValue("@summary", ticket.summary);
+		archiveTicket.Parameters.AddWithValue("@channel_id", ticket.channelID);
 
-			conn.Open();
-			archiveTicket.Prepare();
-			archiveTicket.ExecuteNonQuery();
-		}
+		conn.Open();
+		archiveTicket.Prepare();
+		archiveTicket.ExecuteNonQuery();
+	}
 
-		public static bool DeleteOpenTicket(uint ticketID)
-		{
-			try
-			{
-				using MySqlConnection c = GetConnection();
-				using MySqlCommand deletion = new MySqlCommand(@"DELETE FROM tickets WHERE id=@id", c);
-				deletion.Parameters.AddWithValue("@id", ticketID);
-
-				c.Open();
-				deletion.Prepare();
-				return deletion.ExecuteNonQuery() > 0;
-			}
-			catch (MySqlException)
-			{
-				return false;
-			}
-		}
-		
-		public static bool IsBlacklisted(ulong userID)
+	public static bool DeleteOpenTicket(uint ticketID)
+	{
+		try
 		{
 			using MySqlConnection c = GetConnection();
+			using MySqlCommand deletion = new MySqlCommand(@"DELETE FROM tickets WHERE id=@id", c);
+			deletion.Parameters.AddWithValue("@id", ticketID);
+
 			c.Open();
-			using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM blacklisted_users WHERE user_id=@user_id", c);
-			selection.Parameters.AddWithValue("@user_id", userID);
-			selection.Prepare();
-			MySqlDataReader results = selection.ExecuteReader();
-
-			// Check if user is blacklisted
-			if (results.Read())
-			{
-				return true;
-			}
-			results.Close();
-
+			deletion.Prepare();
+			return deletion.ExecuteNonQuery() > 0;
+		}
+		catch (MySqlException)
+		{
 			return false;
 		}
+	}
 		
-		public static bool Blacklist(ulong blacklistedID, ulong staffID)
-		{
-			try
-			{
-				using MySqlConnection c = GetConnection();
-				c.Open();
-				using MySqlCommand cmd = new MySqlCommand(@"INSERT INTO blacklisted_users (user_id,time,moderator_id) VALUES (@user_id, UTC_TIMESTAMP(), @moderator_id);", c);
-				cmd.Parameters.AddWithValue("@user_id", blacklistedID);
-				cmd.Parameters.AddWithValue("@moderator_id", staffID);
-				cmd.Prepare();
-				return cmd.ExecuteNonQuery() > 0;
-			}
-			catch (MySqlException)
-			{
-				return false;
-			}
-		}
-		
-		public static bool Unblacklist(ulong blacklistedID)
-		{
-			try
-			{
-				using MySqlConnection c = GetConnection();
-				c.Open();
-				using MySqlCommand cmd = new MySqlCommand(@"DELETE FROM blacklisted_users WHERE user_id=@user_id", c);
-				cmd.Parameters.AddWithValue("@user_id", blacklistedID);
-				cmd.Prepare();
-				return cmd.ExecuteNonQuery() > 0;
-			}
-			catch (MySqlException)
-			{
-				return false;
-			}
-		}
-		
-		public static bool AssignStaff(Ticket ticket, ulong staffID)
-		{
-			try
-			{
-				using MySqlConnection c = GetConnection();
-				c.Open();
-				using MySqlCommand update = new MySqlCommand(@"UPDATE tickets SET assigned_staff_id = @assigned_staff_id WHERE id = @id", c);
-				update.Parameters.AddWithValue("@assigned_staff_id", staffID);
-				update.Parameters.AddWithValue("@id", ticket.id);
-				update.Prepare();
-				return update.ExecuteNonQuery() > 0;
-			}
-			catch (MySqlException)
-			{
-				return false;
-			}
-		}
-		
-		public static bool UnassignStaff(Ticket ticket)
-		{
-			return AssignStaff(ticket, 0);
-		}		
-		
-		public static bool SetStaffActive(ulong staffID, bool active)
-        {
-         	try
-         	{
-         		using MySqlConnection c = GetConnection();
-         		c.Open();
-         		MySqlCommand update = new MySqlCommand(@"UPDATE staff SET active = @active WHERE user_id = @user_id", c);
-         		update.Parameters.AddWithValue("@user_id", staffID);
-         		update.Parameters.AddWithValue("@active", active);
-         		update.Prepare();
-         		return update.ExecuteNonQuery() > 0;
-         	}
-         	catch (MySqlException)
-         	{
-         		return false;
-         	}
-        }
-		
-		public static StaffMember GetRandomActiveStaff(params ulong[] ignoredUserIDs)
-		{
-			List<StaffMember> staffMembers = GetActiveStaff(ignoredUserIDs);
-			return staffMembers.Any() ? staffMembers[random.Next(staffMembers.Count)] : null;
-		}
+	public static bool IsBlacklisted(ulong userID)
+	{
+		using MySqlConnection c = GetConnection();
+		c.Open();
+		using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM blacklisted_users WHERE user_id=@user_id", c);
+		selection.Parameters.AddWithValue("@user_id", userID);
+		selection.Prepare();
+		MySqlDataReader results = selection.ExecuteReader();
 
-		public static List<StaffMember> GetActiveStaff(params ulong[] ignoredUserIDs)
+		// Check if user is blacklisted
+		if (results.Read())
 		{
-			bool first = true;
-			string filterString = "";
-			foreach (ulong userID in ignoredUserIDs)
-			{
-				if (first)
-				{
-					first = false;
-					filterString += "AND user_id != " + userID;
-				}
-				else
-				{
-					filterString += "&& user_id != " + userID;
-				}
-			}
-			
+			return true;
+		}
+		results.Close();
+
+		return false;
+	}
+		
+	public static bool Blacklist(ulong blacklistedID, ulong staffID)
+	{
+		try
+		{
 			using MySqlConnection c = GetConnection();
 			c.Open();
-			using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM staff WHERE active = true " + filterString, c);
-			selection.Prepare();
-			MySqlDataReader results = selection.ExecuteReader();
-
-			// Check if staff exists in the database
-			if (!results.Read())
-			{
-				return new List<StaffMember>();
-			}
-
-			List<StaffMember> staffMembers = new List<StaffMember> { new StaffMember(results) };
-			while (results.Read())
-			{
-				staffMembers.Add(new StaffMember(results));
-			}
-			results.Close();
-
-			return staffMembers;
+			using MySqlCommand cmd = new MySqlCommand(@"INSERT INTO blacklisted_users (user_id,time,moderator_id) VALUES (@user_id, UTC_TIMESTAMP(), @moderator_id);", c);
+			cmd.Parameters.AddWithValue("@user_id", blacklistedID);
+			cmd.Parameters.AddWithValue("@moderator_id", staffID);
+			cmd.Prepare();
+			return cmd.ExecuteNonQuery() > 0;
 		}
-		
-		public static List<StaffMember> GetAllStaff(params ulong[] ignoredUserIDs)
+		catch (MySqlException)
 		{
-			bool first = true;
-			string filterString = "";
-			foreach (ulong userID in ignoredUserIDs)
+			return false;
+		}
+	}
+		
+	public static bool Unblacklist(ulong blacklistedID)
+	{
+		try
+		{
+			using MySqlConnection c = GetConnection();
+			c.Open();
+			using MySqlCommand cmd = new MySqlCommand(@"DELETE FROM blacklisted_users WHERE user_id=@user_id", c);
+			cmd.Parameters.AddWithValue("@user_id", blacklistedID);
+			cmd.Prepare();
+			return cmd.ExecuteNonQuery() > 0;
+		}
+		catch (MySqlException)
+		{
+			return false;
+		}
+	}
+		
+	public static bool AssignStaff(Ticket ticket, ulong staffID)
+	{
+		try
+		{
+			using MySqlConnection c = GetConnection();
+			c.Open();
+			using MySqlCommand update = new MySqlCommand(@"UPDATE tickets SET assigned_staff_id = @assigned_staff_id WHERE id = @id", c);
+			update.Parameters.AddWithValue("@assigned_staff_id", staffID);
+			update.Parameters.AddWithValue("@id", ticket.id);
+			update.Prepare();
+			return update.ExecuteNonQuery() > 0;
+		}
+		catch (MySqlException)
+		{
+			return false;
+		}
+	}
+		
+	public static bool UnassignStaff(Ticket ticket)
+	{
+		return AssignStaff(ticket, 0);
+	}		
+		
+	public static bool SetStaffActive(ulong staffID, bool active)
+	{
+		try
+		{
+			using MySqlConnection c = GetConnection();
+			c.Open();
+			MySqlCommand update = new MySqlCommand(@"UPDATE staff SET active = @active WHERE user_id = @user_id", c);
+			update.Parameters.AddWithValue("@user_id", staffID);
+			update.Parameters.AddWithValue("@active", active);
+			update.Prepare();
+			return update.ExecuteNonQuery() > 0;
+		}
+		catch (MySqlException)
+		{
+			return false;
+		}
+	}
+		
+	public static StaffMember GetRandomActiveStaff(params ulong[] ignoredUserIDs)
+	{
+		List<StaffMember> staffMembers = GetActiveStaff(ignoredUserIDs);
+		return staffMembers.Any() ? staffMembers[random.Next(staffMembers.Count)] : null;
+	}
+
+	public static List<StaffMember> GetActiveStaff(params ulong[] ignoredUserIDs)
+	{
+		bool first = true;
+		string filterString = "";
+		foreach (ulong userID in ignoredUserIDs)
+		{
+			if (first)
 			{
-				if (first)
-				{
-					first = false;
-					filterString += "WHERE user_id != " + userID;
-				}
-				else
-				{
-					filterString += "&& user_id != " + userID;
-				}
+				first = false;
+				filterString += "AND user_id != " + userID;
+			}
+			else
+			{
+				filterString += "&& user_id != " + userID;
+			}
+		}
+			
+		using MySqlConnection c = GetConnection();
+		c.Open();
+		using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM staff WHERE active = true " + filterString, c);
+		selection.Prepare();
+		MySqlDataReader results = selection.ExecuteReader();
+
+		// Check if staff exists in the database
+		if (!results.Read())
+		{
+			return new List<StaffMember>();
+		}
+
+		List<StaffMember> staffMembers = new List<StaffMember> { new StaffMember(results) };
+		while (results.Read())
+		{
+			staffMembers.Add(new StaffMember(results));
+		}
+		results.Close();
+
+		return staffMembers;
+	}
+		
+	public static List<StaffMember> GetAllStaff(params ulong[] ignoredUserIDs)
+	{
+		bool first = true;
+		string filterString = "";
+		foreach (ulong userID in ignoredUserIDs)
+		{
+			if (first)
+			{
+				first = false;
+				filterString += "WHERE user_id != " + userID;
+			}
+			else
+			{
+				filterString += "&& user_id != " + userID;
+			}
 				
-			}
+		}
 			
 			
-			using MySqlConnection c = GetConnection();
-			c.Open();
-			using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM staff " + filterString, c);
-			selection.Prepare();
-			MySqlDataReader results = selection.ExecuteReader();
+		using MySqlConnection c = GetConnection();
+		c.Open();
+		using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM staff " + filterString, c);
+		selection.Prepare();
+		MySqlDataReader results = selection.ExecuteReader();
 
-			// Check if staff exist in the database
-			if (!results.Read())
-			{
-				return new List<StaffMember>();
-			}
-
-			List<StaffMember> staffMembers = new List<StaffMember> { new StaffMember(results) };
-			while (results.Read())
-			{
-				staffMembers.Add(new StaffMember(results));
-			}
-			results.Close();
-
-			return staffMembers;
-		}
-
-		public static bool IsStaff(ulong staffID)
+		// Check if staff exist in the database
+		if (!results.Read())
 		{
-			using MySqlConnection c = GetConnection();
-			c.Open();
-			using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM staff WHERE user_id=@user_id", c);
-			selection.Parameters.AddWithValue("@user_id", staffID);
-			selection.Prepare();
-			MySqlDataReader results = selection.ExecuteReader();
-
-			// Check if ticket exists in the database
-			if (!results.Read())
-			{
-				return false;
-			}
-			results.Close();
-			return true;
+			return new List<StaffMember>();
 		}
+
+		List<StaffMember> staffMembers = new List<StaffMember> { new StaffMember(results) };
+		while (results.Read())
+		{
+			staffMembers.Add(new StaffMember(results));
+		}
+		results.Close();
+
+		return staffMembers;
+	}
+
+	public static bool IsStaff(ulong staffID)
+	{
+		using MySqlConnection c = GetConnection();
+		c.Open();
+		using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM staff WHERE user_id=@user_id", c);
+		selection.Parameters.AddWithValue("@user_id", staffID);
+		selection.Prepare();
+		MySqlDataReader results = selection.ExecuteReader();
+
+		// Check if ticket exists in the database
+		if (!results.Read())
+		{
+			return false;
+		}
+		results.Close();
+		return true;
+	}
 		
-		public static bool TryGetStaff(ulong staffID, out StaffMember staffMember)
+	public static bool TryGetStaff(ulong staffID, out StaffMember staffMember)
+	{
+		using MySqlConnection c = GetConnection();
+		c.Open();
+		using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM staff WHERE user_id=@user_id", c);
+		selection.Parameters.AddWithValue("@user_id", staffID);
+		selection.Prepare();
+		MySqlDataReader results = selection.ExecuteReader();
+
+		// Check if ticket exists in the database
+		if (!results.Read())
+		{
+			staffMember = null;
+			return false;
+		}
+		staffMember = new StaffMember(results);
+		results.Close();
+		return true;
+	}
+
+	public static List<Message> GetAllMessages()
+	{
+		using MySqlConnection c = GetConnection();
+		c.Open();
+		using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM messages", c);
+		selection.Prepare();
+		MySqlDataReader results = selection.ExecuteReader();
+
+		// Check if messages exist in the database
+		if (!results.Read())
+		{
+			return new List<Message>();
+		}
+
+		List<Message> messages = new List<Message> { new Message(results) };
+		while (results.Read())
+		{
+			messages.Add(new Message(results));
+		}
+		results.Close();
+
+		return messages;
+	}
+
+	public static bool TryGetMessage(string identifier, out Message message)
+	{
+		using MySqlConnection c = GetConnection();
+		c.Open();
+		using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM messages WHERE identifier=@identifier", c);
+		selection.Parameters.AddWithValue("@identifier", identifier);
+		selection.Prepare();
+		MySqlDataReader results = selection.ExecuteReader();
+
+		// Check if ticket exists in the database
+		if (!results.Read())
+		{
+			message = null;
+			return false;
+		}
+		message = new Message(results);
+		results.Close();
+		return true;
+	}
+
+	public static bool AddMessage(string identifier, ulong userID, string message)
+	{
+		try
 		{
 			using MySqlConnection c = GetConnection();
 			c.Open();
-			using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM staff WHERE user_id=@user_id", c);
-			selection.Parameters.AddWithValue("@user_id", staffID);
-			selection.Prepare();
-			MySqlDataReader results = selection.ExecuteReader();
-
-			// Check if ticket exists in the database
-			if (!results.Read())
-			{
-				staffMember = null;
-				return false;
-			}
-			staffMember = new StaffMember(results);
-			results.Close();
-			return true;
+			using MySqlCommand cmd = new MySqlCommand(@"INSERT INTO messages (identifier,user_id,message) VALUES (@identifier, @user_id, @message);", c);
+			cmd.Parameters.AddWithValue("@identifier", identifier);
+			cmd.Parameters.AddWithValue("@user_id", userID);
+			cmd.Parameters.AddWithValue("@message", message);
+			cmd.Prepare();
+			return cmd.ExecuteNonQuery() > 0;
 		}
+		catch (MySqlException)
+		{
+			return false;
+		}
+	}
 
-		public static List<Message> GetAllMessages()
+	public static bool RemoveMessage(string identifier)
+	{
+		try
 		{
 			using MySqlConnection c = GetConnection();
 			c.Open();
-			using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM messages", c);
-			selection.Prepare();
-			MySqlDataReader results = selection.ExecuteReader();
-
-			// Check if messages exist in the database
-			if (!results.Read())
-			{
-				return new List<Message>();
-			}
-
-			List<Message> messages = new List<Message> { new Message(results) };
-			while (results.Read())
-			{
-				messages.Add(new Message(results));
-			}
-			results.Close();
-
-			return messages;
+			using MySqlCommand cmd = new MySqlCommand(@"DELETE FROM messages WHERE identifier=@identifier", c);
+			cmd.Parameters.AddWithValue("@identifier", identifier);
+			cmd.Prepare();
+			return cmd.ExecuteNonQuery() > 0;
 		}
-
-		public static bool TryGetMessage(string identifier, out Message message)
+		catch (MySqlException)
 		{
-			using MySqlConnection c = GetConnection();
-			c.Open();
-			using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM messages WHERE identifier=@identifier", c);
-			selection.Parameters.AddWithValue("@identifier", identifier);
-			selection.Prepare();
-			MySqlDataReader results = selection.ExecuteReader();
-
-			// Check if ticket exists in the database
-			if (!results.Read())
-			{
-				message = null;
-				return false;
-			}
-			message = new Message(results);
-			results.Close();
-			return true;
+			return false;
 		}
-
-		public static bool AddMessage(string identifier, ulong userID, string message)
-		{
-			try
-			{
-				using MySqlConnection c = GetConnection();
-				c.Open();
-				using MySqlCommand cmd = new MySqlCommand(@"INSERT INTO messages (identifier,user_id,message) VALUES (@identifier, @user_id, @message);", c);
-				cmd.Parameters.AddWithValue("@identifier", identifier);
-				cmd.Parameters.AddWithValue("@user_id", userID);
-				cmd.Parameters.AddWithValue("@message", message);
-				cmd.Prepare();
-				return cmd.ExecuteNonQuery() > 0;
-			}
-			catch (MySqlException)
-			{
-				return false;
-			}
-		}
-
-		public static bool RemoveMessage(string identifier)
-		{
-			try
-			{
-				using MySqlConnection c = GetConnection();
-				c.Open();
-				using MySqlCommand cmd = new MySqlCommand(@"DELETE FROM messages WHERE identifier=@identifier", c);
-				cmd.Parameters.AddWithValue("@identifier", identifier);
-				cmd.Prepare();
-				return cmd.ExecuteNonQuery() > 0;
-			}
-			catch (MySqlException)
-			{
-				return false;
-			}
-		}
+	}
 		
-		public static List<Category> GetAllCategories()
+	public static List<Category> GetAllCategories()
+	{
+		using MySqlConnection c = GetConnection();
+		c.Open();
+		using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM categories", c);
+		selection.Prepare();
+		MySqlDataReader results = selection.ExecuteReader();
+
+		// Check if messages exist in the database
+		if (!results.Read())
+		{
+			return new List<Category>();
+		}
+
+		List<Category> categories = new List<Category> { new Category(results) };
+		while (results.Read())
+		{
+			categories.Add(new Category(results));
+		}
+		results.Close();
+
+		return categories;
+	}
+		
+	public static bool TryGetCategory(ulong categoryID, out Category message)
+	{
+		using MySqlConnection c = GetConnection();
+		c.Open();
+		using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM categories WHERE category_id=@category_id", c);
+		selection.Parameters.AddWithValue("@category_id", categoryID);
+		selection.Prepare();
+		MySqlDataReader results = selection.ExecuteReader();
+
+		// Check if ticket exists in the database
+		if (!results.Read())
+		{
+			message = null;
+			return false;
+		}
+		message = new Category(results);
+		results.Close();
+		return true;
+	}
+		
+	public static bool TryGetCategory(string name, out Category message)
+	{
+		using MySqlConnection c = GetConnection();
+		c.Open();
+		using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM categories WHERE name=@name", c);
+		selection.Parameters.AddWithValue("@name", name);
+		selection.Prepare();
+		MySqlDataReader results = selection.ExecuteReader();
+
+		// Check if ticket exists in the database
+		if (!results.Read())
+		{
+			message = null;
+			return false;
+		}
+		message = new Category(results);
+		results.Close();
+		return true;
+	}
+
+	public static bool AddCategory(string name, ulong categoryID)
+	{
+		try
 		{
 			using MySqlConnection c = GetConnection();
 			c.Open();
-			using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM categories", c);
-			selection.Prepare();
-			MySqlDataReader results = selection.ExecuteReader();
-
-			// Check if messages exist in the database
-			if (!results.Read())
-			{
-				return new List<Category>();
-			}
-
-			List<Category> categories = new List<Category> { new Category(results) };
-			while (results.Read())
-			{
-				categories.Add(new Category(results));
-			}
-			results.Close();
-
-			return categories;
+			using MySqlCommand cmd = new MySqlCommand(@"INSERT INTO categories (name,category_id) VALUES (@name, @category_id);", c);
+			cmd.Parameters.AddWithValue("@name", name);
+			cmd.Parameters.AddWithValue("@category_id", categoryID);
+			cmd.Prepare();
+			return cmd.ExecuteNonQuery() > 0;
 		}
+		catch (MySqlException)
+		{
+			return false;
+		}
+	}
 		
-		public static bool TryGetCategory(ulong categoryID, out Category message)
+	public static bool RemoveCategory(ulong categoryID)
+	{
+		try
 		{
 			using MySqlConnection c = GetConnection();
 			c.Open();
-			using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM categories WHERE category_id=@category_id", c);
-			selection.Parameters.AddWithValue("@category_id", categoryID);
-			selection.Prepare();
-			MySqlDataReader results = selection.ExecuteReader();
-
-			// Check if ticket exists in the database
-			if (!results.Read())
-			{
-				message = null;
-				return false;
-			}
-			message = new Category(results);
-			results.Close();
-			return true;
+			using MySqlCommand cmd = new MySqlCommand(@"DELETE FROM categories WHERE category_id=@category_id", c);
+			cmd.Parameters.AddWithValue("@category_id", categoryID);
+			cmd.Prepare();
+			return cmd.ExecuteNonQuery() > 0;
 		}
-		
-		public static bool TryGetCategory(string name, out Category message)
+		catch (MySqlException)
 		{
-			using MySqlConnection c = GetConnection();
-			c.Open();
-			using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM categories WHERE name=@name", c);
-			selection.Parameters.AddWithValue("@name", name);
-			selection.Prepare();
-			MySqlDataReader results = selection.ExecuteReader();
+			return false;
+		}
+	}
 
-			// Check if ticket exists in the database
-			if (!results.Read())
-			{
-				message = null;
-				return false;
-			}
-			message = new Category(results);
-			results.Close();
-			return true;
+	public class Ticket
+	{
+		public uint id;
+		public ulong creatorID;
+		public ulong assignedStaffID;
+		public string summary;
+		public ulong channelID;
+
+		public Ticket(MySqlDataReader reader)
+		{
+			id = reader.GetUInt32("id");
+			creatorID = reader.GetUInt64("creator_id");
+			assignedStaffID = reader.GetUInt64("assigned_staff_id");
+			summary = reader.GetString("summary");
+			channelID = reader.GetUInt64("channel_id");
 		}
 
-		public static bool AddCategory(string name, ulong categoryID)
+		public string DiscordRelativeTime()
 		{
-			try
-			{
-				using MySqlConnection c = GetConnection();
-				c.Open();
-				using MySqlCommand cmd = new MySqlCommand(@"INSERT INTO categories (name,category_id) VALUES (@name, @category_id);", c);
-				cmd.Parameters.AddWithValue("@name", name);
-				cmd.Parameters.AddWithValue("@category_id", categoryID);
-				cmd.Prepare();
-				return cmd.ExecuteNonQuery() > 0;
-			}
-			catch (MySqlException)
-			{
-				return false;
-			}
+			return Formatter.Timestamp(channelID.GetSnowflakeTime(), Config.timestampFormat);
 		}
-		
-		public static bool RemoveCategory(ulong categoryID)
+	}
+	public class StaffMember
+	{
+		public ulong userID;
+		public string name;
+		public bool active;
+
+		public StaffMember(MySqlDataReader reader)
 		{
-			try
-			{
-				using MySqlConnection c = GetConnection();
-				c.Open();
-				using MySqlCommand cmd = new MySqlCommand(@"DELETE FROM categories WHERE category_id=@category_id", c);
-				cmd.Parameters.AddWithValue("@category_id", categoryID);
-				cmd.Prepare();
-				return cmd.ExecuteNonQuery() > 0;
-			}
-			catch (MySqlException)
-			{
-				return false;
-			}
+			userID = reader.GetUInt64("user_id");
+			name = reader.GetString("name");
+			active = reader.GetBoolean("active");
 		}
+	}
 
-		public class Ticket
+	public class Message
+	{
+		public string identifier;
+		public ulong userID;
+		public string message;
+
+		public Message(MySqlDataReader reader)
 		{
-			public uint id;
-			public ulong creatorID;
-			public ulong assignedStaffID;
-			public string summary;
-			public ulong channelID;
-
-			public Ticket(MySqlDataReader reader)
-			{
-				id = reader.GetUInt32("id");
-				creatorID = reader.GetUInt64("creator_id");
-				assignedStaffID = reader.GetUInt64("assigned_staff_id");
-				summary = reader.GetString("summary");
-				channelID = reader.GetUInt64("channel_id");
-			}
-
-			public string DiscordRelativeTime()
-			{
-				return DSharpPlus.Formatter.Timestamp(channelID.GetSnowflakeTime(), Config.timestampFormat);
-			}
+			identifier = reader.GetString("identifier");
+			userID = reader.GetUInt64("user_id");
+			message = reader.GetString("message");
 		}
-		public class StaffMember
+	}
+
+	public class Category
+	{
+		public string name;
+		public ulong id;
+
+		public Category(MySqlDataReader reader)
 		{
-			public ulong userID;
-			public string name;
-			public bool active;
-
-			public StaffMember(MySqlDataReader reader)
-			{
-				userID = reader.GetUInt64("user_id");
-				name = reader.GetString("name");
-				active = reader.GetBoolean("active");
-			}
-		}
-
-		public class Message
-		{
-			public string identifier;
-			public ulong userID;
-			public string message;
-
-			public Message(MySqlDataReader reader)
-			{
-				identifier = reader.GetString("identifier");
-				userID = reader.GetUInt64("user_id");
-				message = reader.GetString("message");
-			}
-		}
-
-		public class Category
-		{
-			public string name;
-			public ulong id;
-
-			public Category(MySqlDataReader reader)
-			{
-				name = reader.GetString("name");
-				id = reader.GetUInt64("category_id");
-			}
+			name = reader.GetString("name");
+			id = reader.GetUInt64("category_id");
 		}
 	}
 }

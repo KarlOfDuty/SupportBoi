@@ -98,7 +98,7 @@ public class NewCommand : ApplicationCommandModule
 	
 	public static async Task OnCategorySelection(DiscordInteraction interaction)
 	{
-		string stringID = "";
+		string stringID;
 		switch (interaction.Data.ComponentType)
 		{
 			case ComponentType.Button:
@@ -108,6 +108,9 @@ public class NewCommand : ApplicationCommandModule
 				if (interaction.Data.Values == null || interaction.Data.Values.Length <= 0) return;
 				stringID = interaction.Data.Values[0];
 				break;
+
+			case ComponentType.ActionRow:
+			case ComponentType.FormInput:
 			default:
 				return;
 		}
@@ -116,7 +119,7 @@ public class NewCommand : ApplicationCommandModule
 		
 		await interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate, new DiscordInteractionResponseBuilder().AsEphemeral());
 
-		(bool success, string message) = await NewCommand.OpenNewTicket(interaction.User.Id, interaction.ChannelId, categoryID);
+		(bool success, string message) = await OpenNewTicket(interaction.User.Id, interaction.ChannelId, categoryID);
 
 		if (success)
 		{

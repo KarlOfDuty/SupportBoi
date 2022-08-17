@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -6,7 +5,6 @@ using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
-using Tyrrrz.Extensions;
 
 namespace SupportBoi.Commands;
 
@@ -18,7 +16,7 @@ public class CreateSelectionBoxPanelCommand : ApplicationCommandModule
 	{
 		DiscordMessageBuilder builder = new DiscordMessageBuilder()
 			.WithContent(" ")
-			.AddComponents(await GetSelectComponents(command, message ?? "Open new ticket..."));;
+			.AddComponents(await GetSelectComponents(command, message ?? "Open new ticket..."));
 		
 		await command.Channel.SendMessageAsync(builder);
 		await command.CreateResponseAsync(new DiscordEmbedBuilder
