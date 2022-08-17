@@ -6,35 +6,39 @@ A support ticket Discord bot. Uses a MySQL database for storage of ticket inform
 
 ## Commands
 
-| Command                              | Description                                                                                                                          |
-|--------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
-| `/new`                               | Opens a new ticket channel.                                                                                                          |
-| `/close`                             | Closes a ticket channel and posts a ticket transcript in the log channel.                                                            |
-| `/transcript (ticket id) `           | Generates a ticket transcript as an html file.                                                                                       |
-| `/status`                            | Shows a status message about the bot with info such as number of tickets and which version is running.                               |
-| `/summary`                           | Shows some information about a ticket and its summary if set.                                                                        |
-| `/list (user)`                       | Lists a user's open and closed tickets.                                                                                              |
-| `/add <user>`                        | Add users to the ticket.                                                                                                             |
-| `/assign (user)`                     | Assigns a ticket to a staff member, themself if no mention or id is provided.                                                        |
-| `/rassign (role)`                    | Randomly assigns a ticket to an active staff member. If a role is provided only staff member with that role are considered.          |
-| `/unassign`                          | Unassigns a ticket from the currently assigned staff member.                                                                         |
-| `/blacklist <user>`                  | Blacklists users from opening tickets.                                                                                               |
-| `/unblacklist <user>`                | Un-blacklists users from opening tickets.                                                                                            |
-| `/setsummary <summary>`              | Sets a summary for a ticket which can be viewed using the `summary` command.                                                         |
-| `/toggleactive (user)`               | Toggles whether a staff member counts as active or not.                                                                              |
-| `/listassigned (user)`               | Lists all of a staff member's assigned tickets.                                                                                      |
-| `/listunassigned`                    | Lists all unassigned tickets.                                                                                                        |
-| `/listopen (limit)`                  | Lists a number of the oldest still open tickets, default is 20.                                                                      |
-| `/move <category>`                   | Moves a ticket to a specific category by partial name.                                                                               |
-| `/addstaff <user>`                   | Registers a user as a staff member for ticket assignment.                                                                            |
-| `/removestaff <user>`                | Removes a user from staff.                                                                                                           |
-| `/say (identifier)`                  | Prints a message with information from staff. Use with no arguments to list ids.                                                     |
-| `/addmessage <identifier> <message>` | Adds a new message for the 'say' command. The identifier is one word used in the say command and the message is what the bot prints. |
-| `/removestaff <identifier>`          | Removes message from the database.                                                                                                   |
-| `/admin reload`                      | Reloads the config.                                                                                                                  |
-| `/admin listinvalid`                 | Lists tickets which channels have been deleted, you can use the /adming unsetticket command to remove them from the ticket system.   |
-| `/admin setticket (channel)`         | Makes the current channel a ticket.                                                                                                  |
-| `/admin unsetticket (ticket id)`     | Removes a ticket without deleting the channel.                                                                                       |
+| Command                              | Description                                                                                                                                  |
+|--------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
+| `/add <user>`                        | Add users to the ticket.                                                                                                                     |
+| `/addcategory <title> <category>`    | Adds a category for users to open tickets in. The title is what will be used on buttons and in selection menus.                              |
+| `/addmessage <identifier> <message>` | Adds a new message for the `say` command. The identifier is one word used in the say command and the message is what the bot prints.         |
+| `/addstaff <user>`                   | Registers a user as a staff member for ticket assignment.                                                                                    |
+| `/assign (user)`                     | Assigns a ticket to a staff member, themself if no mention or id is provided.                                                                |
+| `/blacklist <user>`                  | Blacklists users from opening tickets.                                                                                                       |
+| `/close`                             | Closes a ticket channel and posts a ticket transcript in the log channel.                                                                    |
+| `/createbuttonpanel`                 | Creates a panel of buttons for users to open tickets with, one for each saved category.                                                      |
+| `/createselectionbox (message)`      | Creates a selection menu for users to open tickets with. Message is the placeholder shown on the selection menu before anything is selected. |
+| `/list (user)`                       | Lists a user's open and closed tickets.                                                                                                      |
+| `/listassigned (user)`               | Lists all of a staff member's assigned tickets.                                                                                              |
+| `/listopen`                          | Lists a number of the oldest still open tickets, default is 20.                                                                              |
+| `/listunassigned`                    | Lists all unassigned tickets.                                                                                                                |
+| `/move <category>`                   | Moves a ticket to a specific category by partial name.                                                                                       |
+| `/new`                               | Opens a new ticket channel.                                                                                                                  |
+| `/rassign (role)`                    | Randomly assigns a ticket to an active staff member. If a role is provided only staff member with that role are considered.                  |
+| `/removecategory <category>`         | Removes a category from the bot.                                                                                                             |
+| `/removemessage <identifier>`        | Removes message from the database.                                                                                                           |
+| `/removestaff <user>`                | Removes a user from staff.                                                                                                                   |
+| `/say (identifier)`                  | Prints a message with information from staff. Use with no arguments to list ids.                                                             |
+| `/setsummary <summary>`              | Sets a summary for a ticket which can be viewed using the `summary` command.                                                                 |
+| `/status`                            | Shows a status message about the bot with info such as number of tickets and which version is running.                                       |
+| `/summary`                           | Shows some information about a ticket and its summary if set.                                                                                |
+| `/toggleactive (user)`               | Toggles whether a staff member counts as active or not.                                                                                      |
+| `/transcript (ticket id) `           | Generates a ticket transcript as an html file.                                                                                               |
+| `/unassign`                          | Unassigns a ticket from the currently assigned staff member.                                                                                 |
+| `/unblacklist <user>`                | Un-blacklists users from opening tickets.                                                                                                    |
+| `/admin listinvalid`                 | Lists tickets which channels have been deleted, you can use the `/admin unsetticket` command to remove them from the ticket system.          |
+| `/admin reload`                      | Reloads the config.                                                                                                                          |
+| `/admin setticket (channel)`         | Makes the current channel a ticket.                                                                                                          |
+| `/admin unsetticket (ticket id)`     | Removes a ticket without deleting the channel.                                                                                               |
 
 ## Setup
 
