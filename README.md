@@ -6,46 +6,57 @@ A support ticket Discord bot. Uses a MySQL database for storage of ticket inform
 
 ## Commands
 
-| Command | Description |
-|--- |---- |
-| `new` | Opens a new ticket channel. |
-| `close` | Closes a ticket channel and posts a ticket transcript in the log channel. |
-| `transcript (ticket number) ` | Generates a ticket transcript as an html file. |
-| `status` | Shows a status message about the bot with info such as number of tickets and which version is running. |
-| `summary` | Shows some information about a ticket and its summary if set. |
-| `list (id/mention)` | Lists a user's open and closed tickets. |
-| `add <ids/mentions>` | Add users to the ticket. |
-| `assign (id/mention)` | Assigns a ticket to a staff member, themself if no mention or id is provided. |
-| `rassign (role id/mention/name)` | Randomly assigns a ticket to an active staff member. If a role is provided only staff member with that role are considered. |
-| `unassign` | Unassigns a ticket from the currently assigned staff member. |
-| `blacklist <ids/mentions>` | Blacklists users from opening tickets. |
-| `unblacklist <ids/mentions>` | Un-blacklists users from opening tickets. |
-| `setsummary <summary>` | Sets a summary for a ticket which can be viewed using the `summary` command. |
-| `toggleactive/ta (id/mention)` | Toggles whether a staff member counts as active or not. |
-| `listassigned/la (id/mention)` | Lists all of a staff member's assigned tickets. |
-| `listunassigned/lu` | Lists all unassigned tickets. |
-| `listoldest/lo (limit)` | Lists a number of the oldest still open tickets, default is 20. |
-| `move <category>` | Moves a ticket to a specific category by partial name. |
-| `reload` | Reloads the config. |
-| `setticket (id/mention)` | Makes the current channel a ticket. |
-| `unsetticket` | Removes a ticket without deleting the channel. |
-| `addstaff <id/mention>` | Registers a user as a staff member for ticket assignment. |
-| `removestaff <id/mention>` | Removes a user from staff. |
-| `say (identifier)` | Prints a message with information from staff. Use with no arguments to list ids. |
-| `addmessage <identifier> <message>` | Adds a new message for the 'say' command. The identifier is one word used in the say command and the message is what the bot prints. |
-| `removestaff <identifier>` | Removes message from the database. |
+| Command                              | Description                                                                                                                          |
+|--------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| `/new`                               | Opens a new ticket channel.                                                                                                          |
+| `/close`                             | Closes a ticket channel and posts a ticket transcript in the log channel.                                                            |
+| `/transcript (ticket id) `           | Generates a ticket transcript as an html file.                                                                                       |
+| `/status`                            | Shows a status message about the bot with info such as number of tickets and which version is running.                               |
+| `/summary`                           | Shows some information about a ticket and its summary if set.                                                                        |
+| `/list (user)`                       | Lists a user's open and closed tickets.                                                                                              |
+| `/add <user>`                        | Add users to the ticket.                                                                                                             |
+| `/assign (user)`                     | Assigns a ticket to a staff member, themself if no mention or id is provided.                                                        |
+| `/rassign (role)`                    | Randomly assigns a ticket to an active staff member. If a role is provided only staff member with that role are considered.          |
+| `/unassign`                          | Unassigns a ticket from the currently assigned staff member.                                                                         |
+| `/blacklist <user>`                  | Blacklists users from opening tickets.                                                                                               |
+| `/unblacklist <user>`                | Un-blacklists users from opening tickets.                                                                                            |
+| `/setsummary <summary>`              | Sets a summary for a ticket which can be viewed using the `summary` command.                                                         |
+| `/toggleactive (user)`               | Toggles whether a staff member counts as active or not.                                                                              |
+| `/listassigned (user)`               | Lists all of a staff member's assigned tickets.                                                                                      |
+| `/listunassigned`                    | Lists all unassigned tickets.                                                                                                        |
+| `/listopen (limit)`                  | Lists a number of the oldest still open tickets, default is 20.                                                                      |
+| `/move <category>`                   | Moves a ticket to a specific category by partial name.                                                                               |
+| `/addstaff <user>`                   | Registers a user as a staff member for ticket assignment.                                                                            |
+| `/removestaff <user>`                | Removes a user from staff.                                                                                                           |
+| `/say (identifier)`                  | Prints a message with information from staff. Use with no arguments to list ids.                                                     |
+| `/addmessage <identifier> <message>` | Adds a new message for the 'say' command. The identifier is one word used in the say command and the message is what the bot prints. |
+| `/removestaff <identifier>`          | Removes message from the database.                                                                                                   |
+| `/admin reload`                      | Reloads the config.                                                                                                                  |
+| `/admin listinvalid`                 | Lists tickets which channels have been deleted, you can use the /adming unsetticket command to remove them from the ticket system.   |
+| `/admin setticket (channel)`         | Makes the current channel a ticket.                                                                                                  |
+| `/admin unsetticket (ticket id)`     | Removes a ticket without deleting the channel.                                                                                       |
 
 ## Setup
 
 1. Set up a mysql server, create a user and empty database for the bot to use.
 
-2. [Create a new bot application](https://discordpy.readthedocs.io/en/latest/discord.html).
+2. Install .NET 6 if it doesn't already exist on your system.
 
-3. Download the bot for your operating system, either a [release version](https://github.com/KarlOfDuty/SupportBoi/releases) or a [dev build](https://jenkins.karlofduty.com/blue/organizations/jenkins/SupportBoi/activity).
+3. [Create a new bot application and invite it to your server](docs/CreateBot.md).
 
-4. Run `./SupportBoi_Linux` on Linux or `./SupportBoi_Windows.exe` on Windows.
+4. Go to `Settings->Integrations->Bot->Command Permissions` and turn off command access for the everyone role.
 
-5. Set up the config (`config.yml`) to your specifications, there are instructions inside and also further down on this page. If you need more help either contact me in Discord or through an issue here.
+5. [Create a new bot application](https://discordpy.readthedocs.io/en/latest/discord.html).
+
+6. Download the bot for your operating system, either a [release version](https://github.com/KarlOfDuty/SupportBoi/releases) or a [dev build](https://jenkins.karlofduty.com/blue/organizations/jenkins/SupportBoi/activity).
+
+7. Run `./SupportBoi_Linux` on Linux or `./SupportBoi_Windows.exe` on Windows.
+
+8. Set up the config (`config.yml`) to your specifications, there are instructions inside and also further down on this page. If you need more help either contact me in Discord or through an issue here.
+
+9. Restart the bot.
+
+10. Go to `Settings->Integrations->Bot->Command Permissions` in your Discord server to set up permissions for the commands.
 
 ## Default Config
 
