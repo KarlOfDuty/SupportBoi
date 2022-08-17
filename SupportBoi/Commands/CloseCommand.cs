@@ -117,22 +117,14 @@ public class CloseCommand : ApplicationCommandModule
 			
 		Database.ArchiveTicket(ticket);
 
-		try
+		await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
 		{
-			await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
-			{
-				Color = DiscordColor.Green,
-				Description = "Channel will be deleted in 3 seconds..."
-			}));
-		}
-		catch (DiscordException e)
-		{
-			Logger.Debug("Exception occurred trying to respond to close confirmation: " + e);
-			Logger.Debug("JsomMessage: " + e.JsonMessage);
-		}
+			Color = DiscordColor.Green,
+			Description = "Channel will be deleted in 3 seconds..."
+		}));
 
 
-		await Task.Delay(3000);
+			await Task.Delay(3000);
 
 		// Delete the channel and database entry
 		await interaction.Channel.DeleteAsync("Ticket closed.");
