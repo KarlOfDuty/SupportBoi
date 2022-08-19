@@ -15,10 +15,10 @@
     <PackageIconUrl>https://karlofduty.com/img/tardisIcon.jpg</PackageIconUrl>
     <Description>A Discord support ticket bot. Saves to a MySQL database and has the option to output open tickets to HTML ticket transcript files when they are closed.</Description>
     <NeutralLanguage>en</NeutralLanguage>
-    <Version>3.0.0.1</Version>
+    <Version>3.0.0.2</Version>
     <PackageVersion>3.0.0</PackageVersion> 
-    <AssemblyVersion>3.0.0.1</AssemblyVersion>
-    <FileVersion>3.0.0.1</FileVersion>
+    <AssemblyVersion>3.0.0.2</AssemblyVersion>
+    <FileVersion>3.0.0.2</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
