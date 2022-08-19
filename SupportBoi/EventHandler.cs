@@ -134,11 +134,21 @@ internal static class EventHandler
 				DiscordChannel channel = await client.GetChannelAsync(ticket.channelID);
 				if (channel?.GuildId == e.Guild.Id)
 				{
-					await channel.SendMessageAsync(new DiscordEmbedBuilder
+					try
 					{
-						Color = DiscordColor.Green,
-						Description = "User '" + e.Member.Username + "#" + e.Member.Discriminator + "' has rejoined the server, and has been re-added to the ticket."
-					});
+						await channel.AddOverwriteAsync(e.Member, Permissions.AccessChannels);
+						await channel.SendMessageAsync(new DiscordEmbedBuilder
+	                    {
+	                        Color = DiscordColor.Green,
+	                        Description = "User '" + e.Member.Username + "#" + e.Member.Discriminator + "' has rejoined the server, and has been re-added to the ticket."
+	                    });
+					}
+					catch (DiscordException ex)
+					{
+						Logger.Error("Exception occurred trying to add channel permissions: " + ex);
+						Logger.Error("JsomMessage: " + ex.JsonMessage);
+					}
+
 				}
 			}
 			catch (Exception) { /* ignored */ }
