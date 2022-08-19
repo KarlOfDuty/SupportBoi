@@ -368,6 +368,7 @@ public static class Database
 		// Check if user is blacklisted
 		if (results.Read())
 		{
+			results.Close();
 			return true;
 		}
 		results.Close();
