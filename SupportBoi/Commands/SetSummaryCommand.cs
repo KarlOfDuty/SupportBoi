@@ -2,7 +2,7 @@
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 
 namespace SupportBoi.Commands;
 
@@ -32,7 +32,7 @@ public class SetSummaryCommand : ApplicationCommandModule
 		update.Prepare();
 		update.ExecuteNonQuery();
 		update.Dispose();
-			
+
 		await command.CreateResponseAsync(new DiscordEmbedBuilder
 		{
 			Color = DiscordColor.Green,

@@ -15,10 +15,10 @@
     <PackageIconUrl>https://karlofduty.com/img/tardisIcon.jpg</PackageIconUrl>
     <Description>A Discord support ticket bot. Saves to a MySQL database and has the option to output open tickets to HTML ticket transcript files when they are closed.</Description>
     <NeutralLanguage>en</NeutralLanguage>
-    <Version>3.0.0.2</Version>
-    <PackageVersion>3.0.0</PackageVersion> 
-    <AssemblyVersion>3.0.0.2</AssemblyVersion>
-    <FileVersion>3.0.0.2</FileVersion>
+    <Version>3.0.1.2</Version>
+    <PackageVersion>3.0.1</PackageVersion> 
+    <AssemblyVersion>3.0.1.2</AssemblyVersion>
+    <FileVersion>3.0.1.2</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -26,13 +26,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DSharpPlus" Version="4.3.0-nightly-01166" />
-    <PackageReference Include="DSharpPlus.Interactivity" Version="4.3.0-nightly-01166" />
-    <PackageReference Include="DSharpPlus.SlashCommands" Version="4.3.0-nightly-01166" />
+    <PackageReference Include="DSharpPlus" Version="4.4.0-nightly-01249" />
+    <PackageReference Include="DSharpPlus.Interactivity" Version="4.4.0-nightly-01249" />
+    <PackageReference Include="DSharpPlus.SlashCommands" Version="4.4.0-nightly-01249" />
     <PackageReference Include="Gress" Version="2.0.1" />
     <PackageReference Include="JsonExtensions" Version="1.2.0" />
     <PackageReference Include="MiniRazor.CodeGen" Version="2.2.1" />
-    <PackageReference Include="MySql.Data" Version="8.0.30" />
+    <PackageReference Include="MySqlConnector" Version="2.2.5" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
     <PackageReference Include="Polly" Version="7.2.3" />
     <PackageReference Include="Superpower" Version="3.0.0" />

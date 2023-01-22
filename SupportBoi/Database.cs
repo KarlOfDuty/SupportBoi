@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Collections.Generic;
 using DSharpPlus;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 
 namespace SupportBoi;
 
@@ -14,18 +14,18 @@ public static class Database
 
 	public static void SetConnectionString(string host, int port, string database, string username, string password)
 	{
-		connectionString = "server=" + host + 
-						   ";database=" + database + 
-						   ";port=" + port + 
-						   ";userid=" + username + 
+		connectionString = "server=" + host +
+						   ";database=" + database +
+						   ";port=" + port +
+						   ";userid=" + username +
 						   ";password=" + password;
 	}
-		
+
 	public static MySqlConnection GetConnection()
 	{
 		return new MySqlConnection(connectionString);
 	}
-		
+
 	public static long GetNumberOfTickets()
 	{
 		try
@@ -42,7 +42,7 @@ public static class Database
 
 		return -1;
 	}
-		
+
 	public static long GetNumberOfClosedTickets()
 	{
 		try
@@ -59,7 +59,7 @@ public static class Database
 
 		return -1;
 	}
-		
+
 	public static void SetupTables()
 	{
 		using MySqlConnection c = GetConnection();
@@ -116,7 +116,7 @@ public static class Database
 		createMessages.ExecuteNonQuery();
 		createCategories.ExecuteNonQuery();
 	}
-		
+
 	public static bool IsOpenTicket(ulong channelID)
 	{
 		using MySqlConnection c = GetConnection();
@@ -134,7 +134,7 @@ public static class Database
 		results.Close();
 		return true;
 	}
-		
+
 	public static bool TryGetOpenTicket(ulong channelID, out Ticket ticket)
 	{
 		using MySqlConnection c = GetConnection();
@@ -155,7 +155,7 @@ public static class Database
 		results.Close();
 		return true;
 	}
-		
+
 	public static bool TryGetOpenTicketByID(uint id, out Ticket ticket)
 	{
 		using MySqlConnection c = GetConnection();
@@ -177,7 +177,7 @@ public static class Database
 		ticket = null;
 		return false;
 	}
-		
+
 	public static bool TryGetClosedTicket(uint id, out Ticket ticket)
 	{
 		using MySqlConnection c = GetConnection();
@@ -199,7 +199,7 @@ public static class Database
 		results.Close();
 		return false;
 	}
-		
+
 	public static bool TryGetOpenTickets(ulong userID, out List<Ticket> tickets)
 	{
 		tickets = null;
@@ -223,7 +223,7 @@ public static class Database
 		results.Close();
 		return true;
 	}
-		
+
 	public static bool TryGetOpenTickets(out List<Ticket> tickets)
 	{
 		tickets = null;
@@ -246,7 +246,7 @@ public static class Database
 		results.Close();
 		return true;
 	}
-		
+
 	public static bool TryGetClosedTickets(ulong userID, out List<Ticket> tickets)
 	{
 		tickets = null;
@@ -270,7 +270,7 @@ public static class Database
 		results.Close();
 		return true;
 	}
-		
+
 	public static bool TryGetAssignedTickets(ulong staffID, out List<Ticket> tickets)
 	{
 		tickets = null;
@@ -294,7 +294,7 @@ public static class Database
 		results.Close();
 		return true;
 	}
-		
+
 	public static long NewTicket(ulong memberID, ulong staffID, ulong ticketID)
 	{
 		using MySqlConnection c = GetConnection();
@@ -322,7 +322,7 @@ public static class Database
 			deleteTicket.Prepare();
 			deleteTicket.ExecuteNonQuery();
 		}
-			
+
 		// Create an entry in the ticket history database
 		using MySqlConnection conn = GetConnection();
 		using MySqlCommand archiveTicket = new MySqlCommand(@"INSERT INTO ticket_history (id, created_time, closed_time, creator_id, assigned_staff_id, summary, channel_id) VALUES (@id, @created_time, UTC_TIMESTAMP(), @creator_id, @assigned_staff_id, @summary, @channel_id);", conn);
@@ -355,7 +355,7 @@ public static class Database
 			return false;
 		}
 	}
-		
+
 	public static bool IsBlacklisted(ulong userID)
 	{
 		using MySqlConnection c = GetConnection();
@@ -375,7 +375,7 @@ public static class Database
 
 		return false;
 	}
-		
+
 	public static bool Blacklist(ulong blacklistedID, ulong staffID)
 	{
 		try
@@ -393,7 +393,7 @@ public static class Database
 			return false;
 		}
 	}
-		
+
 	public static bool Unblacklist(ulong blacklistedID)
 	{
 		try
@@ -410,7 +410,7 @@ public static class Database
 			return false;
 		}
 	}
-		
+
 	public static bool AssignStaff(Ticket ticket, ulong staffID)
 	{
 		try
@@ -428,12 +428,12 @@ public static class Database
 			return false;
 		}
 	}
-		
+
 	public static bool UnassignStaff(Ticket ticket)
 	{
 		return AssignStaff(ticket, 0);
-	}		
-		
+	}
+
 	public static bool SetStaffActive(ulong staffID, bool active)
 	{
 		try
@@ -451,7 +451,7 @@ public static class Database
 			return false;
 		}
 	}
-		
+
 	public static StaffMember GetRandomActiveStaff(params ulong[] ignoredUserIDs)
 	{
 		List<StaffMember> staffMembers = GetActiveStaff(ignoredUserIDs);
@@ -474,7 +474,7 @@ public static class Database
 				filterString += "&& user_id != " + userID;
 			}
 		}
-			
+
 		using MySqlConnection c = GetConnection();
 		c.Open();
 		using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM staff WHERE active = true " + filterString, c);
@@ -496,7 +496,7 @@ public static class Database
 
 		return staffMembers;
 	}
-		
+
 	public static List<StaffMember> GetAllStaff(params ulong[] ignoredUserIDs)
 	{
 		bool first = true;
@@ -512,10 +512,10 @@ public static class Database
 			{
 				filterString += "&& user_id != " + userID;
 			}
-				
+
 		}
-			
-			
+
+
 		using MySqlConnection c = GetConnection();
 		c.Open();
 		using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM staff " + filterString, c);
@@ -555,7 +555,7 @@ public static class Database
 		results.Close();
 		return true;
 	}
-		
+
 	public static bool TryGetStaff(ulong staffID, out StaffMember staffMember)
 	{
 		using MySqlConnection c = GetConnection();
@@ -655,7 +655,7 @@ public static class Database
 			return false;
 		}
 	}
-		
+
 	public static List<Category> GetAllCategories()
 	{
 		using MySqlConnection c = GetConnection();
@@ -679,7 +679,7 @@ public static class Database
 
 		return categories;
 	}
-		
+
 	public static bool TryGetCategory(ulong categoryID, out Category message)
 	{
 		using MySqlConnection c = GetConnection();
@@ -699,7 +699,7 @@ public static class Database
 		results.Close();
 		return true;
 	}
-		
+
 	public static bool TryGetCategory(string name, out Category message)
 	{
 		using MySqlConnection c = GetConnection();
@@ -737,7 +737,7 @@ public static class Database
 			return false;
 		}
 	}
-		
+
 	public static bool RemoveCategory(ulong categoryID)
 	{
 		try

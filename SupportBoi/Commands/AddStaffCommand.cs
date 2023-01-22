@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 
 namespace SupportBoi.Commands;
 

@@ -101,7 +101,7 @@ internal static class EventHandler
 				}
 				return;
 			}
-				
+
 			case BadRequestException ex:
 				Logger.Error("Command exception occured:\n" + e.Exception);
 				Logger.Error("JSON Message: " + ex.JsonMessage);
@@ -234,7 +234,7 @@ internal static class EventHandler
 							Logger.Warn("Unknown button press received! '" + e.Id + "'");
 							return;
 					}
-				case ComponentType.Select:
+				case ComponentType.StringSelect:
 					switch (e.Id)
 					{
 						case {} when e.Id.StartsWith("supportboi_newcommandselector"):
@@ -268,7 +268,7 @@ internal static class EventHandler
 			Logger.Error("Interaction Exception occured: " + ex.GetType() + ": " + ex);
 		}
 	}
-		
+
 	private static string ParseFailedCheck(SlashCheckBaseAttribute attr)
 	{
 		return attr switch

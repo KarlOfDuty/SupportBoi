@@ -34,7 +34,7 @@ public class CloseCommand : ApplicationCommandModule
 				Description = "Are you sure you wish to close this ticket? You cannot re-open it again later."
 			})
 			.AddComponents(new DiscordButtonComponent(ButtonStyle.Danger, "supportboi_closeconfirm", "Confirm"));
-			
+
 
 		await command.CreateResponseAsync(confirmation);
 	}
@@ -44,7 +44,7 @@ public class CloseCommand : ApplicationCommandModule
 		await interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
 		ulong channelID = interaction.Channel.Id;
 		string channelName = interaction.Channel.Name;
-			
+
 		// Check if ticket exists in the database
 		if (!Database.TryGetOpenTicket(channelID, out Database.Ticket ticket))
 		{
@@ -55,7 +55,7 @@ public class CloseCommand : ApplicationCommandModule
 			}));
 			return;
 		}
-			
+
 		// Build transcript
 		try
 		{
@@ -86,7 +86,7 @@ public class CloseCommand : ApplicationCommandModule
 			await using FileStream file = new FileStream(Transcriber.GetPath(ticket.id), FileMode.Open, FileAccess.Read);
 			DiscordMessageBuilder message = new DiscordMessageBuilder();
 			message.WithEmbed(embed);
-			message.WithFiles(new Dictionary<string, Stream> { { Transcriber.GetFilename(ticket.id), file } });
+			message.AddFiles(new Dictionary<string, Stream> { { Transcriber.GetFilename(ticket.id), file } });
 
 			await logChannel.SendMessageAsync(message);
 		}
@@ -104,17 +104,17 @@ public class CloseCommand : ApplicationCommandModule
 			{
 				DiscordMember staffMember = await interaction.Guild.GetMemberAsync(ticket.creatorID);
 				await using FileStream file = new FileStream(Transcriber.GetPath(ticket.id), FileMode.Open, FileAccess.Read);
-					
+
 				DiscordMessageBuilder message = new DiscordMessageBuilder();
 				message.WithEmbed(embed);
-				message.WithFiles(new Dictionary<string, Stream> { { Transcriber.GetFilename(ticket.id), file } });
+				message.AddFiles(new Dictionary<string, Stream> { { Transcriber.GetFilename(ticket.id), file } });
 
 				await staffMember.SendMessageAsync(message);
 			}
 			catch (NotFoundException) { }
 			catch (UnauthorizedException) { }
 		}
-			
+
 		Database.ArchiveTicket(ticket);
 
 		await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder

@@ -28,7 +28,7 @@ public class NewCommand : ApplicationCommandModule
 			case 1:
 				await command.DeferAsync(true);
 				(bool success, string message) = await OpenNewTicket(command.User.Id, command.Channel.Id, verifiedCategories[0].id);
-		
+
 				if (success)
 				{
 					await command.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(new DiscordEmbedBuilder
@@ -66,17 +66,17 @@ public class NewCommand : ApplicationCommandModule
 		for (int nrOfButtonRows = 0; nrOfButtonRows < 5 && nrOfButtons < verifiedCategories.Count; nrOfButtonRows++)
 		{
 			List<DiscordButtonComponent> buttonRow = new List<DiscordButtonComponent>();
-			
+
 			for (; nrOfButtons < 5 * (nrOfButtonRows + 1) && nrOfButtons < verifiedCategories.Count; nrOfButtons++)
 			{
 				buttonRow.Add(new DiscordButtonComponent(ButtonStyle.Primary, "supportboi_newcommandbutton " + verifiedCategories[nrOfButtons].id, verifiedCategories[nrOfButtons].name));
 			}
 			builder.AddComponents(buttonRow);
 		}
-		
+
 		await command.CreateResponseAsync(builder.AsEphemeral());
 	}
-	
+
 	public static async Task CreateSelector(InteractionContext command, List<Database.Category> verifiedCategories)
 	{
 		verifiedCategories = verifiedCategories.OrderBy(x => x.name).ToList();
@@ -85,17 +85,17 @@ public class NewCommand : ApplicationCommandModule
 		for (int selectionBoxes = 0; selectionBoxes < 5 && selectionOptions < verifiedCategories.Count; selectionBoxes++)
 		{
 			List<DiscordSelectComponentOption> categoryOptions = new List<DiscordSelectComponentOption>();
-			
+
 			for (; selectionOptions < 25 * (selectionBoxes + 1) && selectionOptions < verifiedCategories.Count; selectionOptions++)
 			{
 				categoryOptions.Add(new DiscordSelectComponentOption(verifiedCategories[selectionOptions].name, verifiedCategories[selectionOptions].id.ToString()));
 			}
 			selectionComponents.Add(new DiscordSelectComponent("supportboi_newcommandselector" + selectionBoxes, "Open new ticket...", categoryOptions, false, 0, 1));
 		}
-				
+
 		await command.CreateResponseAsync(new DiscordInteractionResponseBuilder().AddComponents(selectionComponents).AsEphemeral());
 	}
-	
+
 	public static async Task OnCategorySelection(DiscordInteraction interaction)
 	{
 		string stringID;
@@ -104,7 +104,7 @@ public class NewCommand : ApplicationCommandModule
 			case ComponentType.Button:
 				stringID = interaction.Data.CustomId.Replace("supportboi_newcommandbutton ", "");
 				break;
-			case ComponentType.Select:
+			case ComponentType.StringSelect:
 				if (interaction.Data.Values == null || interaction.Data.Values.Length <= 0) return;
 				stringID = interaction.Data.Values[0];
 				break;
@@ -114,9 +114,9 @@ public class NewCommand : ApplicationCommandModule
 			default:
 				return;
 		}
-		
+
 		if (!ulong.TryParse(stringID, out ulong categoryID) || categoryID == 0) return;
-		
+
 		await interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate, new DiscordInteractionResponseBuilder().AsEphemeral());
 
 		(bool success, string message) = await OpenNewTicket(interaction.User.Id, interaction.ChannelId, categoryID);
@@ -138,7 +138,7 @@ public class NewCommand : ApplicationCommandModule
 			}));
 		}
 	}
-	
+
 	public static async Task<(bool, string)> OpenNewTicket(ulong userID, ulong commandChannelID, ulong categoryID)
 	{
 		// Check if user is blacklisted
@@ -180,7 +180,7 @@ public class NewCommand : ApplicationCommandModule
 		{
 			return (false, "Error: Could not find you on the Discord server.");
 		}
-		
+
 		DiscordChannel ticketChannel = null;
 
 		try
@@ -213,7 +213,7 @@ public class NewCommand : ApplicationCommandModule
 			Logger.Error("Exception occurred trying to modify channel: " + e);
 			Logger.Error("JsomMessage: " + e.JsonMessage);
 		}
-		
+
 		try
 		{
 			await ticketChannel.AddOverwriteAsync(member, Permissions.AccessChannels);
@@ -256,7 +256,7 @@ public class NewCommand : ApplicationCommandModule
 				}
 			}
 		}
-		
+
 		// Log it if the log channel exists
 		DiscordChannel logChannel = category.Guild.GetChannel(Config.logChannel);
 		if (logChannel != null)
@@ -269,7 +269,7 @@ public class NewCommand : ApplicationCommandModule
 			};
 			await logChannel.SendMessageAsync(logMessage);
 		}
-		
+
 		return (true, "Ticket opened, " + member.Mention + "!\n" + ticketChannel.Mention);
 	}
 }
