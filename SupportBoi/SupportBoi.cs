@@ -54,10 +54,10 @@ internal static class SupportBoi
 			discordClient.Dispose();
 			Logger.Log("Discord client disconnected.");
 		}
-			
+
 		Logger.Log("Loading config \"" + Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar + "config.yml\"");
 		Config.LoadConfig();
-			
+
 		// Check if token is unset
 		if (Config.token is "<add-token-here>" or "")
 		{
@@ -77,9 +77,9 @@ internal static class SupportBoi
 			Logger.Fatal("Could not set up database tables, please confirm connection settings, status of the server and permissions of MySQL user. Error: " + e);
 			throw;
 		}
-			
+
 		Logger.Log("Setting up Discord client...");
-			
+
 		// Setting up client configuration
 		DiscordConfiguration cfg = new DiscordConfiguration
 		{
@@ -89,9 +89,9 @@ internal static class SupportBoi
 			AutoReconnect = true,
 			Intents = DiscordIntents.All
 		};
-			
+
 		discordClient = new DiscordClient(cfg);
-			
+
 		Logger.Log("Hooking events...");
 		discordClient.Ready += EventHandler.OnReady;
 		discordClient.GuildAvailable += EventHandler.OnGuildAvailable;
@@ -100,15 +100,14 @@ internal static class SupportBoi
 		discordClient.GuildMemberAdded += EventHandler.OnMemberAdded;
 		discordClient.GuildMemberRemoved += EventHandler.OnMemberRemoved;
 		discordClient.ComponentInteractionCreated += EventHandler.OnComponentInteractionCreated;
-			
+
 		discordClient.UseInteractivity(new InteractivityConfiguration
 		{
-			AckPaginationButtons = true,
 			PaginationBehaviour = PaginationBehaviour.Ignore,
 			PaginationDeletion = PaginationDeletion.DeleteMessage,
 			Timeout = TimeSpan.FromMinutes(15)
 		});
-			
+
 		Logger.Log("Registering commands...");
 		commands = discordClient.UseSlashCommands();
 
