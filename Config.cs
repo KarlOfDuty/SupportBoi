@@ -1,10 +1,8 @@
 ﻿using System;
 using System.IO;
-using System.Text;
 using DSharpPlus;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
-using SupportBoi.Properties;
 using YamlDotNet.Serialization;
 
 namespace SupportBoi;
@@ -39,7 +37,7 @@ internal static class Config
         // Writes default config to file if it does not already exist
         if (!File.Exists("./config.yml"))
         {
-            File.WriteAllText("./config.yml", Encoding.UTF8.GetString(Resources.default_config));
+            File.WriteAllText("./config.yml", Utilities.ReadManifestData("default_config.yml"));
         }
 
         // Reads config contents into FileStream
