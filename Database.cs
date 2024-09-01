@@ -460,24 +460,10 @@ public static class Database
 
     public static List<StaffMember> GetActiveStaff(params ulong[] ignoredUserIDs)
     {
-        bool first = true;
-        string filterString = "";
-        foreach (ulong userID in ignoredUserIDs)
-        {
-            if (first)
-            {
-                first = false;
-                filterString += "AND user_id != " + userID;
-            }
-            else
-            {
-                filterString += "&& user_id != " + userID;
-            }
-        }
-
         using MySqlConnection c = GetConnection();
         c.Open();
-        using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM staff WHERE active = true " + filterString, c);
+        using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM staff WHERE active = true AND user_id NOT IN (@user_ids)", c);
+        selection.Parameters.AddWithValue("@user_ids", string.Join(",", ignoredUserIDs));
         selection.Prepare();
         MySqlDataReader results = selection.ExecuteReader();
 
@@ -499,26 +485,10 @@ public static class Database
 
     public static List<StaffMember> GetAllStaff(params ulong[] ignoredUserIDs)
     {
-        bool first = true;
-        string filterString = "";
-        foreach (ulong userID in ignoredUserIDs)
-        {
-            if (first)
-            {
-                first = false;
-                filterString += "WHERE user_id != " + userID;
-            }
-            else
-            {
-                filterString += "&& user_id != " + userID;
-            }
-
-        }
-
-
         using MySqlConnection c = GetConnection();
         c.Open();
-        using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM staff " + filterString, c);
+        using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM staff WHERE user_id NOT IN (@user_ids)", c);
+        selection.Parameters.AddWithValue("@user_ids", string.Join(",", ignoredUserIDs));
         selection.Prepare();
         MySqlDataReader results = selection.ExecuteReader();
 

@@ -50,6 +50,8 @@ internal static class EventHandler
             case BadRequestException ex:
                 Logger.Error("JSON Message: " + ex.JsonMessage);
                 break;
+            default:
+                break;
         }
         return Task.CompletedTask;
     }

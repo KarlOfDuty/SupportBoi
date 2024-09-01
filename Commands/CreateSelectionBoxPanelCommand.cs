@@ -30,10 +30,14 @@ public class CreateSelectionBoxPanelCommand : ApplicationCommandModule
     {
         List<Database.Category> verifiedCategories = await Utilities.GetVerifiedChannels();
 
-        if (verifiedCategories.Count == 0) return new List<DiscordSelectComponent>();
+        if (verifiedCategories.Count == 0)
+        {
+            return new List<DiscordSelectComponent>();
+        }
 
         verifiedCategories = verifiedCategories.OrderBy(x => x.name).ToList();
         List<DiscordSelectComponent> selectionComponents = new List<DiscordSelectComponent>();
+
         int selectionOptions = 0;
         for (int selectionBoxes = 0; selectionBoxes < 5 && selectionOptions < verifiedCategories.Count; selectionBoxes++)
         {
@@ -51,9 +55,15 @@ public class CreateSelectionBoxPanelCommand : ApplicationCommandModule
 
     public static async Task OnSelectionMenuUsed(DiscordInteraction interaction)
     {
-        if (interaction.Data.Values == null || interaction.Data.Values.Length <= 0) return;
+        if (interaction.Data.Values == null || interaction.Data.Values.Length <= 0)
+        {
+            return;
+        }
 
-        if (!ulong.TryParse(interaction.Data.Values[0], out ulong categoryID) || categoryID == 0) return;
+        if (!ulong.TryParse(interaction.Data.Values[0], out ulong categoryID) || categoryID == 0)
+        {
+            return;
+        }
 
         await interaction.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral());
 

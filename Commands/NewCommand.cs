@@ -62,6 +62,7 @@ public class NewCommand : ApplicationCommandModule
     public static async Task CreateButtons(InteractionContext command, List<Database.Category> verifiedCategories)
     {
         DiscordInteractionResponseBuilder builder = new DiscordInteractionResponseBuilder().WithContent(" ");
+
         int nrOfButtons = 0;
         for (int nrOfButtonRows = 0; nrOfButtonRows < 5 && nrOfButtons < verifiedCategories.Count; nrOfButtonRows++)
         {
@@ -81,6 +82,7 @@ public class NewCommand : ApplicationCommandModule
     {
         verifiedCategories = verifiedCategories.OrderBy(x => x.name).ToList();
         List<DiscordSelectComponent> selectionComponents = new List<DiscordSelectComponent>();
+
         int selectionOptions = 0;
         for (int selectionBoxes = 0; selectionBoxes < 5 && selectionOptions < verifiedCategories.Count; selectionBoxes++)
         {
@@ -105,7 +107,10 @@ public class NewCommand : ApplicationCommandModule
                 stringID = interaction.Data.CustomId.Replace("supportboi_newcommandbutton ", "");
                 break;
             case ComponentType.StringSelect:
-                if (interaction.Data.Values == null || interaction.Data.Values.Length <= 0) return;
+                if (interaction.Data.Values == null || interaction.Data.Values.Length <= 0)
+                {
+                    return;
+                }
                 stringID = interaction.Data.Values[0];
                 break;
 
@@ -115,7 +120,10 @@ public class NewCommand : ApplicationCommandModule
                 return;
         }
 
-        if (!ulong.TryParse(stringID, out ulong categoryID) || categoryID == 0) return;
+        if (!ulong.TryParse(stringID, out ulong categoryID) || categoryID == 0)
+        {
+            return;
+        }
 
         await interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate, new DiscordInteractionResponseBuilder().AsEphemeral());
 
