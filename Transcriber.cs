@@ -11,43 +11,43 @@ namespace SupportBoi;
 
 internal static class Transcriber
 {
-	internal static async Task ExecuteAsync(ulong channelID, uint ticketID)
-	{
-		DiscordClient discordClient = new DiscordClient(Config.token);
-		ChannelExporter exporter = new ChannelExporter(discordClient);
+    internal static async Task ExecuteAsync(ulong channelID, uint ticketID)
+    {
+        DiscordClient discordClient = new DiscordClient(Config.token);
+        ChannelExporter exporter = new ChannelExporter(discordClient);
 
-		if (!Directory.Exists("./transcripts"))
-		{
-			Directory.CreateDirectory("./transcripts");
-		}
-			
-		Channel channel = await discordClient.GetChannelAsync(new Snowflake(channelID));
-		Guild guild = await discordClient.GetGuildAsync(channel.GuildId);
+        if (!Directory.Exists("./transcripts"))
+        {
+            Directory.CreateDirectory("./transcripts");
+        }
 
-		ExportRequest request = new ExportRequest(
-			Guild: guild,
-			Channel: channel,
-			OutputPath: GetPath(ticketID),
-			Format: ExportFormat.HtmlDark,
-			After: null,
-			Before: null,
-			PartitionLimit: PartitionLimit.Null,
-			MessageFilter: MessageFilter.Null,
-			ShouldDownloadMedia: false,
-			ShouldReuseMedia: false,
-			DateFormat: "yyyy-MMM-dd HH:mm"
-			);
+        Channel channel = await discordClient.GetChannelAsync(new Snowflake(channelID));
+        Guild guild = await discordClient.GetGuildAsync(channel.GuildId);
 
-		await exporter.ExportChannelAsync(request);
-	}
+        ExportRequest request = new ExportRequest(
+            Guild: guild,
+            Channel: channel,
+            OutputPath: GetPath(ticketID),
+            Format: ExportFormat.HtmlDark,
+            After: null,
+            Before: null,
+            PartitionLimit: PartitionLimit.Null,
+            MessageFilter: MessageFilter.Null,
+            ShouldDownloadMedia: false,
+            ShouldReuseMedia: false,
+            DateFormat: "yyyy-MMM-dd HH:mm"
+            );
 
-	internal static string GetPath(uint ticketNumber)
-	{
-		return "./transcripts/" + GetFilename(ticketNumber);
-	}
+        await exporter.ExportChannelAsync(request);
+    }
 
-	internal static string GetFilename(uint ticketNumber)
-	{
-		return "ticket-" + ticketNumber.ToString("00000") + ".html";
-	}
+    internal static string GetPath(uint ticketNumber)
+    {
+        return "./transcripts/" + GetFilename(ticketNumber);
+    }
+
+    internal static string GetFilename(uint ticketNumber)
+    {
+        return "ticket-" + ticketNumber.ToString("00000") + ".html";
+    }
 }

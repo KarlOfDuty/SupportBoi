@@ -11,119 +11,119 @@ namespace SupportBoi.Commands;
 
 public class TranscriptCommand : ApplicationCommandModule
 {
-	[SlashRequireGuild]
-	[SlashCommand("transcript", "Creates a transcript of a ticket.")]
-	public async Task OnExecute(InteractionContext command, [Option("Ticket", "(Optional) Ticket number to get transcript of.")] long ticketID = 0)
-	{
-		await command.DeferAsync(true);
-		Database.Ticket ticket;
-		if (ticketID == 0) // If there are no arguments use current channel
-		{
-			if (Database.TryGetOpenTicket(command.Channel.Id, out ticket))
-			{
-				try
-				{
-					await Transcriber.ExecuteAsync(command.Channel.Id, ticket.id);
-				}
-				catch (Exception)
-				{
-					await command.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
-					{
-						Color = DiscordColor.Red,
-						Description = "ERROR: Could not save transcript file. Aborting..."
-					}));
-					throw;
-				}
-			}
-			else
-			{
-				await command.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
-				{
-					Color = DiscordColor.Red,
-					Description = "This channel is not a ticket."
-				}));
-				return;
-			}
-		}
-		else
-		{
-			// If the ticket is still open, generate a new fresh transcript
-			if (Database.TryGetOpenTicketByID((uint)ticketID, out ticket) && ticket?.creatorID == command.Member.Id)
-			{
-				try
-				{
-					await Transcriber.ExecuteAsync(command.Channel.Id, ticket.id);
-				}
-				catch (Exception)
-				{
-					await command.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
-					{
-						Color = DiscordColor.Red,
-						Description = "ERROR: Could not save transcript file. Aborting..."
-					}));
-					throw;
-				}
+    [SlashRequireGuild]
+    [SlashCommand("transcript", "Creates a transcript of a ticket.")]
+    public async Task OnExecute(InteractionContext command, [Option("Ticket", "(Optional) Ticket number to get transcript of.")] long ticketID = 0)
+    {
+        await command.DeferAsync(true);
+        Database.Ticket ticket;
+        if (ticketID == 0) // If there are no arguments use current channel
+        {
+            if (Database.TryGetOpenTicket(command.Channel.Id, out ticket))
+            {
+                try
+                {
+                    await Transcriber.ExecuteAsync(command.Channel.Id, ticket.id);
+                }
+                catch (Exception)
+                {
+                    await command.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
+                    {
+                        Color = DiscordColor.Red,
+                        Description = "ERROR: Could not save transcript file. Aborting..."
+                    }));
+                    throw;
+                }
+            }
+            else
+            {
+                await command.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
+                {
+                    Color = DiscordColor.Red,
+                    Description = "This channel is not a ticket."
+                }));
+                return;
+            }
+        }
+        else
+        {
+            // If the ticket is still open, generate a new fresh transcript
+            if (Database.TryGetOpenTicketByID((uint)ticketID, out ticket) && ticket?.creatorID == command.Member.Id)
+            {
+                try
+                {
+                    await Transcriber.ExecuteAsync(command.Channel.Id, ticket.id);
+                }
+                catch (Exception)
+                {
+                    await command.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
+                    {
+                        Color = DiscordColor.Red,
+                        Description = "ERROR: Could not save transcript file. Aborting..."
+                    }));
+                    throw;
+                }
 
-			}
-			// If there is no open or closed ticket, send an error. If there is a closed ticket we will simply use the old transcript from when the ticket was closed.
-			else if (!Database.TryGetClosedTicket((uint)ticketID, out ticket) || (ticket?.creatorID != command.Member.Id && !Database.IsStaff(command.Member.Id)))
-			{
-				await command.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
-				{
-					Color = DiscordColor.Red,
-					Description = "Could not find a closed ticket with that number which you opened.\n(Use the /list command to see all your tickets)"
-				}));
-				return;
-			}
-		}
+            }
+            // If there is no open or closed ticket, send an error. If there is a closed ticket we will simply use the old transcript from when the ticket was closed.
+            else if (!Database.TryGetClosedTicket((uint)ticketID, out ticket) || (ticket?.creatorID != command.Member.Id && !Database.IsStaff(command.Member.Id)))
+            {
+                await command.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
+                {
+                    Color = DiscordColor.Red,
+                    Description = "Could not find a closed ticket with that number which you opened.\n(Use the /list command to see all your tickets)"
+                }));
+                return;
+            }
+        }
 
-		// Log it if the log channel exists
-		DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
-		if (logChannel != null)
-		{
-			await using FileStream file = new FileStream(Transcriber.GetPath(ticket.id), FileMode.Open, FileAccess.Read);
+        // Log it if the log channel exists
+        DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
+        if (logChannel != null)
+        {
+            await using FileStream file = new FileStream(Transcriber.GetPath(ticket.id), FileMode.Open, FileAccess.Read);
 
-			DiscordMessageBuilder message = new DiscordMessageBuilder();
-			message.WithEmbed(new DiscordEmbedBuilder
-			{
-				Color = DiscordColor.Green,
-				Description = "Ticket " + ticket.id.ToString("00000") + " transcript generated by " + command.Member.Mention + ".\n",
-				Footer = new DiscordEmbedBuilder.EmbedFooter { Text = '#' + command.Channel.Name }
-			});
-			message.AddFiles(new Dictionary<string, Stream> { { Transcriber.GetFilename(ticket.id), file } });
+            DiscordMessageBuilder message = new DiscordMessageBuilder();
+            message.WithEmbed(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Green,
+                Description = "Ticket " + ticket.id.ToString("00000") + " transcript generated by " + command.Member.Mention + ".\n",
+                Footer = new DiscordEmbedBuilder.EmbedFooter { Text = '#' + command.Channel.Name }
+            });
+            message.AddFiles(new Dictionary<string, Stream> { { Transcriber.GetFilename(ticket.id), file } });
 
-			await logChannel.SendMessageAsync(message);
-		}
+            await logChannel.SendMessageAsync(message);
+        }
 
-		try
-		{
-			// Send transcript in a direct message
-			await using FileStream file = new FileStream(Transcriber.GetPath(ticket.id), FileMode.Open, FileAccess.Read);
+        try
+        {
+            // Send transcript in a direct message
+            await using FileStream file = new FileStream(Transcriber.GetPath(ticket.id), FileMode.Open, FileAccess.Read);
 
-			DiscordMessageBuilder directMessage = new DiscordMessageBuilder();
-			directMessage.WithEmbed(new DiscordEmbedBuilder
-			{
-				Color = DiscordColor.Green,
-				Description = "Transcript generated!\n"
-			});
-			directMessage.AddFiles(new Dictionary<string, Stream> { { Transcriber.GetFilename(ticket.id), file } });
+            DiscordMessageBuilder directMessage = new DiscordMessageBuilder();
+            directMessage.WithEmbed(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Green,
+                Description = "Transcript generated!\n"
+            });
+            directMessage.AddFiles(new Dictionary<string, Stream> { { Transcriber.GetFilename(ticket.id), file } });
 
-			await command.Member.SendMessageAsync(directMessage);
-		}
-		catch (UnauthorizedException)
-		{
-			await command.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
-			{
-				Color = DiscordColor.Red,
-				Description = "Not allowed to send direct message to you, please check your privacy settings.\n"
-			}));
-			return;
-		}
+            await command.Member.SendMessageAsync(directMessage);
+        }
+        catch (UnauthorizedException)
+        {
+            await command.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Red,
+                Description = "Not allowed to send direct message to you, please check your privacy settings.\n"
+            }));
+            return;
+        }
 
-		await command.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
-		{
-			Color = DiscordColor.Green,
-			Description = "Transcript sent!\n"
-		}));
-	}
+        await command.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
+        {
+            Color = DiscordColor.Green,
+            Description = "Transcript sent!\n"
+        }));
+    }
 }
