@@ -24,19 +24,22 @@ internal static class Transcriber
         Channel channel = await discordClient.GetChannelAsync(new Snowflake(channelID));
         Guild guild = await discordClient.GetGuildAsync(channel.GuildId);
 
-        ExportRequest request = new ExportRequest(
-            Guild: guild,
-            Channel: channel,
-            OutputPath: GetPath(ticketID),
-            Format: ExportFormat.HtmlDark,
-            After: null,
-            Before: null,
-            PartitionLimit: PartitionLimit.Null,
-            MessageFilter: MessageFilter.Null,
-            ShouldDownloadMedia: false,
-            ShouldReuseMedia: false,
-            DateFormat: "yyyy-MMM-dd HH:mm"
-            );
+        ExportRequest request = new (
+            guild,
+            channel,
+            GetPath(ticketID),
+            null,
+            ExportFormat.HtmlDark,
+            null,
+            null,
+            PartitionLimit.Null,
+            MessageFilter.Null,
+            true,
+            false,
+            false,
+            "en-SE",
+            true
+        );
 
         await exporter.ExportChannelAsync(request);
     }

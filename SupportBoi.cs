@@ -15,7 +15,19 @@ namespace SupportBoi;
 internal static class SupportBoi
 {
     // Sets up a dummy client to use for logging
-    public static DiscordClient discordClient = new DiscordClient(new DiscordConfiguration { Token = "DUMMY_TOKEN", TokenType = TokenType.Bot, MinimumLogLevel = LogLevel.Debug });
+    private static readonly DiscordConfiguration config = new()
+    {
+        Token = "DUMMY_TOKEN",
+        TokenType = TokenType.Bot,
+        MinimumLogLevel = LogLevel.Debug,
+        AutoReconnect = true,
+        Intents = DiscordIntents.All,
+        LogTimestampFormat = "yyyy-MM-dd HH:mm:ss",
+        LogUnknownEvents = false
+    };
+
+    public static DiscordClient discordClient { get; private set; } = new(config);
+
     private static SlashCommandsExtension commands = null;
 
     private static void Main()
@@ -52,7 +64,6 @@ internal static class SupportBoi
         {
             await discordClient.DisconnectAsync();
             discordClient.Dispose();
-            Logger.Log("Discord client disconnected.");
         }
 
         Logger.Log("Loading config \"" + Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar + "config.yml\"");
@@ -81,16 +92,10 @@ internal static class SupportBoi
         Logger.Log("Setting up Discord client...");
 
         // Setting up client configuration
-        DiscordConfiguration cfg = new DiscordConfiguration
-        {
-            Token = Config.token,
-            TokenType = TokenType.Bot,
-            MinimumLogLevel = Config.logLevel,
-            AutoReconnect = true,
-            Intents = DiscordIntents.All
-        };
+        config.Token = Config.token;
+        config.MinimumLogLevel = Config.logLevel;
 
-        discordClient = new DiscordClient(cfg);
+        discordClient = new DiscordClient(config);
 
         Logger.Log("Hooking events...");
         discordClient.Ready += EventHandler.OnReady;
