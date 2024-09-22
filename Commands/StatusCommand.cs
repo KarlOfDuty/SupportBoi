@@ -18,9 +18,12 @@ public class StatusCommand : ApplicationCommandModule
             .WithAuthor("KarlofDuty/SupportBoi @ GitHub", "https://github.com/KarlofDuty/SupportBoi", "https://karlofduty.com/img/tardisIcon.jpg")
             .WithTitle("Bot information")
             .WithColor(DiscordColor.Cyan)
-            .AddField("Version:", SupportBoi.GetVersion())
+            .AddField("Version:", SupportBoi.GetVersion(), true)
             .AddField("Open tickets:", openTickets + "", true)
-            .AddField("Closed tickets:", closedTickets + " ", true);
+            .AddField("Closed tickets:", closedTickets + " ", true)
+            .AddField("Report bugs:", "[Github Issues](https://github.com/KarlofDuty/SupportBoi/issues)", true)
+            .AddField("Commands:", "[Github Repository](https://github.com/KarlOfDuty/SupportBoi)", true)
+            .AddField("Donate:", "[Github Sponsors](https://github.com/sponsors/KarlOfDuty)", true);
         await command.CreateResponseAsync(botInfo);
     }
 }
