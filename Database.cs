@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using DSharpPlus;
 using MySqlConnector;
 
@@ -9,8 +10,6 @@ namespace SupportBoi;
 public static class Database
 {
     private static string connectionString = "";
-
-    private static readonly Random random = new Random();
 
     public static void SetConnectionString(string host, int port, string database, string username, string password)
     {
@@ -455,7 +454,7 @@ public static class Database
     public static StaffMember GetRandomActiveStaff(params ulong[] ignoredUserIDs)
     {
         List<StaffMember> staffMembers = GetActiveStaff(ignoredUserIDs);
-        return staffMembers.Any() ? staffMembers[random.Next(staffMembers.Count)] : null;
+        return staffMembers.Any() ? staffMembers[RandomNumberGenerator.GetInt32(staffMembers.Count)] : null;
     }
 
     public static List<StaffMember> GetActiveStaff(params ulong[] ignoredUserIDs)
