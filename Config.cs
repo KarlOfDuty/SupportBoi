@@ -32,16 +32,25 @@ internal static class Config
     internal static string username = "supportbot";
     internal static string password = "";
 
+    private static string configPath = "./config.yml";
+
     public static void LoadConfig()
     {
-        // Writes default config to file if it does not already exist
-        if (!File.Exists("./config.yml"))
+        if (!string.IsNullOrEmpty(SupportBoi.commandLineArgs.configPath))
         {
-            File.WriteAllText("./config.yml", Utilities.ReadManifestData("default_config.yml"));
+            configPath = SupportBoi.commandLineArgs.configPath;
+        }
+
+        Logger.Log("Loading config \"" + Path.GetFullPath(configPath) + "\"");
+
+        // Writes default config to file if it does not already exist
+        if (!File.Exists(configPath))
+        {
+            File.WriteAllText(configPath, Utilities.ReadManifestData("default_config.yml"));
         }
 
         // Reads config contents into FileStream
-        FileStream stream = File.OpenRead("./config.yml");
+        FileStream stream = File.OpenRead(configPath);
 
         // Converts the FileStream into a YAML object
         IDeserializer deserializer = new DeserializerBuilder().Build();

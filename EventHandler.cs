@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.Entities;
@@ -29,17 +30,23 @@ internal static class EventHandler
         return Task.CompletedTask;
     }
 
-    internal static Task OnGuildAvailable(DiscordClient _, GuildCreateEventArgs e)
+    internal static async Task OnGuildAvailable(DiscordClient discordClient, GuildCreateEventArgs e)
     {
-        Logger.Log("Guild available: " + e.Guild.Name);
+        Logger.Log("Found Discord server: " + e.Guild.Name + " (" + e.Guild.Id + ")");
+
+        if (SupportBoi.commandLineArgs.serversToLeave.Contains(e.Guild.Id))
+        {
+            Logger.Warn("LEAVING DISCORD SERVER AS REQUESTED: " + e.Guild.Name + " (" + e.Guild.Id + ")");
+            await e.Guild.LeaveAsync();
+            return;
+        }
 
         IReadOnlyDictionary<ulong, DiscordRole> roles = e.Guild.Roles;
 
         foreach ((ulong roleID, DiscordRole role) in roles)
         {
-            Logger.Log(role.Name.PadRight(40, '.') + roleID);
+            Logger.Debug(role.Name.PadRight(40, '.') + roleID);
         }
-        return Task.CompletedTask;
     }
 
     internal static Task OnClientError(DiscordClient _, ClientErrorEventArgs e)

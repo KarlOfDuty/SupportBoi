@@ -11,14 +11,21 @@ namespace SupportBoi;
 
 internal static class Transcriber
 {
+    private static string transcriptDir = "./transcripts";
+
     internal static async Task ExecuteAsync(ulong channelID, uint ticketID)
     {
         DiscordClient discordClient = new DiscordClient(Config.token);
         ChannelExporter exporter = new ChannelExporter(discordClient);
 
-        if (!Directory.Exists("./transcripts"))
+        if (!string.IsNullOrEmpty(SupportBoi.commandLineArgs.transcriptDir))
         {
-            Directory.CreateDirectory("./transcripts");
+            transcriptDir = SupportBoi.commandLineArgs.transcriptDir;
+        }
+
+        if (!Directory.Exists(transcriptDir))
+        {
+            Directory.CreateDirectory(transcriptDir);
         }
 
         Channel channel = await discordClient.GetChannelAsync(new Snowflake(channelID));
@@ -46,7 +53,7 @@ internal static class Transcriber
 
     internal static string GetPath(uint ticketNumber)
     {
-        return "./transcripts/" + GetFilename(ticketNumber);
+        return transcriptDir + "/" + GetFilename(ticketNumber);
     }
 
     internal static string GetFilename(uint ticketNumber)
