@@ -16,7 +16,7 @@ public class CloseCommand : ApplicationCommandModule
 
     [SlashRequireGuild]
     [SlashCommand("close", "Closes a ticket.")]
-    public async Task OnExecute(InteractionContext command, [Option("Reason", "Reason for closing the ticket.")] string reason = "")
+    public async Task OnExecute(InteractionContext command, [Option("Reason", "(Optional) Reason for closing the ticket.")] string reason = "")
     {
         // Check if ticket exists in the database
         if (!Database.TryGetOpenTicket(command.Channel.Id, out Database.Ticket _))

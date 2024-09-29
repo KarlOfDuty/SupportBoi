@@ -1,7 +1,8 @@
 ﻿using DSharpPlus.Entities;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using DSharpPlus.Interactivity;
+using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
 
@@ -16,52 +17,72 @@ public class SayCommand : ApplicationCommandModule
         // Print list of all messages if no identifier is provided
         if (identifier == null)
         {
-            List<Database.Message> messages = Database.GetAllMessages();
-            if (!messages.Any())
-            {
-                await command.CreateResponseAsync(new DiscordEmbedBuilder
-                {
-                    Color = DiscordColor.Red,
-                    Description = "There are no messages registered."
-                }, true);
-                return;
-            }
-
-            List<string> listItems = new List<string>();
-            foreach (Database.Message message in messages)
-            {
-                listItems.Add("**" + message.identifier + "** Added by <@" + message.userID + ">\n");
-            }
-
-            LinkedList<string> listMessages = Utilities.ParseListIntoMessages(listItems);
-            foreach (string listMessage in listMessages)
-            {
-                await command.CreateResponseAsync(new DiscordEmbedBuilder
-                {
-                    Title = "Available messages: ",
-                    Color = DiscordColor.Green,
-                    Description = listMessage
-                }, true);
-            }
+            SendMessageList(command);
+            return;
         }
-        // Print specific message
-        else
-        {
-            if (!Database.TryGetMessage(identifier.ToLower(), out Database.Message message))
-            {
-                await command.CreateResponseAsync(new DiscordEmbedBuilder
-                {
-                    Color = DiscordColor.Red,
-                    Description = "There is no message with that identifier."
-                }, true);
-                return;
-            }
 
+        if (!Database.TryGetMessage(identifier.ToLower(), out Database.Message message))
+        {
             await command.CreateResponseAsync(new DiscordEmbedBuilder
             {
-                Color = DiscordColor.Cyan,
-                Description = message.message.Replace("\\n", "\n")
+                Color = DiscordColor.Red,
+                Description = "There is no message with that identifier."
+            }, true);
+            return;
+        }
+
+        await command.CreateResponseAsync(new DiscordEmbedBuilder
+        {
+            Color = DiscordColor.Cyan,
+            Description = message.message.Replace("\\n", "\n")
+        });
+    }
+
+    private static async void SendMessageList(InteractionContext command)
+    {
+        List<Database.Message> messages = Database.GetAllMessages();
+        if (messages.Count == 0)
+        {
+            await command.CreateResponseAsync(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Red,
+                Description = "There are no messages registered."
+            }, true);
+            return;
+        }
+
+        List<string> listItems = [];
+        foreach (Database.Message message in messages)
+        {
+            listItems.Add("**" + message.identifier + "** Added by <@" + message.userID + ">\n");
+        }
+
+        List<DiscordEmbedBuilder> embeds = [];
+        foreach (string message in Utilities.ParseListIntoMessages(listItems))
+        {
+            embeds.Add(new DiscordEmbedBuilder
+            {
+                Title = "Available messages:",
+                Color = DiscordColor.Green,
+                Description = message
             });
         }
+
+        // Add the footers
+        for (int i = 0; i < embeds.Count; i++)
+        {
+            embeds[i].Footer = new DiscordEmbedBuilder.EmbedFooter
+            {
+                Text = $"Page {i + 1} / {embeds.Count}"
+            };
+        }
+
+        List<Page> listPages = [];
+        foreach (DiscordEmbedBuilder embed in embeds)
+        {
+            listPages.Add(new Page("", embed));
+        }
+
+        await command.Interaction.SendPaginatedResponseAsync(true, command.User, listPages);
     }
 }
