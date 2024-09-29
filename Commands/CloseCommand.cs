@@ -12,9 +12,11 @@ namespace SupportBoi.Commands;
 
 public class CloseCommand : ApplicationCommandModule
 {
+    private static Dictionary<ulong, string> closeReasons = new Dictionary<ulong, string>();
+
     [SlashRequireGuild]
     [SlashCommand("close", "Closes a ticket.")]
-    public async Task OnExecute(InteractionContext command)
+    public async Task OnExecute(InteractionContext command, [Option("Reason", "Reason for closing the ticket.")] string reason = "")
     {
         // Check if ticket exists in the database
         if (!Database.TryGetOpenTicket(command.Channel.Id, out Database.Ticket _))
@@ -35,8 +37,8 @@ public class CloseCommand : ApplicationCommandModule
             })
             .AddComponents(new DiscordButtonComponent(ButtonStyle.Danger, "supportboi_closeconfirm", "Confirm"));
 
-
         await command.CreateResponseAsync(confirmation);
+        closeReasons.Add(command.Channel.Id, reason);
     }
 
     public static async Task OnConfirmed(DiscordInteraction interaction)
@@ -72,6 +74,12 @@ public class CloseCommand : ApplicationCommandModule
             return;
         }
 
+        string closeReason = "";
+        if (closeReasons.TryGetValue(channelID, out string cachedReason))
+        {
+            closeReason = "\nReason: " + cachedReason + "\n";
+        }
+
         // Log it if the log channel exists
         DiscordChannel logChannel = interaction.Guild.GetChannel(Config.logChannel);
         if (logChannel != null)
@@ -79,7 +87,8 @@ public class CloseCommand : ApplicationCommandModule
             DiscordEmbed embed = new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Green,
-                Description = "Ticket " + ticket.id.ToString("00000") + " closed by " + interaction.User.Mention + ".\n",
+                Description = "Ticket " + ticket.id.ToString("00000") + " closed by " +
+                              interaction.User.Mention + ".\n" + closeReason,
                 Footer = new DiscordEmbedBuilder.EmbedFooter { Text = '#' + channelName }
             };
 
@@ -96,7 +105,8 @@ public class CloseCommand : ApplicationCommandModule
             DiscordEmbed embed = new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Green,
-                Description = "Ticket " + ticket.id.ToString("00000") + " which you opened has now been closed, check the transcript for more info.\n",
+                Description = "Ticket " + ticket.id.ToString("00000") + " which you opened has now been closed, " +
+                              "check the transcript for more info.\n" + closeReason,
                 Footer = new DiscordEmbedBuilder.EmbedFooter { Text = '#' + channelName }
             };
 
@@ -124,11 +134,13 @@ public class CloseCommand : ApplicationCommandModule
         }));
 
 
-            await Task.Delay(3000);
+        await Task.Delay(3000);
 
         // Delete the channel and database entry
         await interaction.Channel.DeleteAsync("Ticket closed.");
 
         Database.DeleteOpenTicket(ticket.id);
+
+        closeReasons.Remove(channelID);
     }
 }
