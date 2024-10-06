@@ -81,4 +81,104 @@ public static class Utilities
         using StreamReader reader = new StreamReader(stream);
         return reader.ReadToEnd();
     }
+
+    public static DiscordColor StringToColor(string color)
+    {
+        switch (color.ToLower())
+        {
+            case "black":
+                return DiscordColor.Black;
+            case "white":
+                return DiscordColor.White;
+            case "gray":
+                return DiscordColor.Gray;
+            case "darkgray":
+                return DiscordColor.DarkGray;
+            case "lightgray":
+                return DiscordColor.LightGray;
+            case "verydarkgray":
+                return DiscordColor.VeryDarkGray;
+            case "blurple":
+                return DiscordColor.Blurple;
+            case "grayple":
+                return DiscordColor.Grayple;
+            case "darkbutnotblack":
+                return DiscordColor.DarkButNotBlack;
+            case "notquiteblack":
+                return DiscordColor.NotQuiteBlack;
+            case "red":
+                return DiscordColor.Red;
+            case "darkred":
+                return DiscordColor.DarkRed;
+            case "green":
+                return DiscordColor.Green;
+            case "darkgreen":
+                return DiscordColor.DarkGreen;
+            case "blue":
+                return DiscordColor.Blue;
+            case "darkblue":
+                return DiscordColor.DarkBlue;
+            case "yellow":
+                return DiscordColor.Yellow;
+            case "cyan":
+                return DiscordColor.Cyan;
+            case "magenta":
+                return DiscordColor.Magenta;
+            case "teal":
+                return DiscordColor.Teal;
+            case "aquamarine":
+                return DiscordColor.Aquamarine;
+            case "gold":
+                return DiscordColor.Gold;
+            case "goldenrod":
+                return DiscordColor.Goldenrod;
+            case "azure":
+                return DiscordColor.Azure;
+            case "rose":
+                return DiscordColor.Rose;
+            case "springgreen":
+                return DiscordColor.SpringGreen;
+            case "chartreuse":
+                return DiscordColor.Chartreuse;
+            case "orange":
+                return DiscordColor.Orange;
+            case "purple":
+                return DiscordColor.Purple;
+            case "violet":
+                return DiscordColor.Violet;
+            case "brown":
+                return DiscordColor.Brown;
+            case "hotpink":
+                return DiscordColor.HotPink;
+            case "lilac":
+                return DiscordColor.Lilac;
+            case "cornflowerblue":
+                return DiscordColor.CornflowerBlue;
+            case "midnightblue":
+                return DiscordColor.MidnightBlue;
+            case "wheat":
+                return DiscordColor.Wheat;
+            case "indianred":
+                return DiscordColor.IndianRed;
+            case "turquoise":
+                return DiscordColor.Turquoise;
+            case "sapgreen":
+                return DiscordColor.SapGreen;
+            case "phthaloblue":
+                return DiscordColor.PhthaloBlue;
+            case "phthalogreen":
+                return DiscordColor.PhthaloGreen;
+            case "sienna":
+                return DiscordColor.Sienna;
+            default:
+                try
+                {
+                    return new DiscordColor(color);
+                }
+                catch (Exception)
+                {
+                    return DiscordColor.None;
+                }
+        }
+    }
 }
