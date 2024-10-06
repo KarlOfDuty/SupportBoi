@@ -16,7 +16,7 @@
     # More info: https://dsharpplus.github.io/api/DSharpPlus.TimestampFormat.html
     timestamp-format: "RelativeTime"
 
-    # Whether or not staff members should be randomly assigned tickets when they are made. Individual staff members can opt out using the toggleactive command.
+    # Whether staff members should be randomly assigned tickets when they are made. Individual staff members can opt out using the toggleactive command.
     random-assignment: true
 
     # If set to true the rasssign command will include staff members set as inactive if a specific role is specified in the command.
@@ -61,3 +61,22 @@ database:
     # Username and password for authentication
     user: ""
     password: ""
+
+# TODO: May want to move interview entries to subkey to make room for additional interview settings
+interviews:
+    000000000000000000:
+        message: "Are you appealing your own ban or on behalf of another user?"
+        type: "BUTTONS"
+        color: "CYAN"
+        paths:
+            - "My own ban": # TODO: Can I add button color support somehow?
+                  text: "What is your user name?"
+                  type: "TEXT_INPUT"
+                  summary-field: "Username"
+                  paths:
+                      - ".*":
+                            text: "Please write your appeal below, motivate why you think you should be unbanned."
+            - "Another user's ban":
+                  text: "You can only appeal your own ban. Please close this ticket."
+                  type: "FAIL"
+                  color: "CYAN"

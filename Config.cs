@@ -98,5 +98,8 @@ internal static class Config
         database = json.SelectToken("database.name")?.Value<string>() ?? "supportbot";
         username = json.SelectToken("database.user")?.Value<string>() ?? "supportbot";
         password = json.SelectToken("database.password")?.Value<string>() ?? "";
+
+        // Set up interviewer
+        Interviewer.ParseConfig(json.SelectToken("interviews"));
     }
 }

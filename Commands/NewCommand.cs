@@ -237,6 +237,11 @@ public class NewCommand : ApplicationCommandModule
         // Refreshes the channel as changes were made to it above
         ticketChannel = await SupportBoi.discordClient.GetChannelAsync(ticketChannel.Id);
 
+        if (ticketChannel.Parent?.IsCategory ?? false)
+        {
+            Interviewer.StartInterview(ticketChannel);
+        }
+
         if (staffID != 0)
         {
             await ticketChannel.SendMessageAsync(new DiscordEmbedBuilder
