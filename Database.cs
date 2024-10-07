@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using DSharpPlus;
 using MySqlConnector;
+using Newtonsoft.Json;
 
 namespace SupportBoi;
 
@@ -107,6 +108,11 @@ public static class Database
             "name VARCHAR(256) NOT NULL UNIQUE," +
             "category_id BIGINT UNSIGNED NOT NULL PRIMARY KEY)",
             c);
+        using MySqlCommand createInterviews = new MySqlCommand(
+            "CREATE TABLE IF NOT EXISTS interviews(" +
+            "channel_id BIGINT UNSIGNED NOT NULL PRIMARY KEY," +
+            "interview JSON NOT NULL)",
+            c);
         c.Open();
         createTickets.ExecuteNonQuery();
         createBlacklisted.ExecuteNonQuery();
@@ -114,6 +120,7 @@ public static class Database
         createStaffList.ExecuteNonQuery();
         createMessages.ExecuteNonQuery();
         createCategories.ExecuteNonQuery();
+        createInterviews.ExecuteNonQuery();
     }
 
     public static bool IsOpenTicket(ulong channelID)
@@ -722,6 +729,84 @@ public static class Database
         {
             return false;
         }
+    }
+
+    public static Dictionary<ulong, Interviewer.InterviewQuestion> GetAllInterviews()
+    {
+        using MySqlConnection c = GetConnection();
+        c.Open();
+        using MySqlCommand selection = new MySqlCommand("SELECT * FROM interviews", c);
+        selection.Prepare();
+        MySqlDataReader results = selection.ExecuteReader();
+
+        // Check if messages exist in the database
+        if (!results.Read())
+        {
+            return new Dictionary<ulong, Interviewer.InterviewQuestion>();
+        }
+
+        Dictionary<ulong, Interviewer.InterviewQuestion> questions = new Dictionary<ulong, Interviewer.InterviewQuestion>
+        {
+            { results.GetUInt64("channel_id"), JsonConvert.DeserializeObject<Interviewer.InterviewQuestion>(results.GetString("interview")) }
+        };
+        while (results.Read())
+        {
+            questions.Add(results.GetUInt64("channel_id"), JsonConvert.DeserializeObject<Interviewer.InterviewQuestion>(results.GetString("interview")));
+        }
+        results.Close();
+
+        return questions;
+    }
+
+    public static bool SaveInterview(ulong channelID, Interviewer.InterviewQuestion interview)
+    {
+        try
+        {
+            if (TryGetInterview(channelID, out _))
+            {
+                using MySqlConnection c = GetConnection();
+                c.Open();
+                using MySqlCommand cmd = new MySqlCommand(@"UPDATE interviews SET interview = @interview WHERE channel_id = @channel_id;", c);
+                cmd.Parameters.AddWithValue("@channel_id", channelID);
+                cmd.Parameters.AddWithValue("@interview", JsonConvert.SerializeObject(interview));
+                cmd.Prepare();
+                return cmd.ExecuteNonQuery() > 0;
+            }
+            else
+            {
+                using MySqlConnection c = GetConnection();
+                c.Open();
+                using MySqlCommand cmd = new MySqlCommand(@"INSERT INTO interviews (channel_id,interview) VALUES (@channel_id, @interview);", c);
+                cmd.Parameters.AddWithValue("@channel_id", channelID);
+                cmd.Parameters.AddWithValue("@interview", JsonConvert.SerializeObject(interview));
+                cmd.Prepare();
+                return cmd.ExecuteNonQuery() > 0;
+            }
+        }
+        catch (MySqlException)
+        {
+            return false;
+        }
+    }
+
+    public static bool TryGetInterview(ulong channelID, out Interviewer.InterviewQuestion interview)
+    {
+        using MySqlConnection c = GetConnection();
+        c.Open();
+        using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM interviews WHERE channel_id=@channel_id", c);
+        selection.Parameters.AddWithValue("@channel_id", channelID);
+        selection.Prepare();
+        MySqlDataReader results = selection.ExecuteReader();
+
+        // Check if ticket exists in the database
+        if (!results.Read())
+        {
+            interview = null;
+            return false;
+        }
+        interview = JsonConvert.DeserializeObject<Interviewer.InterviewQuestion>(results.GetString("interview"));
+        results.Close();
+        return true;
     }
 
     public class Ticket

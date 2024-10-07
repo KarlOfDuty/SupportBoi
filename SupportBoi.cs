@@ -152,6 +152,18 @@ internal static class SupportBoi
             throw;
         }
 
+        try
+        {
+            Logger.Log("Connecting to database... (" + Config.hostName + ":" + Config.port + ")");
+            Interviewer.ParseConfig(Config.interviews);
+            Interviewer.LoadActiveInterviews();
+        }
+        catch (Exception e)
+        {
+            Logger.Fatal("Could not set up database tables, please confirm connection settings, status of the server and permissions of MySQL user. Error: " + e);
+            throw;
+        }
+
         Logger.Log("Setting up Discord client...");
 
         // Setting up client configuration

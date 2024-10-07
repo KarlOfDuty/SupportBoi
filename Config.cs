@@ -32,6 +32,8 @@ internal static class Config
     internal static string username = "supportbot";
     internal static string password = "";
 
+    internal static JToken interviews;
+
     private static string configPath = "./config.yml";
 
     public static void LoadConfig()
@@ -100,6 +102,6 @@ internal static class Config
         password = json.SelectToken("database.password")?.Value<string>() ?? "";
 
         // Set up interviewer
-        Interviewer.ParseConfig(json.SelectToken("interviews"));
+        interviews = json.SelectToken("interviews") ?? new JObject();
     }
 }
