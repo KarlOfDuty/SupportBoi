@@ -76,9 +76,15 @@ internal static class EventHandler
             return;
         }
 
-        // Sends a DM to the assigned staff member if at least a day has gone by since the last message and the user sending the message isn't staff
+        // Ignore staff messages
+        if (Database.IsStaff(e.Author.Id))
+        {
+            return;
+        }
+
+        // Sends a DM to the assigned staff member if at least a day has gone by since the last message
         IReadOnlyList<DiscordMessage> messages = await e.Channel.GetMessagesAsync(2);
-        if (messages.Count > 1 && messages[1].Timestamp < DateTimeOffset.UtcNow.AddDays(Config.ticketUpdatedNotificationDelay * -1) && !Database.IsStaff(e.Author.Id))
+        if (messages.Count > 1 && messages[1].Timestamp < DateTimeOffset.UtcNow.AddDays(Config.ticketUpdatedNotificationDelay * -1))
         {
             try
             {
