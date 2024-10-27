@@ -10,7 +10,7 @@ public static class Logger
     {
         try
         {
-            SupportBoi.discordClient.Logger.Log(LogLevel.Debug, new EventId(420, Assembly.GetEntryAssembly()?.GetName().Name), message);
+            SupportBoi.client.Logger.Log(LogLevel.Debug, new EventId(420, Assembly.GetEntryAssembly()?.GetName().Name), message);
         }
         catch (NullReferenceException)
         {
@@ -22,7 +22,7 @@ public static class Logger
     {
         try
         {
-            SupportBoi.discordClient.Logger.Log(LogLevel.Information, new EventId(420, Assembly.GetEntryAssembly()?.GetName().Name), message);
+            SupportBoi.client.Logger.Log(LogLevel.Information, new EventId(420, Assembly.GetEntryAssembly()?.GetName().Name), message);
         }
         catch (NullReferenceException)
         {
@@ -34,7 +34,7 @@ public static class Logger
     {
         try
         {
-            SupportBoi.discordClient.Logger.Log(LogLevel.Warning, new EventId(420, Assembly.GetEntryAssembly()?.GetName().Name), message);
+            SupportBoi.client.Logger.Log(LogLevel.Warning, new EventId(420, Assembly.GetEntryAssembly()?.GetName().Name), message);
         }
         catch (NullReferenceException)
         {
@@ -46,7 +46,7 @@ public static class Logger
     {
         try
         {
-            SupportBoi.discordClient.Logger.Log(LogLevel.Error, new EventId(420, Assembly.GetEntryAssembly()?.GetName().Name), message);
+            SupportBoi.client.Logger.Log(LogLevel.Error, new EventId(420, Assembly.GetEntryAssembly()?.GetName().Name), message);
         }
         catch (NullReferenceException)
         {
@@ -58,7 +58,7 @@ public static class Logger
     {
         try
         {
-            SupportBoi.discordClient.Logger.Log(LogLevel.Critical, new EventId(420, Assembly.GetEntryAssembly()?.GetName().Name), message);
+            SupportBoi.client.Logger.Log(LogLevel.Critical, new EventId(420, Assembly.GetEntryAssembly()?.GetName().Name), message);
         }
         catch (NullReferenceException)
         {

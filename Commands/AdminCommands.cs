@@ -1,25 +1,29 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using DSharpPlus.Commands;
+using DSharpPlus.Commands.ContextChecks;
+using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
-using DSharpPlus.SlashCommands;
-using DSharpPlus.SlashCommands.Attributes;
 
 namespace SupportBoi.Commands;
 
-[SlashCommandGroup("admin", "Administrative commands.")]
-public class AdminCommands : ApplicationCommandModule
+[Command("admin")]
+[Description("Administrative commands.")]
+public class AdminCommands
 {
-    [SlashRequireGuild]
-    [SlashCommand("listinvalid", "List tickets which channels have been deleted. Use /admin unsetticket <id> to remove them.")]
-    public async Task ListInvalid(InteractionContext command)
+    [RequireGuild]
+    [Command("listinvalid")]
+    [Description("List tickets which channels have been deleted. Use /admin unsetticket <id> to remove them.")]
+    public async Task ListInvalid(SlashCommandContext command)
     {
         if (!Database.TryGetOpenTickets(out List<Database.Ticket> openTickets))
         {
-            await command.CreateResponseAsync(new DiscordEmbedBuilder
+            await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Red,
                 Description = "Could not get any open tickets from database."
@@ -28,7 +32,7 @@ public class AdminCommands : ApplicationCommandModule
 
         // Get all channels in all guilds the bot is part of
         List<DiscordChannel> allChannels = new List<DiscordChannel>();
-        foreach (KeyValuePair<ulong,DiscordGuild> guild in SupportBoi.discordClient.Guilds)
+        foreach (KeyValuePair<ulong,DiscordGuild> guild in SupportBoi.client.Guilds)
         {
             try
             {
@@ -49,7 +53,7 @@ public class AdminCommands : ApplicationCommandModule
 
         if (listItems.Count == 0)
         {
-            await command.CreateResponseAsync(new DiscordEmbedBuilder
+            await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Green,
                 Description = "All tickets are valid!"
@@ -86,14 +90,16 @@ public class AdminCommands : ApplicationCommandModule
         await command.Interaction.SendPaginatedResponseAsync(true, command.User, listPages);
     }
 
-    [SlashRequireGuild]
-    [SlashCommand("setticket", "Turns a channel into a ticket WARNING: Anyone will be able to delete the channel using /close.")]
-    public async Task SetTicket(InteractionContext command, [Option("User", "(Optional) The owner of the ticket.")] DiscordUser user = null)
+    [RequireGuild]
+    [Command("setticket")]
+    [Description("Turns a channel into a ticket. WARNING: Anyone will be able to delete the channel using /close.")]
+    public async Task SetTicket(SlashCommandContext command,
+        [Parameter("user")] [Description("(Optional) The owner of the ticket.")] DiscordUser user = null)
     {
         // Check if ticket exists in the database
         if (Database.IsOpenTicket(command.Channel.Id))
         {
-            await command.CreateResponseAsync(new DiscordEmbedBuilder
+            await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Red,
                 Description = "This channel is already a ticket."
@@ -105,14 +111,16 @@ public class AdminCommands : ApplicationCommandModule
 
         long id = Database.NewTicket(ticketUser.Id, 0, command.Channel.Id);
         string ticketID = id.ToString("00000");
-        await command.CreateResponseAsync(new DiscordEmbedBuilder
+        await command.RespondAsync(new DiscordEmbedBuilder
         {
             Color = DiscordColor.Green,
             Description = "Channel has been designated ticket " + ticketID + "."
         });
 
+        // TODO: This throws an exception instead of returning null now
+
         // Log it if the log channel exists
-        DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
+        DiscordChannel logChannel = await command.Guild.GetChannelAsync(Config.logChannel);
         if (logChannel != null)
         {
             await logChannel.SendMessageAsync(new DiscordEmbedBuilder
@@ -123,9 +131,11 @@ public class AdminCommands : ApplicationCommandModule
         }
     }
 
-    [SlashRequireGuild]
-    [SlashCommand("unsetticket", "Deletes a ticket from the ticket system without deleting the channel.")]
-    public async Task UnsetTicket(InteractionContext command, [Option("TicketID", "(Optional) Ticket to unset. Uses the channel you are in by default.")] long ticketID = 0)
+    [RequireGuild]
+    [Command("unsetticket")]
+    [Description("Deletes a ticket from the ticket system without deleting the channel.")]
+    public async Task UnsetTicket(SlashCommandContext command,
+        [Parameter("ticket-id")] [Description("(Optional) Ticket to unset. Uses the channel you are in by default.")] long ticketID = 0)
     {
         Database.Ticket ticket;
 
@@ -134,7 +144,7 @@ public class AdminCommands : ApplicationCommandModule
             // Check if ticket exists in the database
             if (!Database.TryGetOpenTicket(command.Channel.Id, out ticket))
             {
-                await command.CreateResponseAsync(new DiscordEmbedBuilder
+                await command.RespondAsync(new DiscordEmbedBuilder
                 {
                     Color = DiscordColor.Red,
                     Description = "This channel is not a ticket!"
@@ -147,7 +157,7 @@ public class AdminCommands : ApplicationCommandModule
             // Check if ticket exists in the database
             if (!Database.TryGetOpenTicketByID((uint)ticketID, out ticket))
             {
-                await command.CreateResponseAsync(new DiscordEmbedBuilder
+                await command.RespondAsync(new DiscordEmbedBuilder
                 {
                     Color = DiscordColor.Red,
                     Description = "There is no ticket with this ticket ID."
@@ -159,14 +169,16 @@ public class AdminCommands : ApplicationCommandModule
 
         if (Database.DeleteOpenTicket(ticket.id))
         {
-            await command.CreateResponseAsync(new DiscordEmbedBuilder
+            await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Green,
                 Description = "Channel has been undesignated as a ticket."
             });
 
+            // TODO: This throws an exception instead of returning null now
+
             // Log it if the log channel exists
-            DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
+            DiscordChannel logChannel = await command.Guild.GetChannelAsync(Config.logChannel);
             if (logChannel != null)
             {
                 await logChannel.SendMessageAsync(new DiscordEmbedBuilder
@@ -178,7 +190,7 @@ public class AdminCommands : ApplicationCommandModule
         }
         else
         {
-            await command.CreateResponseAsync(new DiscordEmbedBuilder
+            await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Red,
                 Description = "Error: Failed removing ticket from database."
@@ -186,10 +198,11 @@ public class AdminCommands : ApplicationCommandModule
         }
     }
 
-    [SlashCommand("reload", "Reloads the bot config.")]
-    public async Task Reload(InteractionContext command)
+    [Command("reload")]
+    [Description("Reloads the bot config.")]
+    public async Task Reload(SlashCommandContext command)
     {
-        await command.CreateResponseAsync(new DiscordEmbedBuilder
+        await command.RespondAsync(new DiscordEmbedBuilder
         {
             Color = DiscordColor.Green,
             Description = "Reloading bot application..."

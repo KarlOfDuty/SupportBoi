@@ -1,25 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using DSharpPlus.Commands;
+using DSharpPlus.Commands.ContextChecks;
+using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
 using DSharpPlus.Exceptions;
-using DSharpPlus.SlashCommands;
-using DSharpPlus.SlashCommands.Attributes;
 using Microsoft.Extensions.Logging;
 
 namespace SupportBoi.Commands;
 
-public class RandomAssignCommand : ApplicationCommandModule
+public class RandomAssignCommand
 {
-    [SlashRequireGuild]
-    [SlashCommand("rassign", "Randomly assigns a staff member to a ticket.")]
-    public async Task OnExecute(InteractionContext command, [Option("Role", "(Optional) Limit the random assignment to a specific role.")] DiscordRole role = null)
+    [RequireGuild]
+    [Command("rassign")]
+    [Description("Randomly assigns a staff member to a ticket.")]
+    public async Task OnExecute(SlashCommandContext command, [Parameter("role")] [Description("(Optional) Limit the random assignment to a specific role.")] DiscordRole role = null)
     {
         // Check if ticket exists in the database
         if (!Database.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
         {
-            await command.CreateResponseAsync(new DiscordEmbedBuilder
+            await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Red,
                 Description = "Error: This channel is not a ticket."
@@ -37,7 +40,7 @@ public class RandomAssignCommand : ApplicationCommandModule
         // Attempt to assign the staff member to the ticket
         if (!Database.AssignStaff(ticket, staffMember.Id))
         {
-            await command.CreateResponseAsync(new DiscordEmbedBuilder
+            await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Red,
                 Description = "Error: Failed to assign " + staffMember.Mention + " to ticket."
@@ -46,7 +49,7 @@ public class RandomAssignCommand : ApplicationCommandModule
         }
 
         // Respond that the command was successful
-        await command.CreateResponseAsync(new DiscordEmbedBuilder
+        await command.RespondAsync(new DiscordEmbedBuilder
         {
             Color = DiscordColor.Green,
             Description = "Randomly assigned " + staffMember.Mention + " to ticket."
@@ -66,8 +69,9 @@ public class RandomAssignCommand : ApplicationCommandModule
             catch (UnauthorizedException) {}
         }
 
+        // TODO: This throws an exception instead of returning null now
         // Log it if the log channel exists
-        DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
+        DiscordChannel logChannel = await command.Guild.GetChannelAsync(Config.logChannel);
         if (logChannel != null)
         {
             await logChannel.SendMessageAsync(new DiscordEmbedBuilder
@@ -78,7 +82,7 @@ public class RandomAssignCommand : ApplicationCommandModule
         }
     }
 
-    private static async Task<DiscordMember> GetRandomVerifiedStaffMember(InteractionContext command, DiscordRole targetRole, Database.Ticket ticket)
+    private static async Task<DiscordMember> GetRandomVerifiedStaffMember(SlashCommandContext command, DiscordRole targetRole, Database.Ticket ticket)
     {
         if (targetRole != null) // A role was provided
         {
@@ -112,7 +116,7 @@ public class RandomAssignCommand : ApplicationCommandModule
             Database.StaffMember staffEntry = Database.GetRandomActiveStaff(ticket.assignedStaffID, ticket.creatorID);
             if (staffEntry == null)
             {
-                await command.CreateResponseAsync(new DiscordEmbedBuilder
+                await command.RespondAsync(new DiscordEmbedBuilder
                 {
                     Color = DiscordColor.Red,
                     Description = "Error: There are no other staff members to choose from."
@@ -129,7 +133,7 @@ public class RandomAssignCommand : ApplicationCommandModule
         }
 
         // Send a more generic error if we get to this point and still haven't found the staff member
-        await command.CreateResponseAsync(new DiscordEmbedBuilder
+        await command.RespondAsync(new DiscordEmbedBuilder
         {
             Color = DiscordColor.Red,
             Description = "Error: Could not find an applicable staff member."

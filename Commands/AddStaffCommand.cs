@@ -1,17 +1,21 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
+using DSharpPlus.Commands;
+using DSharpPlus.Commands.ContextChecks;
+using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
-using DSharpPlus.SlashCommands;
-using DSharpPlus.SlashCommands.Attributes;
 using MySqlConnector;
 
 namespace SupportBoi.Commands;
 
-public class AddStaffCommand : ApplicationCommandModule
+public class AddStaffCommand
 {
-    [SlashRequireGuild]
-    [SlashCommand("addstaff", "Adds a new staff member.")]
-    public async Task OnExecute(InteractionContext command, [Option("User", "User to add to staff.")] DiscordUser user)
+    [RequireGuild]
+    [Command("addstaff")]
+    [Description("Adds a new staff member.")]
+    public async Task OnExecute(SlashCommandContext command,
+        [Parameter("user")] [Description("User to add to staff.")] DiscordUser user)
     {
         DiscordMember staffMember = null;
         try
@@ -20,7 +24,7 @@ public class AddStaffCommand : ApplicationCommandModule
 
             if (staffMember == null)
             {
-                await command.CreateResponseAsync(new DiscordEmbedBuilder
+                await command.RespondAsync(new DiscordEmbedBuilder
                 {
                     Color = DiscordColor.Red,
                     Description = "Could not find that user in this server."
@@ -30,7 +34,7 @@ public class AddStaffCommand : ApplicationCommandModule
         }
         catch (Exception)
         {
-            await command.CreateResponseAsync(new DiscordEmbedBuilder
+            await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Red,
                 Description = "Could not find that user in this server."
@@ -47,14 +51,16 @@ public class AddStaffCommand : ApplicationCommandModule
         cmd.ExecuteNonQuery();
         cmd.Dispose();
 
-        await command.CreateResponseAsync(new DiscordEmbedBuilder
+        await command.RespondAsync(new DiscordEmbedBuilder
         {
             Color = DiscordColor.Green,
             Description = staffMember.Mention + " was added to staff."
         });
 
+        // TODO: This throws an exception instead of returning null now
+
         // Log it if the log channel exists
-        DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
+        DiscordChannel logChannel = await command.Guild.GetChannelAsync(Config.logChannel);
         if (logChannel != null)
         {
             await logChannel.SendMessageAsync(new DiscordEmbedBuilder

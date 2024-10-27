@@ -1,18 +1,22 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading.Tasks;
+using DSharpPlus.Commands;
+using DSharpPlus.Commands.ContextChecks;
+using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
-using DSharpPlus.SlashCommands;
-using DSharpPlus.SlashCommands.Attributes;
 
 namespace SupportBoi.Commands;
 
-public class ListCommand : ApplicationCommandModule
+public class ListCommand
 {
-    [SlashRequireGuild]
-    [SlashCommand("list", "Lists tickets opened by a user.")]
-    public async Task OnExecute(InteractionContext command, [Option("User", "(Optional) The user to get tickets by.")] DiscordUser user = null)
+    [RequireGuild]
+    [Command("list")]
+    [Description("Lists tickets opened by a user.")]
+    public async Task OnExecute(SlashCommandContext command,
+        [Parameter("user")] [Description("(Optional) The user to get tickets by.")] DiscordUser user = null)
     {
         DiscordUser listUser = user == null ? command.User : user;
 
@@ -80,7 +84,7 @@ public class ListCommand : ApplicationCommandModule
 
         if (embeds.Count == 0)
         {
-            await command.CreateResponseAsync(new DiscordEmbedBuilder
+            await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Cyan,
                 Description = "User does not have any open or closed tickets."

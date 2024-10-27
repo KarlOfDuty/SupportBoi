@@ -1,32 +1,35 @@
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-using DSharpPlus;
+using DSharpPlus.Commands;
+using DSharpPlus.Commands.ContextChecks;
+using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
-using DSharpPlus.SlashCommands;
-using DSharpPlus.SlashCommands.Attributes;
 
 namespace SupportBoi.Commands;
 
-public class CreateSelectionBoxPanelCommand : ApplicationCommandModule
+public class CreateSelectionBoxPanelCommand
 {
-    [SlashRequireGuild]
-    [SlashCommand("createselectionboxpanel", "Creates a selection box which users can use to open new tickets in specific categories.")]
-    public async Task OnExecute(InteractionContext command, [Option("Message", "(Optional) The message to show in the selection box.")] string message = null)
+    [RequireGuild]
+    [Command("createselectionboxpanel")]
+    [Description("Creates a selection box which users can use to open new tickets in specific categories.")]
+    public async Task OnExecute(SlashCommandContext command,
+        [Parameter("message")] [Description("(Optional) The message to show in the selection box.")] string message = null)
     {
         DiscordMessageBuilder builder = new DiscordMessageBuilder()
             .WithContent(" ")
             .AddComponents(await GetSelectComponents(command, message ?? "Open new ticket..."));
 
         await command.Channel.SendMessageAsync(builder);
-        await command.CreateResponseAsync(new DiscordEmbedBuilder
+        await command.RespondAsync(new DiscordEmbedBuilder
         {
             Color = DiscordColor.Green,
             Description = "Successfully created message, make sure to run this command again if you add new categories to the bot."
         }, true);
     }
 
-    public static async Task<List<DiscordSelectComponent>> GetSelectComponents(InteractionContext command, string placeholder)
+    public static async Task<List<DiscordSelectComponent>> GetSelectComponents(SlashCommandContext command, string placeholder)
     {
         List<Database.Category> verifiedCategories = await Utilities.GetVerifiedChannels();
 
@@ -65,7 +68,7 @@ public class CreateSelectionBoxPanelCommand : ApplicationCommandModule
             return;
         }
 
-        await interaction.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral());
+        await interaction.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral());
 
         (bool success, string message) = await NewCommand.OpenNewTicket(interaction.User.Id, interaction.ChannelId, categoryID);
 

@@ -1,27 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
-using DSharpPlus;
+using DSharpPlus.Commands;
+using DSharpPlus.Commands.ContextChecks;
+using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
 using DSharpPlus.Exceptions;
-using DSharpPlus.SlashCommands;
-using DSharpPlus.SlashCommands.Attributes;
 
 namespace SupportBoi.Commands;
 
-public class CloseCommand : ApplicationCommandModule
+public class CloseCommand
 {
     private static Dictionary<ulong, string> closeReasons = new Dictionary<ulong, string>();
 
-    [SlashRequireGuild]
-    [SlashCommand("close", "Closes a ticket.")]
-    public async Task OnExecute(InteractionContext command, [Option("Reason", "(Optional) Reason for closing the ticket.")] string reason = "")
+    [RequireGuild]
+    [Command("close")]
+    [Description("Closes this ticket.")]
+    public async Task OnExecute(SlashCommandContext command,
+        [Parameter("reason")] [Description("(Optional) The reason for closing this ticket.")] string reason = "")
     {
         // Check if ticket exists in the database
         if (!Database.TryGetOpenTicket(command.Channel.Id, out Database.Ticket _))
         {
-            await command.CreateResponseAsync(new DiscordEmbedBuilder
+            await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Red,
                 Description = "This channel is not a ticket."
@@ -35,15 +38,15 @@ public class CloseCommand : ApplicationCommandModule
                 Color = DiscordColor.Cyan,
                 Description = "Are you sure you wish to close this ticket? You cannot re-open it again later."
             })
-            .AddComponents(new DiscordButtonComponent(ButtonStyle.Danger, "supportboi_closeconfirm", "Confirm"));
+            .AddComponents(new DiscordButtonComponent(DiscordButtonStyle.Danger, "supportboi_closeconfirm", "Confirm"));
 
-        await command.CreateResponseAsync(confirmation);
+        await command.RespondAsync(confirmation);
         closeReasons.Add(command.Channel.Id, reason);
     }
 
     public static async Task OnConfirmed(DiscordInteraction interaction)
     {
-        await interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
+        await interaction.CreateResponseAsync(DiscordInteractionResponseType.DeferredMessageUpdate);
         ulong channelID = interaction.Channel.Id;
         string channelName = interaction.Channel.Name;
 
@@ -80,8 +83,10 @@ public class CloseCommand : ApplicationCommandModule
             closeReason = "\nReason: " + cachedReason + "\n";
         }
 
+        // TODO: This throws an exception instead of returning null now
+
         // Log it if the log channel exists
-        DiscordChannel logChannel = interaction.Guild.GetChannel(Config.logChannel);
+        DiscordChannel logChannel = await interaction.Guild.GetChannelAsync(Config.logChannel);
         if (logChannel != null)
         {
             DiscordEmbed embed = new DiscordEmbedBuilder
@@ -112,6 +117,7 @@ public class CloseCommand : ApplicationCommandModule
 
             try
             {
+                // TODO: This throws an exception instead of returning null now
                 DiscordMember staffMember = await interaction.Guild.GetMemberAsync(ticket.creatorID);
                 await using FileStream file = new FileStream(Transcriber.GetPath(ticket.id), FileMode.Open, FileAccess.Read);
 

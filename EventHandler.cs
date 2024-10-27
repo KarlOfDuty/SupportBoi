@@ -2,35 +2,37 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DiscordChatExporter.Core.Utils.Extensions;
 using DSharpPlus;
+using DSharpPlus.Commands;
+using DSharpPlus.Commands.ContextChecks;
+using DSharpPlus.Commands.EventArgs;
+using DSharpPlus.Commands.Exceptions;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using DSharpPlus.Exceptions;
-using DSharpPlus.SlashCommands;
-using DSharpPlus.SlashCommands.Attributes;
-using DSharpPlus.SlashCommands.EventArgs;
 using SupportBoi.Commands;
 
 namespace SupportBoi;
 
-internal static class EventHandler
+public static class EventHandler
 {
-    internal static Task OnReady(DiscordClient client, ReadyEventArgs e)
+    public static Task OnReady(DiscordClient client, GuildDownloadCompletedEventArgs e)
     {
-        Logger.Log("Client is ready to process events.");
+        Logger.Log("Connected to Discord.");
 
         // Checking activity type
-        if (!Enum.TryParse(Config.presenceType, true, out ActivityType activityType))
+        if (!Enum.TryParse(Config.presenceType, true, out DiscordActivityType activityType))
         {
             Logger.Log("Presence type '" + Config.presenceType + "' invalid, using 'Playing' instead.");
-            activityType = ActivityType.Playing;
+            activityType = DiscordActivityType.Playing;
         }
 
-        client.UpdateStatusAsync(new DiscordActivity(Config.presenceText, activityType), UserStatus.Online);
+        client.UpdateStatusAsync(new DiscordActivity(Config.presenceText, activityType), DiscordUserStatus.Online);
         return Task.CompletedTask;
     }
 
-    internal static async Task OnGuildAvailable(DiscordClient discordClient, GuildCreateEventArgs e)
+    public static async Task OnGuildAvailable(DiscordClient discordClient, GuildAvailableEventArgs e)
     {
         Logger.Log("Found Discord server: " + e.Guild.Name + " (" + e.Guild.Id + ")");
 
@@ -49,21 +51,7 @@ internal static class EventHandler
         }
     }
 
-    internal static Task OnClientError(DiscordClient _, ClientErrorEventArgs e)
-    {
-        Logger.Error("Client exception occured:\n" + e.Exception);
-        switch (e.Exception)
-        {
-            case BadRequestException ex:
-                Logger.Error("JSON Message: " + ex.JsonMessage);
-                break;
-            default:
-                break;
-        }
-        return Task.CompletedTask;
-    }
-
-    internal static async Task OnMessageCreated(DiscordClient client, MessageCreateEventArgs e)
+    public static async Task OnMessageCreated(DiscordClient client, MessageCreatedEventArgs e)
     {
         if (e.Author.IsBot)
         {
@@ -94,42 +82,7 @@ internal static class EventHandler
         }
     }
 
-    internal static async Task OnCommandError(SlashCommandsExtension commandSystem, SlashCommandErrorEventArgs e)
-    {
-        switch (e.Exception)
-        {
-            case SlashExecutionChecksFailedException checksFailedException:
-            {
-                foreach (SlashCheckBaseAttribute attr in checksFailedException.FailedChecks)
-                {
-                    await e.Context.Channel.SendMessageAsync(new DiscordEmbedBuilder
-                    {
-                        Color = DiscordColor.Red,
-                        Description = ParseFailedCheck(attr)
-                    });
-                }
-                return;
-            }
-
-            case BadRequestException ex:
-                Logger.Error("Command exception occured:\n" + e.Exception);
-                Logger.Error("JSON Message: " + ex.JsonMessage);
-                return;
-
-            default:
-            {
-                Logger.Error("Exception occured: " + e.Exception.GetType() + ": " + e.Exception);
-                await e.Context.Channel.SendMessageAsync(new DiscordEmbedBuilder
-                {
-                    Color = DiscordColor.Red,
-                    Description = "Internal error occured, please report this to the developer."
-                });
-                return;
-            }
-        }
-    }
-
-    internal static async Task OnMemberAdded(DiscordClient client, GuildMemberAddEventArgs e)
+    public static async Task OnMemberAdded(DiscordClient client, GuildMemberAddedEventArgs e)
     {
         if (!Database.TryGetOpenTickets(e.Member.Id, out List<Database.Ticket> ownTickets))
         {
@@ -145,7 +98,7 @@ internal static class EventHandler
                 {
                     try
                     {
-                        await channel.AddOverwriteAsync(e.Member, Permissions.AccessChannels);
+                        await channel.AddOverwriteAsync(e.Member, DiscordPermissions.AccessChannels);
                         await channel.SendMessageAsync(new DiscordEmbedBuilder
                         {
                             Color = DiscordColor.Green,
@@ -164,7 +117,7 @@ internal static class EventHandler
         }
     }
 
-    internal static async Task OnMemberRemoved(DiscordClient client, GuildMemberRemoveEventArgs e)
+    public static async Task OnMemberRemoved(DiscordClient client, GuildMemberRemovedEventArgs e)
     {
         if (Database.TryGetOpenTickets(e.Member.Id, out List<Database.Ticket> ownTickets))
         {
@@ -211,22 +164,22 @@ internal static class EventHandler
         }
     }
 
-    internal static async Task OnComponentInteractionCreated(DiscordClient client, ComponentInteractionCreateEventArgs e)
+    public static async Task OnComponentInteractionCreated(DiscordClient client, ComponentInteractionCreatedEventArgs e)
     {
         try
         {
             switch (e.Interaction.Data.ComponentType)
             {
-                case ComponentType.Button:
+                case DiscordComponentType.Button:
                     switch (e.Id)
                     {
                         case "supportboi_closeconfirm":
                             await CloseCommand.OnConfirmed(e.Interaction);
                             return;
-                        case {} when e.Id.StartsWith("supportboi_newcommandbutton"):
+                        case not null when e.Id.StartsWith("supportboi_newcommandbutton"):
                             await NewCommand.OnCategorySelection(e.Interaction);
                             return;
-                        case {} when e.Id.StartsWith("supportboi_newticketbutton"):
+                        case not null when e.Id.StartsWith("supportboi_newticketbutton"):
                             await CreateButtonPanelCommand.OnButtonUsed(e.Interaction);
                             return;
                         case "right":
@@ -243,23 +196,23 @@ internal static class EventHandler
                             Logger.Warn("Unknown button press received! '" + e.Id + "'");
                             return;
                     }
-                case ComponentType.StringSelect:
+                case DiscordComponentType.StringSelect:
                     switch (e.Id)
                     {
-                        case {} when e.Id.StartsWith("supportboi_newcommandselector"):
+                        case not null when e.Id.StartsWith("supportboi_newcommandselector"):
                             await NewCommand.OnCategorySelection(e.Interaction);
                             return;
-                        case {} when e.Id.StartsWith("supportboi_newticketselector"):
+                        case not null when e.Id.StartsWith("supportboi_newticketselector"):
                             await CreateSelectionBoxPanelCommand.OnSelectionMenuUsed(e.Interaction);
                             return;
                         default:
                             Logger.Warn("Unknown selection box option received! '" + e.Id + "'");
                             return;
                     }
-                case ComponentType.ActionRow:
+                case DiscordComponentType.ActionRow:
                     Logger.Warn("Unknown action row received! '" + e.Id + "'");
                     return;
-                case ComponentType.FormInput:
+                case DiscordComponentType.FormInput:
                     Logger.Warn("Unknown form input received! '" + e.Id + "'");
                     return;
                 default:
@@ -277,18 +230,39 @@ internal static class EventHandler
             Logger.Error("Interaction Exception occured: " + ex.GetType() + ": " + ex);
         }
     }
-
-    private static string ParseFailedCheck(SlashCheckBaseAttribute attr)
+    public static async Task OnCommandError(CommandsExtension commandSystem, CommandErroredEventArgs e)
     {
-        return attr switch
+        switch (e.Exception)
         {
-            SlashRequireDirectMessageAttribute => "This command can only be used in direct messages!",
-            SlashRequireOwnerAttribute => "Only the server owner can use that command!",
-            SlashRequirePermissionsAttribute => "You don't have permission to do that!",
-            SlashRequireBotPermissionsAttribute => "The bot doesn't have the required permissions to do that!",
-            SlashRequireUserPermissionsAttribute => "You don't have permission to do that!",
-            SlashRequireGuildAttribute => "This command has to be used in a Discord server!",
-            _ => "Unknown Discord API error occured, please try again later."
-        };
+            case ChecksFailedException checksFailedException:
+            {
+                foreach (ContextCheckFailedData error in checksFailedException.Errors)
+                {
+                    await e.Context.Channel.SendMessageAsync(new DiscordEmbedBuilder
+                    {
+                        Color = DiscordColor.Red,
+                        Description = error.ErrorMessage
+                    });
+                }
+                return;
+            }
+
+            case BadRequestException ex:
+                Logger.Error("Command exception occured:\n" + e.Exception);
+                Logger.Error("JSON Message: " + ex.JsonMessage);
+                return;
+
+            default:
+            {
+                Logger.Error("Exception occured: " + e.Exception.GetType() + ": " + e.Exception);
+                await e.Context.Channel.SendMessageAsync(new DiscordEmbedBuilder
+                {
+                    Color = DiscordColor.Red,
+                    Description = "Internal error occured, please report this to the developer."
+                });
+                return;
+            }
+        }
     }
+
 }

@@ -1,19 +1,23 @@
+using System.ComponentModel;
 using System.Threading.Tasks;
+using DSharpPlus.Commands;
+using DSharpPlus.Commands.ContextChecks;
+using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
-using DSharpPlus.SlashCommands;
-using DSharpPlus.SlashCommands.Attributes;
 
 namespace SupportBoi.Commands;
 
-public class RemoveCategoryCommand : ApplicationCommandModule
+public class RemoveCategoryCommand
 {
-    [SlashRequireGuild]
-    [SlashCommand("removecategory", "Removes the ability for users to open tickets in a specific category.")]
-    public async Task OnExecute(InteractionContext command, [Option("Category", "The category to remove.")] DiscordChannel channel)
+    [RequireGuild]
+    [Command("removecategory")]
+    [Description("Removes the ability for users to open tickets in a specific category.")]
+    public async Task OnExecute(SlashCommandContext command,
+        [Parameter("category")] [Description("The category to remove.")] DiscordChannel channel)
     {
         if (!Database.TryGetCategory(channel.Id, out Database.Category _))
         {
-            await command.CreateResponseAsync(new DiscordEmbedBuilder
+            await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Red,
                 Description = "That category is not registered."
@@ -23,7 +27,7 @@ public class RemoveCategoryCommand : ApplicationCommandModule
 
         if (Database.RemoveCategory(channel.Id))
         {
-            await command.CreateResponseAsync(new DiscordEmbedBuilder
+            await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Green,
                 Description = "Category removed."
@@ -31,7 +35,7 @@ public class RemoveCategoryCommand : ApplicationCommandModule
         }
         else
         {
-            await command.CreateResponseAsync(new DiscordEmbedBuilder
+            await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Red,
                 Description = "Error: Failed removing the category from the database."
