@@ -24,7 +24,7 @@
     random-assign-role-override: true
 
     # Sets the type of activity for the bot to display in its presence status
-    # Possible values are: Playing, Streaming, ListeningTo, Watching, Competing, Custom
+    # Possible values are: Playing, Streaming, ListeningTo, Watching, Competing
     presence-type: "ListeningTo"
 
     # Sets the activity text shown in the bot's status
