@@ -1,18 +1,22 @@
 ﻿using DSharpPlus.Entities;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading.Tasks;
+using DSharpPlus.Commands;
+using DSharpPlus.Commands.ContextChecks;
+using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
-using DSharpPlus.SlashCommands;
-using DSharpPlus.SlashCommands.Attributes;
 
 namespace SupportBoi.Commands;
 
-public class SayCommand : ApplicationCommandModule
+public class SayCommand
 {
-    [SlashRequireGuild]
-    [SlashCommand("say", "Prints a message with information from staff. Use without identifier to list all identifiers.")]
-    public async Task OnExecute(InteractionContext command, [Option("Identifier", "(Optional) The identifier word to summon a message.")] string identifier = null)
+    [RequireGuild]
+    [Command("say")]
+    [Description("Prints a message with information from staff. Use without identifier to list all identifiers.")]
+    public async Task OnExecute(SlashCommandContext command,
+        [Parameter("Identifier")] [Description("(Optional) The identifier word to summon a message.")] string identifier = null)
     {
         // Print list of all messages if no identifier is provided
         if (identifier == null)
@@ -23,7 +27,7 @@ public class SayCommand : ApplicationCommandModule
 
         if (!Database.TryGetMessage(identifier.ToLower(), out Database.Message message))
         {
-            await command.CreateResponseAsync(new DiscordEmbedBuilder
+            await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Red,
                 Description = "There is no message with that identifier."
@@ -31,19 +35,19 @@ public class SayCommand : ApplicationCommandModule
             return;
         }
 
-        await command.CreateResponseAsync(new DiscordEmbedBuilder
+        await command.RespondAsync(new DiscordEmbedBuilder
         {
             Color = DiscordColor.Cyan,
             Description = message.message.Replace("\\n", "\n")
         });
     }
 
-    private static async void SendMessageList(InteractionContext command)
+    private static async void SendMessageList(SlashCommandContext command)
     {
         List<Database.Message> messages = Database.GetAllMessages();
         if (messages.Count == 0)
         {
-            await command.CreateResponseAsync(new DiscordEmbedBuilder
+            await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Red,
                 Description = "There are no messages registered."

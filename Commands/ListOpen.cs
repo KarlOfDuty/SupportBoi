@@ -1,22 +1,25 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading.Tasks;
+using DSharpPlus.Commands;
+using DSharpPlus.Commands.ContextChecks;
+using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
-using DSharpPlus.SlashCommands;
-using DSharpPlus.SlashCommands.Attributes;
 
 namespace SupportBoi.Commands;
 
-public class ListOpen : ApplicationCommandModule
+public class ListOpen
 {
-    [SlashRequireGuild]
-    [SlashCommand("listopen", "Lists all open tickets, oldest first.")]
-    public async Task OnExecute(InteractionContext command)
+    [RequireGuild]
+    [Command("listopen")]
+    [Description("Lists all open tickets, oldest first.")]
+    public async Task OnExecute(SlashCommandContext command)
     {
         if (!Database.TryGetOpenTickets(out List<Database.Ticket> openTickets))
         {
-            await command.CreateResponseAsync(new DiscordEmbedBuilder
+            await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Red,
                 Description = "Could not fetch any open tickets."

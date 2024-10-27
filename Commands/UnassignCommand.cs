@@ -1,20 +1,23 @@
-﻿using System.Threading.Tasks;
+﻿using System.ComponentModel;
+using System.Threading.Tasks;
+using DSharpPlus.Commands;
+using DSharpPlus.Commands.ContextChecks;
+using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
-using DSharpPlus.SlashCommands;
-using DSharpPlus.SlashCommands.Attributes;
 
 namespace SupportBoi.Commands;
 
-public class UnassignCommand : ApplicationCommandModule
+public class UnassignCommand
 {
-    [SlashRequireGuild]
-    [SlashCommand("unassign", "Unassigns a staff member from a ticket.")]
-    public async Task OnExecute(InteractionContext command)
+    [RequireGuild]
+    [Command("unassign")]
+    [Description("Unassigns a staff member from a ticket.")]
+    public async Task OnExecute(SlashCommandContext command)
     {
         // Check if ticket exists in the database
         if (!Database.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
         {
-            await command.CreateResponseAsync(new DiscordEmbedBuilder
+            await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Red,
                 Description = "This channel is not a ticket."
@@ -24,7 +27,7 @@ public class UnassignCommand : ApplicationCommandModule
 
         if (!Database.UnassignStaff(ticket))
         {
-            await command.CreateResponseAsync(new DiscordEmbedBuilder
+            await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Red,
                 Description = "Error: Failed to unassign staff member from ticket."
@@ -32,14 +35,15 @@ public class UnassignCommand : ApplicationCommandModule
             return;
         }
 
-        await command.CreateResponseAsync(new DiscordEmbedBuilder
+        await command.RespondAsync(new DiscordEmbedBuilder
         {
             Color = DiscordColor.Green,
             Description = "Unassigned staff member from ticket."
         });
 
+        // TODO: This throws an exception instead of returning null now
         // Log it if the log channel exists
-        DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
+        DiscordChannel logChannel = await command.Guild.GetChannelAsync(Config.logChannel);
         if (logChannel != null)
         {
             await logChannel.SendMessageAsync(new DiscordEmbedBuilder

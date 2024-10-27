@@ -1,22 +1,26 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
+using DSharpPlus.Commands;
+using DSharpPlus.Commands.ContextChecks;
+using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
-using DSharpPlus.SlashCommands;
-using DSharpPlus.SlashCommands.Attributes;
 
 namespace SupportBoi.Commands;
 
-public class BlacklistCommand : ApplicationCommandModule
+public class BlacklistCommand
 {
-    [SlashRequireGuild]
-    [SlashCommand("blacklist", "Blacklists a user from opening tickets.")]
-    public async Task OnExecute(InteractionContext command, [Option("User", "User to blacklist.")] DiscordUser user)
+    [RequireGuild]
+    [Command("blacklist")]
+    [Description("Blacklists a user from opening tickets.")]
+    public async Task OnExecute(SlashCommandContext command,
+        [Parameter("user")] [Description("User to blacklist.")] DiscordUser user)
     {
         try
         {
             if (!Database.Blacklist(user.Id, command.User.Id))
             {
-                await command.CreateResponseAsync(new DiscordEmbedBuilder
+                await command.RespondAsync(new DiscordEmbedBuilder
                 {
                     Color = DiscordColor.Red,
                     Description = user.Mention + " is already blacklisted."
@@ -24,14 +28,15 @@ public class BlacklistCommand : ApplicationCommandModule
                 return;
             }
 
-            await command.CreateResponseAsync(new DiscordEmbedBuilder
+            await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Green,
                 Description = "Blacklisted " + user.Mention + "."
             }, true);
 
+            // TODO: This throws an exception instead of returning null now
             // Log it if the log channel exists
-            DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
+            DiscordChannel logChannel = await command.Guild.GetChannelAsync(Config.logChannel);
             if (logChannel != null)
             {
                 await logChannel.SendMessageAsync(new DiscordEmbedBuilder
@@ -43,7 +48,7 @@ public class BlacklistCommand : ApplicationCommandModule
         }
         catch (Exception)
         {
-            await command.CreateResponseAsync(new DiscordEmbedBuilder
+            await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Red,
                 Description = "Error occured while blacklisting " + user.Mention + "."

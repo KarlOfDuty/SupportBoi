@@ -1,17 +1,21 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
+using DSharpPlus.Commands;
+using DSharpPlus.Commands.ContextChecks;
+using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
 using DSharpPlus.Exceptions;
-using DSharpPlus.SlashCommands;
-using DSharpPlus.SlashCommands.Attributes;
 
 namespace SupportBoi.Commands;
 
-public class AssignCommand : ApplicationCommandModule
+public class AssignCommand
 {
-    [SlashRequireGuild]
-    [SlashCommand("assign", "Assigns a staff member to this ticket.")]
-    public async Task OnExecute(InteractionContext command, [Option("User", "(Optional) User to assign to this ticket.")] DiscordUser user = null)
+    [RequireGuild]
+    [Command("assign")]
+    [Description("Assigns a staff member to this ticket.")]
+    public async Task OnExecute(SlashCommandContext command,
+        [Parameter("user")] [Description("(Optional) User to assign to this ticket.")] DiscordUser user = null)
     {
         DiscordMember member = null;
         try
@@ -20,7 +24,7 @@ public class AssignCommand : ApplicationCommandModule
 
             if (member == null)
             {
-                await command.CreateResponseAsync(new DiscordEmbedBuilder
+                await command.RespondAsync(new DiscordEmbedBuilder
                 {
                     Color = DiscordColor.Red,
                     Description = "Could not find that user in this server."
@@ -30,7 +34,7 @@ public class AssignCommand : ApplicationCommandModule
         }
         catch (Exception)
         {
-            await command.CreateResponseAsync(new DiscordEmbedBuilder
+            await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Red,
                 Description = "Could not find that user in this server."
@@ -41,7 +45,7 @@ public class AssignCommand : ApplicationCommandModule
         // Check if ticket exists in the database
         if (!Database.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
         {
-            await command.CreateResponseAsync(new DiscordEmbedBuilder
+            await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Red,
                 Description = "This channel is not a ticket."
@@ -51,7 +55,7 @@ public class AssignCommand : ApplicationCommandModule
 
         if (!Database.IsStaff(member.Id))
         {
-            await command.CreateResponseAsync(new DiscordEmbedBuilder
+            await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Red,
                 Description = "Error: User is not registered as staff."
@@ -61,7 +65,7 @@ public class AssignCommand : ApplicationCommandModule
 
         if (!Database.AssignStaff(ticket, member.Id))
         {
-            await command.CreateResponseAsync(new DiscordEmbedBuilder
+            await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Red,
                 Description = "Error: Failed to assign " + member.Mention + " to ticket."
@@ -69,7 +73,7 @@ public class AssignCommand : ApplicationCommandModule
             return;
         }
 
-        await command.CreateResponseAsync(new DiscordEmbedBuilder
+        await command.RespondAsync(new DiscordEmbedBuilder
         {
             Color = DiscordColor.Green,
             Description = "Assigned " + member.Mention + " to ticket."
@@ -88,8 +92,9 @@ public class AssignCommand : ApplicationCommandModule
             catch (UnauthorizedException) {}
         }
 
+        // TODO: This throws an exception instead of returning null now
         // Log it if the log channel exists
-        DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
+        DiscordChannel logChannel = await command.Guild.GetChannelAsync(Config.logChannel);
         if (logChannel != null)
         {
             await logChannel.SendMessageAsync(new DiscordEmbedBuilder

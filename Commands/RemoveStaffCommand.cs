@@ -1,20 +1,24 @@
-﻿using System.Threading.Tasks;
+﻿using System.ComponentModel;
+using System.Threading.Tasks;
+using DSharpPlus.Commands;
+using DSharpPlus.Commands.ContextChecks;
+using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
-using DSharpPlus.SlashCommands;
-using DSharpPlus.SlashCommands.Attributes;
 using MySqlConnector;
 
 namespace SupportBoi.Commands;
 
-public class RemoveStaffCommand : ApplicationCommandModule
+public class RemoveStaffCommand
 {
-    [SlashRequireGuild]
-    [SlashCommand("removestaff", "Removes a staff member.")]
-    public async Task OnExecute(InteractionContext command, [Option("User", "User to remove from staff.")] DiscordUser user)
+    [RequireGuild]
+    [Command("removestaff")]
+    [Description("Removes a staff member.")]
+    public async Task OnExecute(SlashCommandContext command,
+        [Parameter("user")] [Description("User to remove from staff.")] DiscordUser user)
     {
         if (!Database.IsStaff(user.Id))
         {
-            await command.CreateResponseAsync(new DiscordEmbedBuilder
+            await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Red,
                 Description = "User is already not registered as staff."
@@ -26,17 +30,18 @@ public class RemoveStaffCommand : ApplicationCommandModule
         c.Open();
         MySqlCommand deletion = new MySqlCommand(@"DELETE FROM staff WHERE user_id=@user_id", c);
         deletion.Parameters.AddWithValue("@user_id", user.Id);
-        deletion.Prepare();
+        await deletion.PrepareAsync();
         deletion.ExecuteNonQuery();
 
-        await command.CreateResponseAsync(new DiscordEmbedBuilder
+        await command.RespondAsync(new DiscordEmbedBuilder
         {
             Color = DiscordColor.Green,
             Description = "User was removed from staff."
         }, true);
 
+        // TODO: This throws an exception instead of returning null now
         // Log it if the log channel exists
-        DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
+        DiscordChannel logChannel = await command.Guild.GetChannelAsync(Config.logChannel);
         if (logChannel != null)
         {
             await logChannel.SendMessageAsync(new DiscordEmbedBuilder

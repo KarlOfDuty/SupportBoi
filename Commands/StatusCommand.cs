@@ -1,15 +1,18 @@
-﻿using System.Threading.Tasks;
+﻿using System.ComponentModel;
+using System.Threading.Tasks;
+using DSharpPlus.Commands;
+using DSharpPlus.Commands.ContextChecks;
+using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
-using DSharpPlus.SlashCommands;
-using DSharpPlus.SlashCommands.Attributes;
 
 namespace SupportBoi.Commands;
 
-public class StatusCommand : ApplicationCommandModule
+public class StatusCommand
 {
-    [SlashRequireGuild]
-    [SlashCommand("status", "Shows bot status and information.")]
-    public async Task OnExecute(InteractionContext command)
+    [RequireGuild]
+    [Command("status")]
+    [Description("Shows bot status and information.")]
+    public async Task OnExecute(SlashCommandContext command)
     {
         long openTickets = Database.GetNumberOfTickets();
         long closedTickets = Database.GetNumberOfClosedTickets();
@@ -24,6 +27,6 @@ public class StatusCommand : ApplicationCommandModule
             .AddField("Report bugs:", "[Github Issues](https://github.com/KarlofDuty/SupportBoi/issues)", true)
             .AddField("Commands:", "[Github Repository](https://github.com/KarlOfDuty/SupportBoi)", true)
             .AddField("Donate:", "[Github Sponsors](https://github.com/sponsors/KarlOfDuty)", true);
-        await command.CreateResponseAsync(botInfo);
+        await command.RespondAsync(botInfo);
     }
 }
