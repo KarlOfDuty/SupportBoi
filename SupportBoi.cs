@@ -148,7 +148,6 @@ internal static class SupportBoi
         Logger.Log("Setting up Discord client...");
         DiscordClientBuilder clientBuilder = DiscordClientBuilder.CreateDefault(Config.token, DiscordIntents.All)
             .SetReconnectOnFatalGatewayErrors()
-            .SetLogLevel(Config.logLevel)
             .ConfigureServices(configure =>
             {
                 configure.AddSingleton<IClientErrorHandler>(new ErrorHandler());
@@ -212,6 +211,10 @@ internal static class SupportBoi
             {
                 clientConfig.LogUnknownEvents = false;
                 clientConfig.LogUnknownAuditlogs = false;
+            })
+            .ConfigureLogging(config =>
+            {
+                config.AddProvider(new LogTestFactory());
             });
 
         client = clientBuilder.Build();
@@ -220,8 +223,6 @@ internal static class SupportBoi
         await client.ConnectAsync();
     }
 }
-
-
 
 internal class ErrorHandler : IClientErrorHandler
 {
