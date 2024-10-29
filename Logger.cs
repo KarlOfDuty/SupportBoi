@@ -1,68 +1,137 @@
 using Microsoft.Extensions.Logging;
 using System;
-using System.Reflection;
 
 namespace SupportBoi;
 
-public static class Logger
+internal class LogTestFactory : ILoggerProvider
 {
-    public static void Debug(string message)
+    public void Dispose() { }
+
+    public ILogger CreateLogger(string categoryName)
     {
-        try
-        {
-            SupportBoi.client.Logger.Log(LogLevel.Debug, new EventId(420, Assembly.GetEntryAssembly()?.GetName().Name), message);
-        }
-        catch (NullReferenceException)
-        {
-            Console.WriteLine("[DEBUG] " + message);
-        }
+        return Logger.instance;
+    }
+}
+
+public class Logger : ILogger
+{
+    public static Logger instance { get; } = new Logger();
+
+    private static LogLevel minimumLogLevel = LogLevel.Trace;
+    private readonly object @lock = new();
+
+    internal static void SetLogLevel(LogLevel level)
+    {
+        minimumLogLevel = level;
     }
 
-    public static void Log(string message)
+    internal static void Debug(string message, Exception exception = null)
     {
-        try
-        {
-            SupportBoi.client.Logger.Log(LogLevel.Information, new EventId(420, Assembly.GetEntryAssembly()?.GetName().Name), message);
-        }
-        catch (NullReferenceException)
-        {
-            Console.WriteLine("[INFO] " + message);
-        }
+        instance.Log(LogLevel.Debug, new EventId(420, "BOT"), exception, message);
     }
 
-    public static void Warn(string message)
+    internal static void Log(string message, Exception exception = null)
     {
-        try
-        {
-            SupportBoi.client.Logger.Log(LogLevel.Warning, new EventId(420, Assembly.GetEntryAssembly()?.GetName().Name), message);
-        }
-        catch (NullReferenceException)
-        {
-            Console.WriteLine("[WARNING] " + message);
-        }
+        instance.Log(LogLevel.Information, new EventId(420, "BOT"), exception, message);
     }
 
-    public static void Error(string message)
+    internal static void Warn(string message, Exception exception = null)
     {
-        try
-        {
-            SupportBoi.client.Logger.Log(LogLevel.Error, new EventId(420, Assembly.GetEntryAssembly()?.GetName().Name), message);
-        }
-        catch (NullReferenceException)
-        {
-            Console.WriteLine("[ERROR] " + message);
-        }
+        instance.Log(LogLevel.Warning, new EventId(420, "BOT"), exception, message);
     }
 
-    public static void Fatal(string message)
+    internal static void Error(string message, Exception exception = null)
     {
-        try
+        instance.Log(LogLevel.Error, new EventId(420, "BOT"), exception, message);
+    }
+
+    internal static void Fatal(string message, Exception exception = null)
+    {
+        instance.Log(LogLevel.Critical, new EventId(420, "BOT"), exception, message);
+    }
+
+    public bool IsEnabled(LogLevel logLevel)
+    {
+        return logLevel >= minimumLogLevel && logLevel != LogLevel.None;
+    }
+
+    public IDisposable BeginScope<TState>(TState state) where TState : notnull => default;
+
+    private static ConsoleColor GetLogLevelColour(LogLevel logLevel)
+    {
+        return logLevel switch
         {
-            SupportBoi.client.Logger.Log(LogLevel.Critical, new EventId(420, Assembly.GetEntryAssembly()?.GetName().Name), message);
-        }
-        catch (NullReferenceException)
+            LogLevel.Trace       => ConsoleColor.White,
+            LogLevel.Debug       => ConsoleColor.DarkGray,
+            LogLevel.Information => ConsoleColor.DarkBlue,
+            LogLevel.Warning     => ConsoleColor.Yellow,
+            LogLevel.Error       => ConsoleColor.Red,
+            _                    => ConsoleColor.White
+        };
+    }
+
+    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+    {
+        if (!IsEnabled(logLevel))
+            return;
+
+        string[] logLevelParts = logLevel switch
         {
-            Console.WriteLine("[CRITICAL] " + message);
+            LogLevel.Trace       => ["[", "Trace", "] "],
+            LogLevel.Debug       => ["[", "Debug", "] "],
+            LogLevel.Information => ["[", "Info", "]  "],
+            LogLevel.Warning     => ["[", "Warn", "]  "],
+            LogLevel.Error       => ["[", "Error", "] "],
+            LogLevel.Critical    => ["[", "\u001b[1mCrit\u001b[0m", "]  "],
+            _                    => ["[", "None", "]  "],
+        };
+
+        lock (@lock)
+        {
+            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.Write("[");
+
+            Console.ResetColor();
+            Console.ForegroundColor = GetLogLevelColour(logLevel);
+            Console.Write($"{DateTimeOffset.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")}");
+
+            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.Write("] ");
+
+            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.Write("[");
+
+            Console.ForegroundColor = eventId == 420 ? ConsoleColor.Green : ConsoleColor.DarkGreen;
+            Console.Write(eventId == 420 ? "BOT" : "API");
+
+            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.Write("] ");
+            Console.Write(logLevelParts[0]);
+
+            Console.ForegroundColor = GetLogLevelColour(logLevel);
+            if (logLevel == LogLevel.Critical)
+            {
+                Console.BackgroundColor = ConsoleColor.DarkRed;
+            }
+            Console.Write(logLevelParts[1]);
+
+            Console.ResetColor();
+            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.Write(logLevelParts[2]);
+
+            Console.ResetColor();
+            if (logLevel is LogLevel.Trace or LogLevel.Debug)
+            {
+                Console.ForegroundColor = ConsoleColor.Gray;
+            }
+            Console.WriteLine(formatter(state, exception));
+
+            if (exception != null)
+            {
+                Console.WriteLine($"{exception} : {exception.Message}\n{exception.StackTrace}");
+            }
+
+            Console.ResetColor();
         }
     }
 }
