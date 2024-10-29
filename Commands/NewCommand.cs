@@ -267,19 +267,20 @@ public class NewCommand
             }
         }
 
-        // TODO: This throws an exception instead of returning null now
-
-        // Log it if the log channel exists
-        DiscordChannel logChannel = await category.Guild.GetChannelAsync(Config.logChannel);
-        if (logChannel != null)
+        try
         {
-            DiscordEmbed logMessage = new DiscordEmbedBuilder
+            // Log it if the log channel exists
+            DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
+            await logChannel.SendMessageAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Green,
                 Description = "Ticket " + ticketChannel.Mention + " opened by " + member.Mention + ".\n",
                 Footer = new DiscordEmbedBuilder.EmbedFooter {Text = "Ticket " + ticketID}
-            };
-            await logChannel.SendMessageAsync(logMessage);
+            });
+        }
+        catch (NotFoundException)
+        {
+            Logger.Error("Could not find the log channel.");
         }
 
         return (true, "Ticket opened, " + member.Mention + "!\n" + ticketChannel.Mention);

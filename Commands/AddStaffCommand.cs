@@ -5,6 +5,7 @@ using DSharpPlus.Commands;
 using DSharpPlus.Commands.ContextChecks;
 using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
+using DSharpPlus.Exceptions;
 using MySqlConnector;
 
 namespace SupportBoi.Commands;
@@ -57,17 +58,19 @@ public class AddStaffCommand
             Description = staffMember.Mention + " was added to staff."
         });
 
-        // TODO: This throws an exception instead of returning null now
-
-        // Log it if the log channel exists
-        DiscordChannel logChannel = await command.Guild.GetChannelAsync(Config.logChannel);
-        if (logChannel != null)
+        try
         {
+            // Log it if the log channel exists
+            DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
             await logChannel.SendMessageAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Green,
                 Description = staffMember.Mention + " was added to staff.\n"
             });
+        }
+        catch (NotFoundException)
+        {
+            Logger.Error("Could not find the log channel.");
         }
     }
 }

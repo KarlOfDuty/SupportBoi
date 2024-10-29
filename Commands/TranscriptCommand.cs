@@ -79,12 +79,11 @@ public class TranscriptCommand
                 return;
             }
         }
-        // TODO: This throws an exception instead of returning null now
 
-        // Log it if the log channel exists
-        DiscordChannel logChannel = await command.Guild.GetChannelAsync(Config.logChannel);
-        if (logChannel != null)
+        try
         {
+            // Log it if the log channel exists
+            DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
             await using FileStream file = new FileStream(Transcriber.GetPath(ticket.id), FileMode.Open, FileAccess.Read);
 
             DiscordMessageBuilder message = new DiscordMessageBuilder();
@@ -97,6 +96,10 @@ public class TranscriptCommand
             message.AddFiles(new Dictionary<string, Stream> { { Transcriber.GetFilename(ticket.id), file } });
 
             await logChannel.SendMessageAsync(message);
+        }
+        catch (NotFoundException)
+        {
+            Logger.Error("Could not find the log channel.");
         }
 
         try
