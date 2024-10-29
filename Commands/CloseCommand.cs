@@ -83,12 +83,10 @@ public class CloseCommand
             closeReason = "\nReason: " + cachedReason + "\n";
         }
 
-        // TODO: This throws an exception instead of returning null now
-
-        // Log it if the log channel exists
-        DiscordChannel logChannel = await interaction.Guild.GetChannelAsync(Config.logChannel);
-        if (logChannel != null)
+        try
         {
+            // Log it if the log channel exists
+            DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
             DiscordEmbed embed = new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Green,
@@ -104,6 +102,10 @@ public class CloseCommand
 
             await logChannel.SendMessageAsync(message);
         }
+        catch (NotFoundException)
+        {
+            Logger.Error("Could not find the log channel.");
+        }
 
         if (Config.closingNotifications)
         {
@@ -117,8 +119,7 @@ public class CloseCommand
 
             try
             {
-                // TODO: This throws an exception instead of returning null now
-                DiscordMember staffMember = await interaction.Guild.GetMemberAsync(ticket.creatorID);
+                DiscordUser staffMember = await SupportBoi.client.GetUserAsync(ticket.creatorID);
                 await using FileStream file = new FileStream(Transcriber.GetPath(ticket.id), FileMode.Open, FileAccess.Read);
 
                 DiscordMessageBuilder message = new DiscordMessageBuilder();

@@ -92,16 +92,19 @@ public class AssignCommand
             catch (UnauthorizedException) {}
         }
 
-        // TODO: This throws an exception instead of returning null now
-        // Log it if the log channel exists
-        DiscordChannel logChannel = await command.Guild.GetChannelAsync(Config.logChannel);
-        if (logChannel != null)
+        try
         {
+            // Log it if the log channel exists
+            DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
             await logChannel.SendMessageAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Green,
                 Description = member.Mention + " was assigned to " + command.Channel.Mention + " by " + command.Member.Mention + "."
             });
+        }
+        catch (NotFoundException)
+        {
+            Logger.Error("Could not find the log channel.");
         }
     }
 }
