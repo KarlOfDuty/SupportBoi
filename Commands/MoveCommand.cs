@@ -81,7 +81,7 @@ public class MoveCommand
         await command.RespondAsync(new DiscordEmbedBuilder
         {
             Color = DiscordColor.Green,
-            Description = "Ticket was moved to " + categoryChannel.Mention
+            Description = "Ticket was moved to `" + categoryChannel.Name + "`."
         });
     }
 }
