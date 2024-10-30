@@ -19,6 +19,7 @@ internal static class Config
     internal static string presenceText = "";
     internal static bool newCommandUsesSelector = false;
     internal static int ticketLimit = 5;
+    internal static bool pinFirstMessage = false;
 
     internal static bool ticketUpdatedNotifications = false;
     internal static double ticketUpdatedNotificationDelay = 0.0;
@@ -85,7 +86,8 @@ internal static class Config
         presenceType = json.SelectToken("bot.presence-type")?.Value<string>() ?? "Playing";
         presenceText = json.SelectToken("bot.presence-text")?.Value<string>() ?? "";
         newCommandUsesSelector = json.SelectToken("bot.new-command-uses-selector")?.Value<bool>() ?? false;
-        ticketLimit =json.SelectToken("bot.ticket-limit")?.Value<int>() ?? 5;
+        ticketLimit = json.SelectToken("bot.ticket-limit")?.Value<int>() ?? 5;
+        pinFirstMessage = json.SelectToken("bot.pin-first-message")?.Value<bool>() ?? false;
 
         ticketUpdatedNotifications = json.SelectToken("notifications.ticket-updated")?.Value<bool>() ?? false;
         ticketUpdatedNotificationDelay = json.SelectToken("notifications.ticket-updated-delay")?.Value<double>() ?? 0.0;

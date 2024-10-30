@@ -2,17 +2,17 @@
     # Bot token.
     token: "<add-token-here>"
 
-    # Channel where ticket logs are posted (recommended)
+    # Channel where ticket logs are posted (recommended).
     log-channel: 000000000000000000
 
     # Message posted when a ticket is opened.
     welcome-message: "Please describe your issue below, and include all information needed for us to take action. This is an example ticket message and can be changed in the config."
 
-    # Decides what messages are shown in console
+    # Decides what messages are shown in console.
     # Possible values are: Critical, Error, Warning, Information, Debug.
     console-log-level: "Information"
 
-    # One of the following: LongDate, LongDateTime, LongTime, RelativeTime, ShortDate, ShortDateTime, ShortTime
+    # One of the following: LongDate, LongDateTime, LongTime, RelativeTime, ShortDate, ShortDateTime, ShortTime.
     # More info: https://dsharpplus.github.io/api/DSharpPlus.TimestampFormat.html
     timestamp-format: "RelativeTime"
 
@@ -23,41 +23,44 @@
     # This can be useful if you have admins set as inactive to not automatically receive tickets and then have moderators elevate tickets when needed.
     random-assign-role-override: true
 
-    # Sets the type of activity for the bot to display in its presence status
-    # Possible values are: Playing, Streaming, ListeningTo, Watching, Competing, Custom
+    # Sets the type of activity for the bot to display in its presence status.
+    # Possible values are: Playing, Streaming, ListeningTo, Watching, Competing, Custom.
     presence-type: "ListeningTo"
 
     # Sets the activity text shown in the bot's status
     presence-text: "/new"
 
-    # Set to true if you want the /new command to show a selection box instead of a series of buttons
+    # Set to true if you want the /new command to show a selection box instead of a series of buttons.
     new-command-uses-selector: false
 
-    # Number of tickets a single user can have open at a time, staff members are excluded from this
+    # Number of tickets a single user can have open at a time, staff members are excluded from this.
     ticket-limit: 5
 
+    # Pins the first message in a ticket to allow for quick navigation to the top in large tickets.
+    pin-first-message: true
+
 notifications:
-    # Notifies the assigned staff member when a new message is posted in a ticket if the ticket has been silent for a configurable amount of time
+    # Notifies the assigned staff member when a new message is posted in a ticket if the ticket has been silent for a configurable amount of time.
     # Other staff members and bots do not trigger this.
     ticket-updated: true
 
     # The above notification will only be sent if the ticket has been silent for more than this amount of days. Default is 0.5 days.
     ticket-updated-delay: 0.5
 
-    # Notifies staff when they are assigned to tickets
+    # Notifies staff when they are assigned to tickets.
     assignment: true
 
-    # Notifies the user opening the ticket that their ticket was closed and includes the transcript
+    # Notifies the user opening the ticket that their ticket was closed and includes the transcript.
     closing: true
 
 database:
-    # Address and port of the mysql server
+    # Address and port of the mysql server.
     address: "127.0.0.1"
     port: 3306
 
-    # Name of the database to use
+    # Name of the database to use.
     name: "supportboi"
 
-    # Username and password for authentication
+    # Username and password for authentication.
     user: ""
     password: ""

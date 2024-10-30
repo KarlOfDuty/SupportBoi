@@ -234,7 +234,19 @@ public class NewCommand
             Logger.Error("JsomMessage: " + e.JsonMessage);
         }
 
-        await ticketChannel.SendMessageAsync("Hello, " + member.Mention + "!\n" + Config.welcomeMessage);
+        DiscordMessage message = await ticketChannel.SendMessageAsync("Hello, " + member.Mention + "!\n" + Config.welcomeMessage);
+
+        if (Config.pinFirstMessage)
+        {
+            try
+            {
+                await message.PinAsync();
+            }
+            catch (Exception e)
+            {
+                Logger.Error("Exception occurred trying to pin message: ", e);
+            }
+        }
 
         // Refreshes the channel as changes were made to it above
         ticketChannel = await SupportBoi.client.GetChannelAsync(ticketChannel.Id);
