@@ -93,7 +93,12 @@ public class Logger : ILogger
 
             Console.ResetColor();
             Console.ForegroundColor = GetLogLevelColour(logLevel);
+            if (logLevel == LogLevel.Critical)
+            {
+                Console.BackgroundColor = ConsoleColor.DarkRed;
+            }
             Console.Write($"{DateTimeOffset.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")}");
+            Console.ResetColor();
 
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.Write("] ");
@@ -124,10 +129,15 @@ public class Logger : ILogger
             {
                 Console.ForegroundColor = ConsoleColor.Gray;
             }
+            else if (logLevel is LogLevel.Critical or LogLevel.Error)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+            }
             Console.WriteLine(formatter(state, exception));
 
             if (exception != null)
             {
+                Console.ForegroundColor = ConsoleColor.Gray;
                 Console.WriteLine($"{exception} : {exception.Message}\n{exception.StackTrace}");
             }
 
