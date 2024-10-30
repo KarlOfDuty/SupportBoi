@@ -50,7 +50,7 @@ public static class Utilities
             DiscordChannel channel = null;
             try
             {
-                channel = await SupportBoi.discordClient.GetChannelAsync(category.id);
+                channel = await SupportBoi.client.GetChannelAsync(category.id);
             }
             catch (Exception) { /*ignored*/ }
 

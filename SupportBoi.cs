@@ -8,31 +8,24 @@ using DSharpPlus;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Enums;
 using DSharpPlus.Interactivity.Extensions;
-using DSharpPlus.SlashCommands;
+using DSharpPlus.Commands;
 using Microsoft.Extensions.Logging;
 using SupportBoi.Commands;
 using CommandLine;
+using DSharpPlus.Commands.ContextChecks;
+using DSharpPlus.Commands.EventArgs;
+using DSharpPlus.Commands.Exceptions;
+using DSharpPlus.Commands.Processors.SlashCommands;
+using DSharpPlus.Commands.Processors.TextCommands.Parsing;
+using DSharpPlus.Entities;
+using DSharpPlus.Exceptions;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace SupportBoi;
 
 internal static class SupportBoi
 {
-    // Sets up a dummy client to use for logging
-    private static readonly DiscordConfiguration config = new()
-    {
-        Token = "DUMMY_TOKEN",
-        TokenType = TokenType.Bot,
-        MinimumLogLevel = LogLevel.Debug,
-        AutoReconnect = true,
-        Intents = DiscordIntents.All,
-        LogTimestampFormat = "yyyy-MM-dd HH:mm:ss",
-        LogUnknownEvents = false
-    };
-
-    public static DiscordClient discordClient { get; private set; } = new(config);
-
-    private static SlashCommandsExtension commands = null;
-
+    internal static DiscordClient client = null;
     public class CommandLineArguments
     {
         [CommandLine.Option('c',
@@ -124,10 +117,10 @@ internal static class SupportBoi
 
     public static async void Reload()
     {
-        if (discordClient != null)
+        if (client != null)
         {
-            await discordClient.DisconnectAsync();
-            discordClient.Dispose();
+            await client.DisconnectAsync();
+            client.Dispose();
         }
 
         Config.LoadConfig();
@@ -165,65 +158,103 @@ internal static class SupportBoi
         }
 
         Logger.Log("Setting up Discord client...");
+        DiscordClientBuilder clientBuilder = DiscordClientBuilder.CreateDefault(Config.token, DiscordIntents.All)
+            .SetReconnectOnFatalGatewayErrors()
+            .ConfigureServices(configure =>
+            {
+                configure.AddSingleton<IClientErrorHandler>(new ErrorHandler());
+            })
+            .ConfigureEventHandlers(builder =>
+            {
+                builder.HandleGuildDownloadCompleted(EventHandler.OnReady);
+                builder.HandleGuildAvailable(EventHandler.OnGuildAvailable);
+                builder.HandleMessageCreated(EventHandler.OnMessageCreated);
+                builder.HandleGuildMemberAdded(EventHandler.OnMemberAdded);
+                builder.HandleGuildMemberRemoved(EventHandler.OnMemberRemoved);
+                builder.HandleComponentInteractionCreated(EventHandler.OnComponentInteractionCreated);
+            })
+            .UseInteractivity(new InteractivityConfiguration
+            {
+                PaginationBehaviour = PaginationBehaviour.Ignore,
+                PaginationDeletion = PaginationDeletion.DeleteMessage,
+                Timeout = TimeSpan.FromMinutes(15)
+            })
+            .UseCommands((_, extension) =>
+            {
+                extension.AddCommands(
+                [
+                    typeof(AddCategoryCommand),
+                    typeof(AddCommand),
+                    typeof(AddMessageCommand),
+                    typeof(AddStaffCommand),
+                    typeof(AssignCommand),
+                    typeof(BlacklistCommand),
+                    typeof(CloseCommand),
+                    typeof(CreateButtonPanelCommand),
+                    typeof(CreateSelectionBoxPanelCommand),
+                    typeof(ListAssignedCommand),
+                    typeof(ListCommand),
+                    typeof(ListOpen),
+                    typeof(ListUnassignedCommand),
+                    typeof(MoveCommand),
+                    typeof(NewCommand),
+                    typeof(RandomAssignCommand),
+                    typeof(RemoveCategoryCommand),
+                    typeof(RemoveMessageCommand),
+                    typeof(RemoveStaffCommand),
+                    typeof(SayCommand),
+                    typeof(SetSummaryCommand),
+                    typeof(StatusCommand),
+                    typeof(SummaryCommand),
+                    typeof(ToggleActiveCommand),
+                    typeof(TranscriptCommand),
+                    typeof(UnassignCommand),
+                    typeof(UnblacklistCommand),
+                    typeof(AdminCommands)
+                ]);
+                extension.AddProcessor(new SlashCommandProcessor());
+                extension.CommandErrored += EventHandler.OnCommandError;
+            }, new CommandsConfiguration()
+            {
+                RegisterDefaultCommandProcessors = false,
+                UseDefaultCommandErrorHandler = false
+            })
+            .ConfigureExtraFeatures(clientConfig =>
+            {
+                clientConfig.LogUnknownEvents = false;
+                clientConfig.LogUnknownAuditlogs = false;
+            })
+            .ConfigureLogging(config =>
+            {
+                config.AddProvider(new LogTestFactory());
+            });
 
-        // Setting up client configuration
-        config.Token = Config.token;
-        config.MinimumLogLevel = Config.logLevel;
-
-        discordClient = new DiscordClient(config);
-
-        Logger.Log("Hooking events...");
-        discordClient.Ready += EventHandler.OnReady;
-        discordClient.GuildAvailable += EventHandler.OnGuildAvailable;
-        discordClient.ClientErrored += EventHandler.OnClientError;
-        discordClient.MessageCreated += EventHandler.OnMessageCreated;
-        discordClient.GuildMemberAdded += EventHandler.OnMemberAdded;
-        discordClient.GuildMemberRemoved += EventHandler.OnMemberRemoved;
-        discordClient.ComponentInteractionCreated += EventHandler.OnComponentInteractionCreated;
-
-        discordClient.UseInteractivity(new InteractivityConfiguration
-        {
-            PaginationBehaviour = PaginationBehaviour.Ignore,
-            PaginationDeletion = PaginationDeletion.DeleteMessage,
-            Timeout = TimeSpan.FromMinutes(15)
-        });
-
-        Logger.Log("Registering commands...");
-        commands = discordClient.UseSlashCommands();
-
-        commands.RegisterCommands<AddCategoryCommand>();
-        commands.RegisterCommands<AddCommand>();
-        commands.RegisterCommands<AddMessageCommand>();
-        commands.RegisterCommands<AddStaffCommand>();
-        commands.RegisterCommands<AssignCommand>();
-        commands.RegisterCommands<BlacklistCommand>();
-        commands.RegisterCommands<CloseCommand>();
-        commands.RegisterCommands<CreateButtonPanelCommand>();
-        commands.RegisterCommands<CreateSelectionBoxPanelCommand>();
-        commands.RegisterCommands<ListAssignedCommand>();
-        commands.RegisterCommands<ListCommand>();
-        commands.RegisterCommands<ListOpen>();
-        commands.RegisterCommands<ListUnassignedCommand>();
-        commands.RegisterCommands<MoveCommand>();
-        commands.RegisterCommands<NewCommand>();
-        commands.RegisterCommands<RandomAssignCommand>();
-        commands.RegisterCommands<RemoveCategoryCommand>();
-        commands.RegisterCommands<RemoveMessageCommand>();
-        commands.RegisterCommands<RemoveStaffCommand>();
-        commands.RegisterCommands<SayCommand>();
-        commands.RegisterCommands<SetSummaryCommand>();
-        commands.RegisterCommands<StatusCommand>();
-        commands.RegisterCommands<SummaryCommand>();
-        commands.RegisterCommands<ToggleActiveCommand>();
-        commands.RegisterCommands<TranscriptCommand>();
-        commands.RegisterCommands<UnassignCommand>();
-        commands.RegisterCommands<UnblacklistCommand>();
-        commands.RegisterCommands<AdminCommands>();
-
-        Logger.Log("Hooking command events...");
-        commands.SlashCommandErrored += EventHandler.OnCommandError;
+        client = clientBuilder.Build();
 
         Logger.Log("Connecting to Discord...");
-        await discordClient.ConnectAsync();
+        await client.ConnectAsync();
+    }
+}
+
+internal class ErrorHandler : IClientErrorHandler
+{
+    public ValueTask HandleEventHandlerError(string name, Exception exception, Delegate invokedDelegate, object sender, object args)
+    {
+        Logger.Error("Client exception occured:\n" + exception);
+        switch (exception)
+        {
+            case BadRequestException ex:
+                Logger.Error("JSON Message: " + ex.JsonMessage);
+                break;
+            default:
+                break;
+        }
+        return ValueTask.FromException(exception);
+    }
+
+    public ValueTask HandleGatewayError(Exception exception)
+    {
+        Logger.Error("A gateway error occured:\n" + exception);
+        return ValueTask.FromException(exception);
     }
 }

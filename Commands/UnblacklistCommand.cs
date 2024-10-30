@@ -1,22 +1,26 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
+using DSharpPlus.Commands;
+using DSharpPlus.Commands.ContextChecks;
+using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
-using DSharpPlus.SlashCommands;
-using DSharpPlus.SlashCommands.Attributes;
+using DSharpPlus.Exceptions;
 
 namespace SupportBoi.Commands;
 
-public class UnblacklistCommand : ApplicationCommandModule
+public class UnblacklistCommand
 {
-    [SlashRequireGuild]
-    [SlashCommand("unblacklist", "Unblacklists a user from opening tickets.")]
-    public async Task OnExecute(InteractionContext command, [Option("User", "User to remove from blacklist.")] DiscordUser user)
+    [RequireGuild]
+    [Command("unblacklist")]
+    [Description("Unblacklists a user from opening tickets.")]
+    public async Task OnExecute(SlashCommandContext command, [Parameter("user")] [Description("User to remove from blacklist.")] DiscordUser user)
     {
         try
         {
             if (!Database.Unblacklist(user.Id))
             {
-                await command.CreateResponseAsync(new DiscordEmbedBuilder
+                await command.RespondAsync(new DiscordEmbedBuilder
                 {
                     Color = DiscordColor.Red,
                     Description = user.Mention + " is not blacklisted."
@@ -24,26 +28,31 @@ public class UnblacklistCommand : ApplicationCommandModule
                 return;
             }
 
-            await command.CreateResponseAsync(new DiscordEmbedBuilder
+            await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Green,
                 Description = "Removed " + user.Mention + " from blacklist."
             }, true);
 
-            // Log it if the log channel exists
-            DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
-            if (logChannel != null)
+            try
             {
+                // Log it if the log channel exists
+                DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
                 await logChannel.SendMessageAsync(new DiscordEmbedBuilder
                 {
                     Color = DiscordColor.Green,
                     Description = user.Mention + " was unblacklisted from opening tickets by " + command.Member.Mention + "."
                 });
             }
+            catch (NotFoundException)
+            {
+                Logger.Error("Could not find the log channel.");
+            }
+
         }
         catch (Exception)
         {
-            await command.CreateResponseAsync(new DiscordEmbedBuilder
+            await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Red,
                 Description = "Error occured while removing " + user.Mention + " from blacklist."

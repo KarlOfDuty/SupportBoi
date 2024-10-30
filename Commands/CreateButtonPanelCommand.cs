@@ -1,28 +1,30 @@
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-using DSharpPlus;
+using DSharpPlus.Commands;
+using DSharpPlus.Commands.ContextChecks;
+using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
-using DSharpPlus.SlashCommands;
-using DSharpPlus.SlashCommands.Attributes;
 
 namespace SupportBoi.Commands;
 
-public class CreateButtonPanelCommand : ApplicationCommandModule
+public class CreateButtonPanelCommand
 {
-    [SlashRequireGuild]
-    [SlashCommand("createbuttonpanel", "Creates a series of buttons which users can use to open new tickets in specific categories.")]
-    public async Task OnExecute(InteractionContext command)
+    [RequireGuild]
+    [Command("createbuttonpanel")]
+    [Description("Creates a series of buttons which users can use to open new tickets in specific categories.")]
+    public async Task OnExecute(SlashCommandContext command)
     {
         DiscordMessageBuilder builder = new DiscordMessageBuilder().WithContent(" ");
         List<Database.Category> verifiedCategories = await Utilities.GetVerifiedChannels();
 
         if (verifiedCategories.Count == 0)
         {
-            await command.CreateResponseAsync(new DiscordEmbedBuilder
+            await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Red,
-                Description = "Error: No registered categories found."
+                Description = "Error: No registered categories found. You have to use /addcategory first."
             }, true);
             return;
         }
@@ -36,13 +38,13 @@ public class CreateButtonPanelCommand : ApplicationCommandModule
 
             for (; nrOfButtons < 5 * (nrOfButtonRows + 1) && nrOfButtons < verifiedCategories.Count; nrOfButtons++)
             {
-                buttonRow.Add(new DiscordButtonComponent(ButtonStyle.Primary, "supportboi_newticketbutton " + verifiedCategories[nrOfButtons].id, verifiedCategories[nrOfButtons].name));
+                buttonRow.Add(new DiscordButtonComponent(DiscordButtonStyle.Primary, "supportboi_newticketbutton " + verifiedCategories[nrOfButtons].id, verifiedCategories[nrOfButtons].name));
             }
             builder.AddComponents(buttonRow);
         }
 
         await command.Channel.SendMessageAsync(builder);
-        await command.CreateResponseAsync(new DiscordEmbedBuilder
+        await command.RespondAsync(new DiscordEmbedBuilder
         {
             Color = DiscordColor.Green,
             Description = "Successfully created message, make sure to run this command again if you add new categories to the bot."
@@ -51,7 +53,7 @@ public class CreateButtonPanelCommand : ApplicationCommandModule
 
     public static async Task OnButtonUsed(DiscordInteraction interaction)
     {
-        await interaction.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral());
+        await interaction.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral());
 
         if (!ulong.TryParse(interaction.Data.CustomId.Replace("supportboi_newticketbutton ", ""), out ulong categoryID) || categoryID == 0)
         {

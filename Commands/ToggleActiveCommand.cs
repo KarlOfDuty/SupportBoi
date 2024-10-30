@@ -1,22 +1,25 @@
-﻿using System.Threading.Tasks;
+﻿using System.ComponentModel;
+using System.Threading.Tasks;
+using DSharpPlus.Commands;
+using DSharpPlus.Commands.ContextChecks;
+using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
-using DSharpPlus.SlashCommands;
-using DSharpPlus.SlashCommands.Attributes;
 
 namespace SupportBoi.Commands;
 
-public class ToggleActiveCommand : ApplicationCommandModule
+public class ToggleActiveCommand
 {
-    [SlashRequireGuild]
-    [SlashCommand("toggleactive", "Toggles active status for a staff member.")]
-    public async Task OnExecute(InteractionContext command, [Option("User", "(Optional) Staff member to toggle activity for.")] DiscordUser user = null)
+    [RequireGuild]
+    [Command("toggleactive")]
+    [Description("Toggles active status for a staff member.")]
+    public async Task OnExecute(SlashCommandContext command, [Parameter("user")] [Description("(Optional) Staff member to toggle activity for.")] DiscordUser user = null)
     {
         DiscordUser staffUser = user == null ? command.User : user;
 
         // Check if ticket exists in the database
         if (!Database.TryGetStaff(staffUser.Id, out Database.StaffMember staffMember))
         {
-            await command.CreateResponseAsync(new DiscordEmbedBuilder
+            await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Red,
                 Description = user == null ? "You have not been registered as staff." : "The user is not registered as staff."
@@ -26,7 +29,7 @@ public class ToggleActiveCommand : ApplicationCommandModule
 
         if (Database.SetStaffActive(staffUser.Id, !staffMember.active))
         {
-            await command.CreateResponseAsync(new DiscordEmbedBuilder
+            await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Green,
                 Description = staffMember.active ? "Staff member is now set as inactive and will no longer be randomly assigned any support tickets." : "Staff member is now set as active and will be randomly assigned support tickets again."
@@ -34,7 +37,7 @@ public class ToggleActiveCommand : ApplicationCommandModule
         }
         else
         {
-            await command.CreateResponseAsync(new DiscordEmbedBuilder
+            await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Red,
                 Description = "Error: Unable to update active status in database."

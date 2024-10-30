@@ -1,24 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using DSharpPlus.Commands;
+using DSharpPlus.Commands.ContextChecks;
+using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
 using DSharpPlus.Exceptions;
-using DSharpPlus.SlashCommands;
-using DSharpPlus.SlashCommands.Attributes;
 
 namespace SupportBoi.Commands;
 
-public class MoveCommand : ApplicationCommandModule
+public class MoveCommand
 {
-    [SlashRequireGuild]
-    [SlashCommand("move", "Moves a ticket to another category.")]
-    public async Task OnExecute(InteractionContext command, [Option("Category", "The category to move the ticket to. Only has to be the beginning of the name.")] string category)
+    [RequireGuild]
+    [Command("move")]
+    [Description("Moves a ticket to another category.")]
+    public async Task OnExecute(SlashCommandContext command,
+        [Parameter("category")] [Description("The category to move the ticket to. Only has to be the beginning of the name.")] string category)
     {
         // Check if ticket exists in the database
         if (!Database.TryGetOpenTicket(command.Channel.Id, out Database.Ticket _))
         {
-            await command.CreateResponseAsync(new DiscordEmbedBuilder
+            await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Red,
                 Description = "This channel is not a ticket."
@@ -28,7 +32,7 @@ public class MoveCommand : ApplicationCommandModule
 
         if (string.IsNullOrEmpty(category))
         {
-            await command.CreateResponseAsync(new DiscordEmbedBuilder
+            await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Red,
                 Description = "Error: No category provided."
@@ -42,7 +46,7 @@ public class MoveCommand : ApplicationCommandModule
 
         if (categoryChannel == null)
         {
-            await command.CreateResponseAsync(new DiscordEmbedBuilder
+            await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Red,
                 Description = "Error: Could not find a category by that name."
@@ -52,7 +56,7 @@ public class MoveCommand : ApplicationCommandModule
 
         if (command.Channel.Id == categoryChannel.Id)
         {
-            await command.CreateResponseAsync(new DiscordEmbedBuilder
+            await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Red,
                 Description = "Error: The ticket is already in that category."
@@ -66,7 +70,7 @@ public class MoveCommand : ApplicationCommandModule
         }
         catch (UnauthorizedException)
         {
-            await command.CreateResponseAsync(new DiscordEmbedBuilder
+            await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Red,
                 Description = "Error: Not authorized to move this ticket to that category."
@@ -74,10 +78,10 @@ public class MoveCommand : ApplicationCommandModule
             return;
         }
 
-        await command.CreateResponseAsync(new DiscordEmbedBuilder
+        await command.RespondAsync(new DiscordEmbedBuilder
         {
             Color = DiscordColor.Green,
-            Description = "Ticket was moved to " + categoryChannel.Mention
+            Description = "Ticket was moved to `" + categoryChannel.Name + "`."
         });
     }
 }

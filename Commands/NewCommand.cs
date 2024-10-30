@@ -1,49 +1,51 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-using DSharpPlus;
+using DSharpPlus.Commands;
+using DSharpPlus.Commands.ContextChecks;
+using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
 using DSharpPlus.Exceptions;
-using DSharpPlus.SlashCommands;
-using DSharpPlus.SlashCommands.Attributes;
 
 namespace SupportBoi.Commands;
-public class NewCommand : ApplicationCommandModule
+public class NewCommand
 {
-    [SlashRequireGuild]
-    [SlashCommand("new", "Opens a new ticket.")]
-    public async Task OnExecute(InteractionContext command)
+    [RequireGuild]
+    [Command("new")]
+    [Description("Opens a new ticket.")]
+    public async Task OnExecute(SlashCommandContext command)
     {
         List<Database.Category> verifiedCategories = await Utilities.GetVerifiedChannels();
         switch (verifiedCategories.Count)
         {
             case 0:
-                await command.CreateResponseAsync(new DiscordEmbedBuilder
+                await command.RespondAsync(new DiscordEmbedBuilder
                 {
                     Color = DiscordColor.Red,
                     Description = "Error: No registered categories found."
                 }, true);
                 return;
             case 1:
-                await command.DeferAsync(true);
+                await command.DeferResponseAsync(true);
                 (bool success, string message) = await OpenNewTicket(command.User.Id, command.Channel.Id, verifiedCategories[0].id);
 
                 if (success)
                 {
-                    await command.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(new DiscordEmbedBuilder
+                    await command.FollowupAsync(new DiscordEmbedBuilder
                     {
                         Color = DiscordColor.Green,
                         Description = message
-                    }).AsEphemeral());
+                    }, true);
                 }
                 else
                 {
-                    await command.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(new DiscordEmbedBuilder
+                    await command.FollowupAsync(new DiscordEmbedBuilder
                     {
                         Color = DiscordColor.Red,
                         Description = message
-                    }).AsEphemeral());
+                    }, true);
                 }
                 return;
             default:
@@ -59,7 +61,7 @@ public class NewCommand : ApplicationCommandModule
         }
     }
 
-    public static async Task CreateButtons(InteractionContext command, List<Database.Category> verifiedCategories)
+    public static async Task CreateButtons(SlashCommandContext command, List<Database.Category> verifiedCategories)
     {
         DiscordInteractionResponseBuilder builder = new DiscordInteractionResponseBuilder().WithContent(" ");
 
@@ -70,15 +72,15 @@ public class NewCommand : ApplicationCommandModule
 
             for (; nrOfButtons < 5 * (nrOfButtonRows + 1) && nrOfButtons < verifiedCategories.Count; nrOfButtons++)
             {
-                buttonRow.Add(new DiscordButtonComponent(ButtonStyle.Primary, "supportboi_newcommandbutton " + verifiedCategories[nrOfButtons].id, verifiedCategories[nrOfButtons].name));
+                buttonRow.Add(new DiscordButtonComponent(DiscordButtonStyle.Primary, "supportboi_newcommandbutton " + verifiedCategories[nrOfButtons].id, verifiedCategories[nrOfButtons].name));
             }
             builder.AddComponents(buttonRow);
         }
 
-        await command.CreateResponseAsync(builder.AsEphemeral());
+        await command.RespondAsync(builder.AsEphemeral());
     }
 
-    public static async Task CreateSelector(InteractionContext command, List<Database.Category> verifiedCategories)
+    public static async Task CreateSelector(SlashCommandContext command, List<Database.Category> verifiedCategories)
     {
         verifiedCategories = verifiedCategories.OrderBy(x => x.name).ToList();
         List<DiscordSelectComponent> selectionComponents = new List<DiscordSelectComponent>();
@@ -95,7 +97,7 @@ public class NewCommand : ApplicationCommandModule
             selectionComponents.Add(new DiscordSelectComponent("supportboi_newcommandselector" + selectionBoxes, "Open new ticket...", categoryOptions, false, 0, 1));
         }
 
-        await command.CreateResponseAsync(new DiscordInteractionResponseBuilder().AddComponents(selectionComponents).AsEphemeral());
+        await command.RespondAsync(new DiscordInteractionResponseBuilder().AddComponents(selectionComponents).AsEphemeral());
     }
 
     public static async Task OnCategorySelection(DiscordInteraction interaction)
@@ -103,10 +105,10 @@ public class NewCommand : ApplicationCommandModule
         string stringID;
         switch (interaction.Data.ComponentType)
         {
-            case ComponentType.Button:
+            case DiscordComponentType.Button:
                 stringID = interaction.Data.CustomId.Replace("supportboi_newcommandbutton ", "");
                 break;
-            case ComponentType.StringSelect:
+            case DiscordComponentType.StringSelect:
                 if (interaction.Data.Values == null || interaction.Data.Values.Length <= 0)
                 {
                     return;
@@ -114,8 +116,8 @@ public class NewCommand : ApplicationCommandModule
                 stringID = interaction.Data.Values[0];
                 break;
 
-            case ComponentType.ActionRow:
-            case ComponentType.FormInput:
+            case DiscordComponentType.ActionRow:
+            case DiscordComponentType.FormInput:
             default:
                 return;
         }
@@ -125,7 +127,7 @@ public class NewCommand : ApplicationCommandModule
             return;
         }
 
-        await interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate, new DiscordInteractionResponseBuilder().AsEphemeral());
+        await interaction.CreateResponseAsync(DiscordInteractionResponseType.DeferredMessageUpdate, new DiscordInteractionResponseBuilder().AsEphemeral());
 
         (bool success, string message) = await OpenNewTicket(interaction.User.Id, interaction.ChannelId, categoryID);
 
@@ -170,7 +172,7 @@ public class NewCommand : ApplicationCommandModule
         DiscordChannel category = null;
         try
         {
-            category = await SupportBoi.discordClient.GetChannelAsync(categoryID);
+            category = await SupportBoi.client.GetChannelAsync(categoryID);
         }
         catch (Exception) { /*ignored*/ }
 
@@ -195,7 +197,7 @@ public class NewCommand : ApplicationCommandModule
 
         try
         {
-            ticketChannel = await category.Guild.CreateChannelAsync("ticket", ChannelType.Text, category);
+            ticketChannel = await category.Guild.CreateChannelAsync("ticket", DiscordChannelType.Text, category);
         }
         catch (Exception) { /* ignored */ }
 
@@ -226,7 +228,7 @@ public class NewCommand : ApplicationCommandModule
 
         try
         {
-            await ticketChannel.AddOverwriteAsync(member, Permissions.AccessChannels);
+            await ticketChannel.AddOverwriteAsync(member, DiscordPermissions.AccessChannels);
         }
         catch (DiscordException e)
         {
@@ -234,10 +236,22 @@ public class NewCommand : ApplicationCommandModule
             Logger.Error("JsomMessage: " + e.JsonMessage);
         }
 
-        await ticketChannel.SendMessageAsync("Hello, " + member.Mention + "!\n" + Config.welcomeMessage);
+        DiscordMessage message = await ticketChannel.SendMessageAsync("Hello, " + member.Mention + "!\n" + Config.welcomeMessage);
+
+        if (Config.pinFirstMessage)
+        {
+            try
+            {
+                await message.PinAsync();
+            }
+            catch (Exception e)
+            {
+                Logger.Error("Exception occurred trying to pin message: ", e);
+            }
+        }
 
         // Refreshes the channel as changes were made to it above
-        ticketChannel = await SupportBoi.discordClient.GetChannelAsync(ticketChannel.Id);
+        ticketChannel = await SupportBoi.client.GetChannelAsync(ticketChannel.Id);
 
         if (ticketChannel.Parent?.IsCategory ?? false)
         {
@@ -272,17 +286,20 @@ public class NewCommand : ApplicationCommandModule
             }
         }
 
-        // Log it if the log channel exists
-        DiscordChannel logChannel = category.Guild.GetChannel(Config.logChannel);
-        if (logChannel != null)
+        try
         {
-            DiscordEmbed logMessage = new DiscordEmbedBuilder
+            // Log it if the log channel exists
+            DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
+            await logChannel.SendMessageAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Green,
                 Description = "Ticket " + ticketChannel.Mention + " opened by " + member.Mention + ".\n",
                 Footer = new DiscordEmbedBuilder.EmbedFooter {Text = "Ticket " + ticketID}
-            };
-            await logChannel.SendMessageAsync(logMessage);
+            });
+        }
+        catch (NotFoundException)
+        {
+            Logger.Error("Could not find the log channel.");
         }
 
         return (true, "Ticket opened, " + member.Mention + "!\n" + ticketChannel.Mention);

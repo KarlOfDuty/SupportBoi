@@ -1,24 +1,28 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading.Tasks;
+using DSharpPlus.Commands;
+using DSharpPlus.Commands.ContextChecks;
+using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
-using DSharpPlus.SlashCommands;
-using DSharpPlus.SlashCommands.Attributes;
 
 namespace SupportBoi.Commands;
 
-public class ListAssignedCommand : ApplicationCommandModule
+public class ListAssignedCommand
 {
-    [SlashRequireGuild]
-    [SlashCommand("listassigned", "Lists tickets assigned to a user.")]
-    public async Task OnExecute(InteractionContext command, [Option("User", "(Optional) User to list tickets for.")] DiscordUser user = null)
+    [RequireGuild]
+    [Command("listassigned")]
+    [Description("Lists tickets assigned to a user.")]
+    public async Task OnExecute(SlashCommandContext command,
+        [Parameter("user")] [Description("(Optional) User to list tickets for.")] DiscordUser user = null)
     {
         DiscordUser listUser = user == null ? command.User : user;
 
         if (!Database.TryGetAssignedTickets(listUser.Id, out List<Database.Ticket> assignedTickets))
         {
-            await command.CreateResponseAsync(new DiscordEmbedBuilder
+            await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Red,
                 Description = "User does not have any assigned tickets."

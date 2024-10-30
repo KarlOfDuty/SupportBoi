@@ -1,20 +1,24 @@
-﻿using System.Threading.Tasks;
+﻿using System.ComponentModel;
+using System.Threading.Tasks;
+using DSharpPlus.Commands;
+using DSharpPlus.Commands.ContextChecks;
+using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
-using DSharpPlus.SlashCommands;
-using DSharpPlus.SlashCommands.Attributes;
+using DSharpPlus.Exceptions;
 
 namespace SupportBoi.Commands;
 
-public class UnassignCommand : ApplicationCommandModule
+public class UnassignCommand
 {
-    [SlashRequireGuild]
-    [SlashCommand("unassign", "Unassigns a staff member from a ticket.")]
-    public async Task OnExecute(InteractionContext command)
+    [RequireGuild]
+    [Command("unassign")]
+    [Description("Unassigns a staff member from a ticket.")]
+    public async Task OnExecute(SlashCommandContext command)
     {
         // Check if ticket exists in the database
         if (!Database.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
         {
-            await command.CreateResponseAsync(new DiscordEmbedBuilder
+            await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Red,
                 Description = "This channel is not a ticket."
@@ -24,7 +28,7 @@ public class UnassignCommand : ApplicationCommandModule
 
         if (!Database.UnassignStaff(ticket))
         {
-            await command.CreateResponseAsync(new DiscordEmbedBuilder
+            await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Red,
                 Description = "Error: Failed to unassign staff member from ticket."
@@ -32,21 +36,25 @@ public class UnassignCommand : ApplicationCommandModule
             return;
         }
 
-        await command.CreateResponseAsync(new DiscordEmbedBuilder
+        await command.RespondAsync(new DiscordEmbedBuilder
         {
             Color = DiscordColor.Green,
             Description = "Unassigned staff member from ticket."
         });
 
-        // Log it if the log channel exists
-        DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
-        if (logChannel != null)
+        try
         {
+            // Log it if the log channel exists
+            DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
             await logChannel.SendMessageAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Green,
                 Description = "Staff member was unassigned from " + command.Channel.Mention + " by " + command.Member.Mention + "."
             });
+        }
+        catch (NotFoundException)
+        {
+            Logger.Error("Could not find the log channel.");
         }
     }
 }

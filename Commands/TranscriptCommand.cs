@@ -1,21 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
+using DSharpPlus.Commands;
+using DSharpPlus.Commands.ContextChecks;
+using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
 using DSharpPlus.Exceptions;
-using DSharpPlus.SlashCommands;
-using DSharpPlus.SlashCommands.Attributes;
 
 namespace SupportBoi.Commands;
 
-public class TranscriptCommand : ApplicationCommandModule
+public class TranscriptCommand
 {
-    [SlashRequireGuild]
-    [SlashCommand("transcript", "Creates a transcript of a ticket.")]
-    public async Task OnExecute(InteractionContext command, [Option("Ticket", "(Optional) Ticket number to get transcript of.")] long ticketID = 0)
+    [RequireGuild]
+    [Command("transcript")]
+    [Description("Creates a transcript of a ticket.")]
+    public async Task OnExecute(SlashCommandContext command, [Parameter("ticket-id")] [Description("(Optional) Ticket number to get transcript of.")] long ticketID = 0)
     {
-        await command.DeferAsync(true);
+        await command.DeferResponseAsync(true);
         Database.Ticket ticket;
         if (ticketID == 0) // If there are no arguments use current channel
         {
@@ -77,10 +80,10 @@ public class TranscriptCommand : ApplicationCommandModule
             }
         }
 
-        // Log it if the log channel exists
-        DiscordChannel logChannel = command.Guild.GetChannel(Config.logChannel);
-        if (logChannel != null)
+        try
         {
+            // Log it if the log channel exists
+            DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
             await using FileStream file = new FileStream(Transcriber.GetPath(ticket.id), FileMode.Open, FileAccess.Read);
 
             DiscordMessageBuilder message = new DiscordMessageBuilder();
@@ -93,6 +96,10 @@ public class TranscriptCommand : ApplicationCommandModule
             message.AddFiles(new Dictionary<string, Stream> { { Transcriber.GetFilename(ticket.id), file } });
 
             await logChannel.SendMessageAsync(message);
+        }
+        catch (NotFoundException)
+        {
+            Logger.Error("Could not find the log channel.");
         }
 
         try

@@ -12,7 +12,6 @@ internal static class Config
     internal static string token = "";
     internal static ulong logChannel;
     internal static string welcomeMessage = "";
-    internal static LogLevel logLevel = LogLevel.Information;
     internal static TimestampFormat timestampFormat = TimestampFormat.RelativeTime;
     internal static bool randomAssignment = false;
     internal static bool randomAssignRoleOverride = false;
@@ -20,6 +19,7 @@ internal static class Config
     internal static string presenceText = "";
     internal static bool newCommandUsesSelector = false;
     internal static int ticketLimit = 5;
+    internal static bool pinFirstMessage = false;
 
     internal static bool ticketUpdatedNotifications = false;
     internal static double ticketUpdatedNotificationDelay = 0.0;
@@ -68,11 +68,12 @@ internal static class Config
         welcomeMessage = json.SelectToken("bot.welcome-message")?.Value<string>() ?? "";
         string stringLogLevel = json.SelectToken("bot.console-log-level")?.Value<string>() ?? "";
 
-        if (!Enum.TryParse(stringLogLevel, true, out logLevel))
+        if (!Enum.TryParse(stringLogLevel, true, out LogLevel logLevel))
         {
             logLevel = LogLevel.Information;
             Logger.Warn("Log level '" + stringLogLevel + "' invalid, using 'Information' instead.");
         }
+        Logger.SetLogLevel(logLevel);
 
         string stringTimestampFormat = json.SelectToken("bot.timestamp-format")?.Value<string>() ?? "RelativeTime";
 
@@ -87,7 +88,8 @@ internal static class Config
         presenceType = json.SelectToken("bot.presence-type")?.Value<string>() ?? "Playing";
         presenceText = json.SelectToken("bot.presence-text")?.Value<string>() ?? "";
         newCommandUsesSelector = json.SelectToken("bot.new-command-uses-selector")?.Value<bool>() ?? false;
-        ticketLimit =json.SelectToken("bot.ticket-limit")?.Value<int>() ?? 5;
+        ticketLimit = json.SelectToken("bot.ticket-limit")?.Value<int>() ?? 5;
+        pinFirstMessage = json.SelectToken("bot.pin-first-message")?.Value<bool>() ?? false;
 
         ticketUpdatedNotifications = json.SelectToken("notifications.ticket-updated")?.Value<bool>() ?? false;
         ticketUpdatedNotificationDelay = json.SelectToken("notifications.ticket-updated-delay")?.Value<double>() ?? 0.0;

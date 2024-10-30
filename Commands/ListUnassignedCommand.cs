@@ -1,22 +1,25 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading.Tasks;
+using DSharpPlus.Commands;
+using DSharpPlus.Commands.ContextChecks;
+using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
-using DSharpPlus.SlashCommands;
-using DSharpPlus.SlashCommands.Attributes;
 
 namespace SupportBoi.Commands;
 
-public class ListUnassignedCommand : ApplicationCommandModule
+public class ListUnassignedCommand
 {
-    [SlashRequireGuild]
-    [SlashCommand("listunassigned", "Lists unassigned tickets.")]
-    public async Task OnExecute(InteractionContext command)
+    [RequireGuild]
+    [Command("listunassigned")]
+    [Description("Lists unassigned tickets.")]
+    public async Task OnExecute(SlashCommandContext command)
     {
         if (!Database.TryGetAssignedTickets(0, out List<Database.Ticket> unassignedTickets))
         {
-            await command.CreateResponseAsync(new DiscordEmbedBuilder
+            await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Green,
                 Description = "There are no unassigned tickets."
