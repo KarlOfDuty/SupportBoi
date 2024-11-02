@@ -66,7 +66,6 @@ public static class Utilities
         return verifiedCategories;
     }
 
-
     public static string ReadManifestData(string embeddedFileName)
     {
         Assembly assembly = Assembly.GetExecutingAssembly();

@@ -1,9 +1,12 @@
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 
 namespace SupportBoi;
 
@@ -11,8 +14,8 @@ public static class Interviewer
 {
     public enum QuestionType
     {
-        DONE,
         FAIL,
+        DONE,
         BUTTONS,
         SELECTOR,
         TEXT_INPUT
@@ -25,37 +28,95 @@ public static class Interviewer
     public class InterviewQuestion
     {
         // Message contents sent to the user.
+        [JsonProperty("message")]
         public string message;
 
         // The type of question.
+        [JsonConverter(typeof(StringEnumConverter))]
+        [JsonProperty("type")]
         public QuestionType type;
 
         // Colour of the message embed.
+        [JsonProperty("color")]
         public string color;
 
-        // The ID of this message, populated after it has been sent.
+        // The ID of this message where the bot asked this question,
+        // populated after it has been sent.
+        [JsonProperty("message-id")]
         public ulong messageID;
 
         // Used as label for this question in the post-interview summary.
+        [JsonProperty("summary-field")]
         public string summaryField;
 
         // The user's response to the question.
+        [JsonProperty("answer")]
         public string answer;
 
         // The ID of the user's answer message, populated after it has been received.
+        [JsonProperty("answer-id")]
         public ulong answerID;
 
         // Possible questions to ask next, or DONE/FAIL type in order to finish interview.
+        [JsonProperty("paths")]
         public Dictionary<string, InterviewQuestion> paths;
+    }
+
+    // This class is identical to the one above and just exists as a hack to get JSON validation when
+    // new entries are entered but not when read from database in order to be more lenient with old interviews.
+    // I might do this in a more proper way at some point.
+    public class ValidatedInterviewQuestion
+    {
+        // Message contents sent to the user.
+        [JsonProperty("message", Required = Required.Always)]
+        public string message;
+
+        // The type of question.
+        [JsonConverter(typeof(StringEnumConverter))]
+        [JsonProperty("type", Required = Required.Always)]
+        public QuestionType type;
+
+        // Colour of the message embed.
+        [JsonProperty("color", Required = Required.Always)]
+        public string color;
+
+        // The ID of this message where the bot asked this question,
+        // populated after it has been sent.
+        [JsonProperty("message-id", Required = Required.Default)]
+        public ulong messageID;
+
+        // Used as label for this question in the post-interview summary.
+        [JsonProperty("summary-field", Required = Required.Default)]
+        public string summaryField;
+
+        // The user's response to the question.
+        [JsonProperty("answer", Required = Required.Default)]
+        public string answer;
+
+        // The ID of the user's answer message, populated after it has been received.
+        [JsonProperty("answer-id", Required = Required.Default)]
+        public ulong answerID;
+
+        // Possible questions to ask next, or DONE/FAIL type in order to finish interview.
+        [JsonProperty("paths", Required = Required.Always)]
+        public Dictionary<string, ValidatedInterviewQuestion> paths;
     }
 
     private static Dictionary<ulong, InterviewQuestion> categoryInterviews = [];
 
     private static Dictionary<ulong, InterviewQuestion> activeInterviews = [];
 
-    public static void ParseConfig(JToken interviewConfig)
+    public static void ParseTemplates(JToken interviewConfig)
     {
-        categoryInterviews = JsonConvert.DeserializeObject<Dictionary<ulong, InterviewQuestion>>(interviewConfig.ToString());
+        categoryInterviews = JsonConvert.DeserializeObject<Dictionary<ulong, InterviewQuestion>>(interviewConfig.ToString(), new JsonSerializerSettings
+        {
+            Error = delegate (object sender, ErrorEventArgs args)
+            {
+                Logger.Error("Exception occured when trying to read interview from database:\n" + args.ErrorContext.Error.Message);
+                Logger.Debug("Detailed exception:", args.ErrorContext.Error);
+                args.ErrorContext.Handled = true;
+            }
+        });
     }
 
     public static void LoadActiveInterviews()
@@ -107,7 +168,7 @@ public static class Interviewer
                     List<DiscordButtonComponent> buttonRow = [];
                     for (; nrOfButtons < 5 * (nrOfButtonRows + 1) && nrOfButtons < question.paths.Count; nrOfButtons++)
                     {
-                        buttonRow.Add(new DiscordButtonComponent(ButtonStyle.Primary, "supportboi_interviewbutton " + nrOfButtons, question.paths.ToArray()[nrOfButtons].Key));
+                        buttonRow.Add(new DiscordButtonComponent(DiscordButtonStyle.Primary, "supportboi_interviewbutton " + nrOfButtons, question.paths.ToArray()[nrOfButtons].Key));
                     }
                     msgBuilder.AddComponents(buttonRow);
                 }

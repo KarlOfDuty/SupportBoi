@@ -731,6 +731,52 @@ public static class Database
         }
     }
 
+    public static string GetInterviewTemplates()
+    {
+        using MySqlConnection c = GetConnection();
+        c.Open();
+        using MySqlCommand selection = new MySqlCommand("SELECT * FROM interviews WHERE channel_id=0", c);
+        selection.Prepare();
+        MySqlDataReader results = selection.ExecuteReader();
+
+        // Check if messages exist in the database
+        if (!results.Read())
+        {
+            return "{}";
+        }
+
+        string templates = results.GetString("interview");
+        results.Close();
+        return templates;
+    }
+
+    public static bool SetInterviewTemplates(string templates)
+    {
+        try
+        {
+            string query;
+            if (TryGetInterview(0, out _))
+            {
+                query = "UPDATE interviews SET interview = @interview WHERE channel_id = 0";
+            }
+            else
+            {
+                query = "INSERT INTO interviews (channel_id,interview) VALUES (0, @interview)";
+            }
+
+            using MySqlConnection c = GetConnection();
+            c.Open();
+            using MySqlCommand cmd = new MySqlCommand(query, c);
+            cmd.Parameters.AddWithValue("@interview", templates);
+            cmd.Prepare();
+            return cmd.ExecuteNonQuery() > 0;
+        }
+        catch (MySqlException)
+        {
+            return false;
+        }
+    }
+
     public static Dictionary<ulong, Interviewer.InterviewQuestion> GetAllInterviews()
     {
         using MySqlConnection c = GetConnection();
@@ -745,14 +791,16 @@ public static class Database
             return new Dictionary<ulong, Interviewer.InterviewQuestion>();
         }
 
-        Dictionary<ulong, Interviewer.InterviewQuestion> questions = new Dictionary<ulong, Interviewer.InterviewQuestion>
+        Dictionary<ulong, Interviewer.InterviewQuestion> questions = new();
+        do
         {
-            { results.GetUInt64("channel_id"), JsonConvert.DeserializeObject<Interviewer.InterviewQuestion>(results.GetString("interview")) }
-        };
-        while (results.Read())
-        {
-            questions.Add(results.GetUInt64("channel_id"), JsonConvert.DeserializeObject<Interviewer.InterviewQuestion>(results.GetString("interview")));
+            // Channel ID 0 is the interview template
+            if (results.GetUInt64("channel_id") != 0)
+            {
+                questions.Add(results.GetUInt64("channel_id"), JsonConvert.DeserializeObject<Interviewer.InterviewQuestion>(results.GetString("interview")));
+            }
         }
+        while (results.Read());
         results.Close();
 
         return questions;
@@ -762,26 +810,23 @@ public static class Database
     {
         try
         {
+            string query;
             if (TryGetInterview(channelID, out _))
             {
-                using MySqlConnection c = GetConnection();
-                c.Open();
-                using MySqlCommand cmd = new MySqlCommand(@"UPDATE interviews SET interview = @interview WHERE channel_id = @channel_id;", c);
-                cmd.Parameters.AddWithValue("@channel_id", channelID);
-                cmd.Parameters.AddWithValue("@interview", JsonConvert.SerializeObject(interview));
-                cmd.Prepare();
-                return cmd.ExecuteNonQuery() > 0;
+                query = "UPDATE interviews SET interview = @interview WHERE channel_id = @channel_id";
             }
             else
             {
-                using MySqlConnection c = GetConnection();
-                c.Open();
-                using MySqlCommand cmd = new MySqlCommand(@"INSERT INTO interviews (channel_id,interview) VALUES (@channel_id, @interview);", c);
-                cmd.Parameters.AddWithValue("@channel_id", channelID);
-                cmd.Parameters.AddWithValue("@interview", JsonConvert.SerializeObject(interview));
-                cmd.Prepare();
-                return cmd.ExecuteNonQuery() > 0;
+                query = "INSERT INTO interviews (channel_id,interview) VALUES (@channel_id, @interview)";
             }
+
+            using MySqlConnection c = GetConnection();
+            c.Open();
+            using MySqlCommand cmd = new MySqlCommand(query, c);
+            cmd.Parameters.AddWithValue("@channel_id", channelID);
+            cmd.Parameters.AddWithValue("@interview", JsonConvert.SerializeObject(interview));
+            cmd.Prepare();
+            return cmd.ExecuteNonQuery() > 0;
         }
         catch (MySqlException)
         {

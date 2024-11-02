@@ -93,7 +93,11 @@ internal static class SupportBoi
         Logger.Log("Starting " + Assembly.GetEntryAssembly()?.GetName().Name + " version " + GetVersion() + "...");
         try
         {
-            Reload();
+            if (!await Reload())
+            {
+                Logger.Fatal("Aborting startup due to a fatal error...");
+                return;
+            }
 
             // Block this task until the program is closed.
             await Task.Delay(-1);
@@ -115,7 +119,7 @@ internal static class SupportBoi
              + " (" + ThisAssembly.Git.Commit + ")";
     }
 
-    public static async void Reload()
+    public static async Task<bool> Reload()
     {
         if (client != null)
         {
@@ -141,20 +145,20 @@ internal static class SupportBoi
         }
         catch (Exception e)
         {
-            Logger.Fatal("Could not set up database tables, please confirm connection settings, status of the server and permissions of MySQL user. Error: " + e);
-            throw;
+            Logger.Fatal("Could not set up database tables, please confirm connection settings, status of the server and permissions of MySQL user. Error: ", e);
+            return false;
         }
 
         try
         {
-            Logger.Log("Connecting to database... (" + Config.hostName + ":" + Config.port + ")");
-            Interviewer.ParseConfig(Config.interviews);
+            Logger.Log("Loading interviews from database...");
+            Interviewer.ParseTemplates(Database.GetInterviewTemplates());
             Interviewer.LoadActiveInterviews();
         }
         catch (Exception e)
         {
-            Logger.Fatal("Could not set up database tables, please confirm connection settings, status of the server and permissions of MySQL user. Error: " + e);
-            throw;
+            Logger.Fatal("Could not load interviews from database. Error: ", e);
+            return false;
         }
 
         Logger.Log("Setting up Discord client...");
@@ -233,6 +237,7 @@ internal static class SupportBoi
 
         Logger.Log("Connecting to Discord...");
         await client.ConnectAsync();
+        return true;
     }
 }
 

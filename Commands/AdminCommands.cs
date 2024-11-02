@@ -1,7 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Runtime.Serialization;
+using System.Text;
 using System.Threading.Tasks;
 using DSharpPlus.Commands;
 using DSharpPlus.Commands.ContextChecks;
@@ -10,6 +14,10 @@ using DSharpPlus.Entities;
 using DSharpPlus.Exceptions;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Schema;
+using ErrorEventArgs = Newtonsoft.Json.Serialization.ErrorEventArgs;
 
 namespace SupportBoi.Commands;
 
@@ -214,5 +222,99 @@ public class AdminCommands
         });
         Logger.Log("Reloading bot...");
         SupportBoi.Reload();
+    }
+
+    [Command("getinterviewtemplates")]
+    [Description("Provides a copy of the interview templates which you can edit and then reupload.")]
+    public async Task GetInterviewTemplates(SlashCommandContext command)
+    {
+        MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes(Database.GetInterviewTemplates()));
+        await command.RespondAsync(new DiscordInteractionResponseBuilder().AddFile("interview-templates.json", stream));
+    }
+
+    [Command("setinterviewtemplates")]
+    [Description("Uploads an interview template file.")]
+    public async Task SetInterviewTemplates(SlashCommandContext command, [Parameter("file")] DiscordAttachment file)
+    {
+        if (!file.MediaType?.Contains("application/json") ?? false)
+        {
+            await command.RespondAsync(new DiscordEmbedBuilder
+            {
+
+                Color = DiscordColor.Red,
+                Description = "The uploaded file is not a JSON file according to Discord."
+            });
+            return;
+        }
+
+        Stream stream = await new HttpClient().GetStreamAsync(file.Url);
+        string json = await new StreamReader(stream).ReadToEndAsync();
+
+        try
+        {
+            List<string> errors = [];
+
+            // Convert it to an interview object to validate the template
+            Dictionary<ulong, Interviewer.ValidatedInterviewQuestion> interview = JsonConvert.DeserializeObject<Dictionary<ulong, Interviewer.ValidatedInterviewQuestion>>(json, new JsonSerializerSettings()
+            {
+                //NullValueHandling = NullValueHandling.Include,
+                MissingMemberHandling = MissingMemberHandling.Error,
+                Error = delegate (object sender, ErrorEventArgs args)
+                {
+                    // I noticed the main exception mainly has information for developers, not administrators,
+                    // so I switched to using the inner message if available.
+                    if (string.IsNullOrEmpty(args.ErrorContext.Error.InnerException?.Message))
+                    {
+                        errors.Add(args.ErrorContext.Error.Message);
+                    }
+                    else
+                    {
+                        errors.Add(args.ErrorContext.Error.InnerException.Message);
+                    }
+
+                    Logger.Debug("Exception occured when trying to upload interview template:\n" + args.ErrorContext.Error);
+                    args.ErrorContext.Handled = true;
+                }
+            });
+
+            if (errors.Count != 0)
+            {
+                string errorString = string.Join("\n\n", errors);
+                if (errorString.Length > 1500)
+                {
+                    errorString = errorString.Substring(0, 1500);
+                }
+
+                await command.RespondAsync(new DiscordEmbedBuilder
+                {
+                    Color = DiscordColor.Red,
+                    Description = "The uploaded JSON structure could not be converted to an interview template.\n\nErrors:\n```\n" + errorString + "\n```",
+                    Footer = new DiscordEmbedBuilder.EmbedFooter()
+                    {
+                        Text = "More detailed information may be available as debug messages in the bot logs."
+                    }
+                });
+                return;
+            }
+
+            Database.SetInterviewTemplates(JsonConvert.SerializeObject(interview, Formatting.Indented));
+        }
+        catch (Exception e)
+        {
+            await command.RespondAsync(new DiscordEmbedBuilder
+            {
+
+                Color = DiscordColor.Red,
+                Description = "The uploaded JSON structure could not be converted to an interview template.\n\nError message:\n```\n" + e.Message + "\n```"
+            });
+            return;
+        }
+
+        await command.RespondAsync(new DiscordEmbedBuilder
+        {
+
+            Color = DiscordColor.Green,
+            Description = "Uploaded interview template."
+        });
     }
 }
