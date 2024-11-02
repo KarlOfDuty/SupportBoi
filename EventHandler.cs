@@ -183,10 +183,10 @@ public static class EventHandler
                             await CloseCommand.OnConfirmed(e.Interaction);
                             return;
                         case not null when e.Id.StartsWith("supportboi_newcommandbutton"):
-                            await NewCommand.OnCategorySelection(e.Interaction);
+                            await OnCategorySelection(e.Interaction);
                             return;
                         case not null when e.Id.StartsWith("supportboi_newticketbutton"):
-                            await CreateButtonPanelCommand.OnButtonUsed(e.Interaction);
+                            await OnButtonUsed(e.Interaction);
                             return;
                         case "right":
                             return;
@@ -206,7 +206,7 @@ public static class EventHandler
                     switch (e.Id)
                     {
                         case not null when e.Id.StartsWith("supportboi_newcommandselector"):
-                            await NewCommand.OnCategorySelection(e.Interaction);
+                            await OnCategorySelection(e.Interaction);
                             return;
                         case not null when e.Id.StartsWith("supportboi_newticketselector"):
                             await CreateSelectionBoxPanelCommand.OnSelectionMenuUsed(e.Interaction);
@@ -221,6 +221,10 @@ public static class EventHandler
                 case DiscordComponentType.FormInput:
                     Logger.Warn("Unknown form input received! '" + e.Id + "'");
                     return;
+                case DiscordComponentType.UserSelect:
+                case DiscordComponentType.RoleSelect:
+                case DiscordComponentType.MentionableSelect:
+                case DiscordComponentType.ChannelSelect:
                 default:
                     Logger.Warn("Unknown interaction type received! '" + e.Interaction.Data.ComponentType + "'");
                     break;
@@ -236,6 +240,86 @@ public static class EventHandler
             Logger.Error("Interaction Exception occured: " + ex.GetType() + ": " + ex);
         }
     }
+
+    private static async Task OnButtonUsed(DiscordInteraction interaction)
+    {
+        await interaction.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral());
+
+        if (!ulong.TryParse(interaction.Data.CustomId.Replace("supportboi_newticketbutton ", ""), out ulong categoryID) || categoryID == 0)
+        {
+            Logger.Warn("Invalid ID: " + interaction.Data.CustomId.Replace("supportboi_newticketbutton ", ""));
+            return;
+        }
+
+        (bool success, string message) = await NewCommand.OpenNewTicket(interaction.User.Id, interaction.ChannelId, categoryID);
+
+        if (success)
+        {
+            await interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().AddEmbed(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Green,
+                Description = message
+            }));
+        }
+        else
+        {
+            await interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().AddEmbed(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Red,
+                Description = message
+            }));
+        }
+    }
+
+    private static async Task OnCategorySelection(DiscordInteraction interaction)
+    {
+        string stringID;
+        switch (interaction.Data.ComponentType)
+        {
+            case DiscordComponentType.Button:
+                stringID = interaction.Data.CustomId.Replace("supportboi_newcommandbutton ", "");
+                break;
+            case DiscordComponentType.StringSelect:
+                if (interaction.Data.Values == null || interaction.Data.Values.Length <= 0)
+                {
+                    return;
+                }
+                stringID = interaction.Data.Values[0];
+                break;
+
+            case DiscordComponentType.ActionRow:
+            case DiscordComponentType.FormInput:
+            default:
+                return;
+        }
+
+        if (!ulong.TryParse(stringID, out ulong categoryID) || categoryID == 0)
+        {
+            return;
+        }
+
+        await interaction.CreateResponseAsync(DiscordInteractionResponseType.DeferredMessageUpdate, new DiscordInteractionResponseBuilder().AsEphemeral());
+
+        (bool success, string message) = await NewCommand.OpenNewTicket(interaction.User.Id, interaction.ChannelId, categoryID);
+
+        if (success)
+        {
+            await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Green,
+                Description = message
+            }));
+        }
+        else
+        {
+            await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Red,
+                Description = message
+            }));
+        }
+    }
+
     public static async Task OnCommandError(CommandsExtension commandSystem, CommandErroredEventArgs e)
     {
         switch (e.Exception)
