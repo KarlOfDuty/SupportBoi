@@ -204,7 +204,7 @@ public static class EventHandler
                             await OnNewTicketButtonUsed(e.Interaction);
                             return;
                         case not null when e.Id.StartsWith("supportboi_interviewbutton"):
-                            await Interviewer.ProcessButtonResponse(e.Interaction);
+                            await Interviewer.ProcessButtonOrSelectorResponse(e.Interaction);
                             return;
                         case "right":
                         case "left":
@@ -224,6 +224,9 @@ public static class EventHandler
                             return;
                         case not null when e.Id.StartsWith("supportboi_newticketselector"):
                             await CreateSelectionBoxPanelCommand.OnSelectionMenuUsed(e.Interaction);
+                            return;
+                        case not null when e.Id.StartsWith("supportboi_interviewselector"):
+                            await Interviewer.ProcessButtonOrSelectorResponse(e.Interaction);
                             return;
                         default:
                             Logger.Warn("Unknown selection box option received! '" + e.Id + "'");

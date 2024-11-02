@@ -13,13 +13,14 @@ namespace SupportBoi;
 
 public static class Interviewer
 {
+    // TODO: Investigate other types of selectors
     public enum QuestionType
     {
         ERROR,
         CANCEL,
         DONE,
         BUTTONS,
-        SELECTOR,
+        TEXT_SELECTOR,
         TEXT_INPUT
     }
 
@@ -182,13 +183,17 @@ public static class Interviewer
         return activeInterviews.ContainsKey(channelID);
     }
 
-    // TODO: Add selection box handling.
-
-    public static async Task ProcessButtonResponse(DiscordInteraction interaction)
+    public static async Task ProcessButtonOrSelectorResponse(DiscordInteraction interaction)
     {
         // TODO: Add error responses.
 
         if (interaction?.Channel == null || interaction?.Message == null)
+        {
+            return;
+        }
+
+        // The user selected nothing.
+        if (interaction.Data.ComponentType == DiscordComponentType.StringSelect && interaction.Data.Values.Length == 0)
         {
             return;
         }
@@ -214,69 +219,46 @@ public static class Interviewer
         }
 
         // Parse the response index from the button.
-        if (!int.TryParse(interaction.Data.CustomId.Replace("supportboi_interviewbutton ", ""), out int pathIndex))
+        string componentID = "";
+
+        switch (interaction.Data.ComponentType)
         {
-            Logger.Error("Invalid interview button index: " + interaction.Data.CustomId.Replace("supportboi_interviewbutton ", ""));
+            case DiscordComponentType.StringSelect:
+                componentID = interaction.Data.Values[0];
+                break;
+            case DiscordComponentType.Button:
+                componentID = interaction.Data.CustomId.Replace("supportboi_interviewbutton ", "");
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+
+
+        if (!int.TryParse(componentID, out int pathIndex))
+        {
+            Logger.Error("Invalid interview button/selector index: " + componentID);
             return;
         }
 
         if (pathIndex >= currentQuestion.paths.Count || pathIndex < 0)
         {
-            Logger.Error("Invalid interview button index: " + pathIndex);
+            Logger.Error("Invalid interview button/selector index: " + pathIndex);
             return;
         }
 
-        KeyValuePair<string,InterviewQuestion> questionPath = currentQuestion.paths.ElementAt(pathIndex);
+        (string questionString, InterviewQuestion nextQuestion) = currentQuestion.paths.ElementAt(pathIndex);
 
+        await HandleAnswer(questionString, nextQuestion, interviewRoot, currentQuestion, interaction.Channel);
 
-        currentQuestion.answer = interaction.Data.Name;
-        currentQuestion.answerID = 0;
-
-        // Create next question, or finish the interview.
-        InterviewQuestion nextQuestion = questionPath.Value;
-        switch (questionPath.Value.type)
-        {
-            case QuestionType.TEXT_INPUT:
-                await CreateQuestion(interaction.Channel, nextQuestion);
-                break;
-            case QuestionType.BUTTONS:
-                await CreateQuestion(interaction.Channel, nextQuestion);
-                // TODO: Remove buttons
-                break;
-            case QuestionType.SELECTOR:
-                await CreateQuestion(interaction.Channel, nextQuestion);
-                // TODO: Remove selector
-                break;
-            case QuestionType.DONE:
-                // TODO: Create summary.
-                // TODO: Remove previous interview messages.
-                // TODO: Remove active interview.
-                Logger.Error("INTERVIEW DONE");
-                break;
-            case QuestionType.CANCEL:
-            default:
-                // TODO: Post fail message.
-                // TODO: Remove active interview.
-                Logger.Error("INTERVIEW FAILED");
-                break;
-        }
-
-        // Remove other paths.
-        currentQuestion.paths = new Dictionary<string, InterviewQuestion>
-        {
-            { questionPath.Key, nextQuestion }
-        };
-
+        // Edit message to remove buttons/selectors.
+        // TODO: Add footer with answer.
         await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(interaction.Message.Embeds[0]));
-
-        Database.SaveInterview(interaction.Channel.Id, interviewRoot);
     }
 
     public static async Task ProcessResponseMessage(DiscordMessage message)
     {
         // TODO: Handle other interactions like button presses.
         // TODO: Handle FAIL event, cancelling the interview.
-        // TODO: Handle DONE event, creating a summary.
 
         // Either the message or the referenced message is null.
         if (message.Channel == null || message.ReferencedMessage?.Channel == null)
@@ -312,83 +294,98 @@ public static class Interviewer
             // Skip to the matching path.
             if (!Regex.IsMatch(message.Content, questionString)) continue;
 
-            // TODO: Refactor this into separate function to reduce duplication
-
-            currentQuestion.answer = message.Content;
-            currentQuestion.answerID = message.Id;
-
-            // Create next question, or finish the interview.
-            switch (nextQuestion.type)
-            {
-                case QuestionType.ERROR:
-                    break;
-                case QuestionType.TEXT_INPUT:
-                case QuestionType.BUTTONS:
-                case QuestionType.SELECTOR:
-                    await CreateQuestion(message.Channel, nextQuestion);
-
-                    // Remove other paths.
-                    currentQuestion.paths = new Dictionary<string, InterviewQuestion>
-                    {
-                        { questionString, nextQuestion }
-                    };
-
-                    Database.SaveInterview(message.Channel.Id, interviewRoot);
-                    break;
-                case QuestionType.DONE:
-                    // TODO: Remove previous interview messages.
-                    OrderedDictionary summaryFields = new OrderedDictionary();
-                    interviewRoot.GetSummary(ref summaryFields);
-
-                    DiscordEmbedBuilder embed = new DiscordEmbedBuilder()
-                    {
-                        Color = Utilities.StringToColor(nextQuestion.color),
-                        Title = "Summary:",
-                        Description = nextQuestion.message,
-                    };
-
-                    foreach (DictionaryEntry entry in summaryFields)
-                    {
-                        embed.AddField((string)entry.Key, (string)entry.Value);
-                    }
-
-                    await message.Channel.SendMessageAsync(embed);
-
-                    List<ulong> previousMessages = new List<ulong> { };
-                    interviewRoot.GetMessageIDs(ref previousMessages);
-
-                    foreach (ulong previousMessageID in previousMessages)
-                    {
-                        try
-                        {
-                            Logger.Debug("Deleting message: " + previousMessageID);
-                            DiscordMessage previousMessage = await message.Channel.GetMessageAsync(previousMessageID);
-                            await message.Channel.DeleteMessageAsync(previousMessage, "Deleting old interview message.");
-                        }
-                        catch (Exception e)
-                        {
-                            Logger.Error("Failed to delete old interview message: " + e.Message);
-                        }
-
-                    }
-
-                    if (!Database.TryDeleteInterview(message.Channel.Id))
-                    {
-                        Logger.Error("Could not delete interview from database. Channel ID: " + message.Channel.Id);
-                    }
-                    Reload();
-                    return;
-                case QuestionType.CANCEL:
-                default:
-                    // TODO: Post fail message.
-                    // TODO: Remove active interview.
-                    break;
-            }
+            await HandleAnswer(questionString, nextQuestion, interviewRoot, currentQuestion, message.Channel, message);
             return;
         }
 
         // TODO: No matching path found.
 
+    }
+
+    private static async Task HandleAnswer(string questionString,
+                                           InterviewQuestion nextQuestion,
+                                           InterviewQuestion interviewRoot,
+                                           InterviewQuestion previousQuestion,
+                                           DiscordChannel channel,
+                                           DiscordMessage message = null)
+    {
+        // The answer was provided using a button or selector
+        if (message == null)
+        {
+            previousQuestion.answer = questionString;
+            previousQuestion.answerID = 0;
+        }
+        else
+        {
+            previousQuestion.answer = message.Content;
+            previousQuestion.answerID = message.Id;
+        }
+
+        // Remove any other paths from the previous question.
+        previousQuestion.paths = new Dictionary<string, InterviewQuestion>
+        {
+            { questionString, nextQuestion }
+        };
+
+        // Create next question, or finish the interview.
+        switch (nextQuestion.type)
+        {
+            case QuestionType.TEXT_INPUT:
+            case QuestionType.BUTTONS:
+            case QuestionType.TEXT_SELECTOR:
+                await CreateQuestion(channel, nextQuestion);
+                Database.SaveInterview(channel.Id, interviewRoot);
+                break;
+            case QuestionType.DONE:
+                OrderedDictionary summaryFields = new OrderedDictionary();
+                interviewRoot.GetSummary(ref summaryFields);
+
+                DiscordEmbedBuilder embed = new DiscordEmbedBuilder()
+                {
+                    Color = Utilities.StringToColor(nextQuestion.color),
+                    Title = "Summary:",
+                    Description = nextQuestion.message,
+                };
+
+                foreach (DictionaryEntry entry in summaryFields)
+                {
+                    embed.AddField((string)entry.Key, (string)entry.Value);
+                }
+
+                await channel.SendMessageAsync(embed);
+
+                List<ulong> previousMessages = new List<ulong> { };
+                interviewRoot.GetMessageIDs(ref previousMessages);
+
+                foreach (ulong previousMessageID in previousMessages)
+                {
+                    try
+                    {
+                        Logger.Debug("Deleting message: " + previousMessageID);
+                        DiscordMessage previousMessage = await channel.GetMessageAsync(previousMessageID);
+                        await channel.DeleteMessageAsync(previousMessage, "Deleting old interview message.");
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.Error("Failed to delete old interview message: " + e.Message);
+                    }
+
+                }
+
+                if (!Database.TryDeleteInterview(channel.Id))
+                {
+                    Logger.Error("Could not delete interview from database. Channel ID: " + channel.Id);
+                }
+                Reload();
+                return;
+            case QuestionType.CANCEL:
+                // TODO: Post fail message.
+                // TODO: Remove active interview.
+                break;
+            case QuestionType.ERROR:
+            default:
+                break;
+        }
     }
 
     private static async Task CreateQuestion(DiscordChannel channel, InterviewQuestion question)
@@ -414,7 +411,7 @@ public static class Interviewer
                     msgBuilder.AddComponents(buttonRow);
                 }
                 break;
-            case QuestionType.SELECTOR:
+            case QuestionType.TEXT_SELECTOR:
                 List<DiscordSelectComponent> selectionComponents = [];
 
                 int selectionOptions = 0;
