@@ -257,9 +257,6 @@ public static class Interviewer
 
     public static async Task ProcessResponseMessage(DiscordMessage message)
     {
-        // TODO: Handle other interactions like button presses.
-        // TODO: Handle FAIL event, cancelling the interview.
-
         // Either the message or the referenced message is null.
         if (message.Channel == null || message.ReferencedMessage?.Channel == null)
         {
@@ -384,6 +381,7 @@ public static class Interviewer
                 break;
             case QuestionType.ERROR:
             default:
+                // TODO: Post error message.
                 break;
         }
     }
@@ -432,6 +430,7 @@ public static class Interviewer
                 break;
             case QuestionType.DONE:
             case QuestionType.CANCEL:
+            case QuestionType.ERROR:
             default:
                 break;
         }
@@ -439,10 +438,5 @@ public static class Interviewer
         msgBuilder.AddEmbed(embed);
         DiscordMessage message = await channel.SendMessageAsync(msgBuilder);
         question.messageID = message.Id;
-    }
-
-    public static void CreateSummary()
-    {
-
     }
 }
