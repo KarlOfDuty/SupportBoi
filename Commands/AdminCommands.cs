@@ -221,14 +221,14 @@ public class AdminCommands
             Description = "Reloading bot application..."
         });
         Logger.Log("Reloading bot...");
-        SupportBoi.Reload();
+        await SupportBoi.Reload();
     }
 
     [Command("getinterviewtemplates")]
     [Description("Provides a copy of the interview templates which you can edit and then reupload.")]
     public async Task GetInterviewTemplates(SlashCommandContext command)
     {
-        MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes(Database.GetInterviewTemplates()));
+        MemoryStream stream = new(Encoding.UTF8.GetBytes(Database.GetInterviewTemplatesJSON()));
         await command.RespondAsync(new DiscordInteractionResponseBuilder().AddFile("interview-templates.json", stream));
     }
 
@@ -298,6 +298,7 @@ public class AdminCommands
             }
 
             Database.SetInterviewTemplates(JsonConvert.SerializeObject(interview, Formatting.Indented));
+            Interviewer.Reload();
         }
         catch (Exception e)
         {

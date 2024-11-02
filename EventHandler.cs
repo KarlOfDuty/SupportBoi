@@ -58,12 +58,27 @@ public static class EventHandler
             return;
         }
 
-        // Check if ticket exists in the database and ticket notifications are enabled
-        if (!Database.TryGetOpenTicket(e.Channel.Id, out Database.Ticket ticket) || !Config.ticketUpdatedNotifications)
+        // Ignore messages outside of tickets.
+        if (!Database.TryGetOpenTicket(e.Channel.Id, out Database.Ticket ticket))
         {
             return;
         }
 
+        // Send staff notification if applicable.
+        if (Config.ticketUpdatedNotifications)
+        {
+            await SendTicketUpdatedMessage(e, ticket);
+        }
+
+        // Try to process the message as an interview response if the ticket owner replied to this bot.
+        if (ticket.creatorID == e.Author.Id && e.Message.ReferencedMessage?.Author == client.CurrentUser)
+        {
+            await Interviewer.ProcessResponseMessage(e.Message);
+        }
+    }
+
+    private static async Task SendTicketUpdatedMessage(MessageCreatedEventArgs e, Database.Ticket ticket)
+    {
         // Ignore staff messages
         if (Database.IsStaff(e.Author.Id))
         {
@@ -114,7 +129,7 @@ public static class EventHandler
                     catch (DiscordException ex)
                     {
                         Logger.Error("Exception occurred trying to add channel permissions: " + ex);
-                        Logger.Error("JsomMessage: " + ex.JsonMessage);
+                        Logger.Error("JsonMessage: " + ex.JsonMessage);
                     }
 
                 }
@@ -183,19 +198,18 @@ public static class EventHandler
                             await CloseCommand.OnConfirmed(e.Interaction);
                             return;
                         case not null when e.Id.StartsWith("supportboi_newcommandbutton"):
-                            await OnCategorySelection(e.Interaction);
+                            await OnNewTicketSelectorUsed(e.Interaction);
                             return;
                         case not null when e.Id.StartsWith("supportboi_newticketbutton"):
-                            await OnButtonUsed(e.Interaction);
+                            await OnNewTicketButtonUsed(e.Interaction);
+                            return;
+                        case not null when e.Id.StartsWith("supportboi_interviewbutton"):
+                            await Interviewer.ProcessButtonResponse(e.Interaction);
                             return;
                         case "right":
-                            return;
                         case "left":
-                            return;
                         case "rightskip":
-                            return;
                         case "leftskip":
-                            return;
                         case "stop":
                             return;
                         default:
@@ -206,7 +220,7 @@ public static class EventHandler
                     switch (e.Id)
                     {
                         case not null when e.Id.StartsWith("supportboi_newcommandselector"):
-                            await OnCategorySelection(e.Interaction);
+                            await OnNewTicketSelectorUsed(e.Interaction);
                             return;
                         case not null when e.Id.StartsWith("supportboi_newticketselector"):
                             await CreateSelectionBoxPanelCommand.OnSelectionMenuUsed(e.Interaction);
@@ -241,13 +255,13 @@ public static class EventHandler
         }
     }
 
-    private static async Task OnButtonUsed(DiscordInteraction interaction)
+    private static async Task OnNewTicketButtonUsed(DiscordInteraction interaction)
     {
         await interaction.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral());
 
         if (!ulong.TryParse(interaction.Data.CustomId.Replace("supportboi_newticketbutton ", ""), out ulong categoryID) || categoryID == 0)
         {
-            Logger.Warn("Invalid ID: " + interaction.Data.CustomId.Replace("supportboi_newticketbutton ", ""));
+            Logger.Warn("Invalid ticket button ID: " + interaction.Data.CustomId.Replace("supportboi_newticketbutton ", ""));
             return;
         }
 
@@ -271,7 +285,7 @@ public static class EventHandler
         }
     }
 
-    private static async Task OnCategorySelection(DiscordInteraction interaction)
+    private static async Task OnNewTicketSelectorUsed(DiscordInteraction interaction)
     {
         string stringID;
         switch (interaction.Data.ComponentType)

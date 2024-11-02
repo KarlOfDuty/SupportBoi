@@ -152,8 +152,7 @@ internal static class SupportBoi
         try
         {
             Logger.Log("Loading interviews from database...");
-            Interviewer.ParseTemplates(Database.GetInterviewTemplates());
-            Interviewer.LoadActiveInterviews();
+            Interviewer.Reload();
         }
         catch (Exception e)
         {

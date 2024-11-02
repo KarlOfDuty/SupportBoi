@@ -1,12 +1,13 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+using System.Collections.Specialized;
 using System.Linq;
-using DSharpPlus;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using DSharpPlus.Entities;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
 
 namespace SupportBoi;
 
@@ -14,7 +15,8 @@ public static class Interviewer
 {
     public enum QuestionType
     {
-        FAIL,
+        ERROR,
+        CANCEL,
         DONE,
         BUTTONS,
         SELECTOR,
@@ -27,6 +29,8 @@ public static class Interviewer
     // The entire interview tree is serialized and stored in the database in order to record responses as they are made.
     public class InterviewQuestion
     {
+        // TODO: Optional properties: embed title, button style
+
         // Message contents sent to the user.
         [JsonProperty("message")]
         public string message;
@@ -40,26 +44,84 @@ public static class Interviewer
         [JsonProperty("color")]
         public string color;
 
-        // The ID of this message where the bot asked this question,
-        // populated after it has been sent.
-        [JsonProperty("message-id")]
-        public ulong messageID;
-
         // Used as label for this question in the post-interview summary.
         [JsonProperty("summary-field")]
         public string summaryField;
 
-        // The user's response to the question.
-        [JsonProperty("answer")]
-        public string answer;
-
-        // The ID of the user's answer message, populated after it has been received.
-        [JsonProperty("answer-id")]
-        public ulong answerID;
-
         // Possible questions to ask next, or DONE/FAIL type in order to finish interview.
         [JsonProperty("paths")]
         public Dictionary<string, InterviewQuestion> paths;
+
+        // The following parameters are populated by the bot, not the json template.
+
+        // The ID of this message where the bot asked this question.
+        [JsonProperty("message-id")]
+        public ulong messageID;
+
+        // The contents of the user's answer.
+        [JsonProperty("answer")]
+        public string answer;
+
+        // The ID of the user's answer message if this is a TEXT_INPUT type.
+        [JsonProperty("answer-id")]
+        public ulong answerID;
+
+        public bool TryGetCurrentQuestion(out InterviewQuestion question)
+        {
+            // This object has not been initialized, we have checked too deep.
+            if (messageID == 0)
+            {
+                question = null;
+                return false;
+            }
+
+            // Check children.
+            foreach (KeyValuePair<string,InterviewQuestion> path in paths)
+            {
+                // This child either is the one we are looking for or contains the one we are looking for.
+                if (path.Value.TryGetCurrentQuestion(out question))
+                {
+                    return true;
+                }
+            }
+
+            // This object is the deepest object with a message ID set, meaning it is the latest asked question.
+            question = this;
+            return true;
+        }
+
+        public void GetSummary(ref OrderedDictionary summary)
+        {
+            if (!string.IsNullOrWhiteSpace(summaryField))
+            {
+                summary.Add(summaryField, answer);
+            }
+
+            // This will always contain exactly one or zero children.
+            foreach (KeyValuePair<string, InterviewQuestion> path in paths)
+            {
+                path.Value.GetSummary(ref summary);
+            }
+        }
+
+        public void GetMessageIDs(ref List<ulong> messageIDs)
+        {
+            if (messageID != 0)
+            {
+                messageIDs.Add(messageID);
+            }
+
+            if (answerID != 0)
+            {
+                messageIDs.Add(answerID);
+            }
+
+            // This will always contain exactly one or zero children.
+            foreach (KeyValuePair<string, InterviewQuestion> path in paths)
+            {
+                path.Value.GetMessageIDs(ref messageIDs);
+            }
+        }
     }
 
     // This class is identical to the one above and just exists as a hack to get JSON validation when
@@ -80,77 +142,256 @@ public static class Interviewer
         [JsonProperty("color", Required = Required.Always)]
         public string color;
 
-        // The ID of this message where the bot asked this question,
-        // populated after it has been sent.
-        [JsonProperty("message-id", Required = Required.Default)]
-        public ulong messageID;
-
         // Used as label for this question in the post-interview summary.
-        [JsonProperty("summary-field", Required = Required.Default)]
+        [JsonProperty("summary-field", Required = Required.Always)]
         public string summaryField;
-
-        // The user's response to the question.
-        [JsonProperty("answer", Required = Required.Default)]
-        public string answer;
-
-        // The ID of the user's answer message, populated after it has been received.
-        [JsonProperty("answer-id", Required = Required.Default)]
-        public ulong answerID;
 
         // Possible questions to ask next, or DONE/FAIL type in order to finish interview.
         [JsonProperty("paths", Required = Required.Always)]
         public Dictionary<string, ValidatedInterviewQuestion> paths;
     }
 
-    private static Dictionary<ulong, InterviewQuestion> categoryInterviews = [];
+    private static Dictionary<ulong, InterviewQuestion> interviewTemplates = [];
 
     private static Dictionary<ulong, InterviewQuestion> activeInterviews = [];
 
-    public static void ParseTemplates(JToken interviewConfig)
+    // TODO: Maybe split into two functions?
+    public static void Reload()
     {
-        categoryInterviews = JsonConvert.DeserializeObject<Dictionary<ulong, InterviewQuestion>>(interviewConfig.ToString(), new JsonSerializerSettings
-        {
-            Error = delegate (object sender, ErrorEventArgs args)
-            {
-                Logger.Error("Exception occured when trying to read interview from database:\n" + args.ErrorContext.Error.Message);
-                Logger.Debug("Detailed exception:", args.ErrorContext.Error);
-                args.ErrorContext.Handled = true;
-            }
-        });
-    }
-
-    public static void LoadActiveInterviews()
-    {
+        interviewTemplates = Database.GetInterviewTemplates();
         activeInterviews = Database.GetAllInterviews();
     }
 
-    public static void StartInterview(DiscordChannel channel)
+    public static async void StartInterview(DiscordChannel channel)
     {
         if (channel.Parent == null)
         {
             return;
         }
 
-        if (categoryInterviews.TryGetValue(channel.Parent.Id, out InterviewQuestion interview))
+        if (interviewTemplates.TryGetValue(channel.Parent.Id, out InterviewQuestion interview))
         {
-            CreateQuestion(channel, interview);
+            await CreateQuestion(channel, interview);
             Database.SaveInterview(channel.Id, interview);
+            Reload();
         }
     }
 
-    public static void ProcessResponse(DiscordMessage message)
+    public static bool IsInterviewActive(ulong channelID)
     {
-        // TODO: Find if channel has open interview.
-        // TODO: Find if message is replying to interview message.
+        return activeInterviews.ContainsKey(channelID);
+    }
+
+    // TODO: Add selection box handling.
+
+    public static async Task ProcessButtonResponse(DiscordInteraction interaction)
+    {
+        // TODO: Add error responses.
+
+        if (interaction?.Channel == null || interaction?.Message == null)
+        {
+            return;
+        }
+
+        await interaction.CreateResponseAsync(DiscordInteractionResponseType.DeferredMessageUpdate);
+
+        // Could not find active interview.
+        if (!activeInterviews.TryGetValue(interaction.Channel.Id, out InterviewQuestion interviewRoot))
+        {
+            return;
+        }
+
+        // Could not find message id in interview.
+        if (!interviewRoot.TryGetCurrentQuestion(out InterviewQuestion currentQuestion))
+        {
+            return;
+        }
+
+        // This button is for an older question.
+        if (interaction.Message.Id != currentQuestion.messageID)
+        {
+            return;
+        }
+
+        // Parse the response index from the button.
+        if (!int.TryParse(interaction.Data.CustomId.Replace("supportboi_interviewbutton ", ""), out int pathIndex))
+        {
+            Logger.Error("Invalid interview button index: " + interaction.Data.CustomId.Replace("supportboi_interviewbutton ", ""));
+            return;
+        }
+
+        if (pathIndex >= currentQuestion.paths.Count || pathIndex < 0)
+        {
+            Logger.Error("Invalid interview button index: " + pathIndex);
+            return;
+        }
+
+        KeyValuePair<string,InterviewQuestion> questionPath = currentQuestion.paths.ElementAt(pathIndex);
+
+
+        currentQuestion.answer = interaction.Data.Name;
+        currentQuestion.answerID = 0;
+
+        // Create next question, or finish the interview.
+        InterviewQuestion nextQuestion = questionPath.Value;
+        switch (questionPath.Value.type)
+        {
+            case QuestionType.TEXT_INPUT:
+                await CreateQuestion(interaction.Channel, nextQuestion);
+                break;
+            case QuestionType.BUTTONS:
+                await CreateQuestion(interaction.Channel, nextQuestion);
+                // TODO: Remove buttons
+                break;
+            case QuestionType.SELECTOR:
+                await CreateQuestion(interaction.Channel, nextQuestion);
+                // TODO: Remove selector
+                break;
+            case QuestionType.DONE:
+                // TODO: Create summary.
+                // TODO: Remove previous interview messages.
+                // TODO: Remove active interview.
+                Logger.Error("INTERVIEW DONE");
+                break;
+            case QuestionType.CANCEL:
+            default:
+                // TODO: Post fail message.
+                // TODO: Remove active interview.
+                Logger.Error("INTERVIEW FAILED");
+                break;
+        }
+
+        // Remove other paths.
+        currentQuestion.paths = new Dictionary<string, InterviewQuestion>
+        {
+            { questionPath.Key, nextQuestion }
+        };
+
+        await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(interaction.Message.Embeds[0]));
+
+        Database.SaveInterview(interaction.Channel.Id, interviewRoot);
+    }
+
+    public static async Task ProcessResponseMessage(DiscordMessage message)
+    {
         // TODO: Handle other interactions like button presses.
-        // TODO: Find out where in the interview tree we are.
         // TODO: Handle FAIL event, cancelling the interview.
         // TODO: Handle DONE event, creating a summary.
 
-        //Database.SaveInterview(channel.Id, interview);
+        // Either the message or the referenced message is null.
+        if (message.Channel == null || message.ReferencedMessage?.Channel == null)
+        {
+            return;
+        }
+
+        // The channel does not have an active interview.
+        if (!activeInterviews.TryGetValue(message.ReferencedMessage.Channel.Id, out InterviewQuestion interviewRoot))
+        {
+            return;
+        }
+
+        if (!interviewRoot.TryGetCurrentQuestion(out InterviewQuestion currentQuestion))
+        {
+            return;
+        }
+
+        // The user responded to something other than the latest interview question.
+        if (message.ReferencedMessage.Id != currentQuestion.messageID)
+        {
+            return;
+        }
+
+        // The user responded to a question which does not take a text response.
+        if (currentQuestion.type != QuestionType.TEXT_INPUT)
+        {
+            return;
+        }
+
+        foreach ((string questionString, InterviewQuestion nextQuestion) in currentQuestion.paths)
+        {
+            // Skip to the matching path.
+            if (!Regex.IsMatch(message.Content, questionString)) continue;
+
+            // TODO: Refactor this into separate function to reduce duplication
+
+            currentQuestion.answer = message.Content;
+            currentQuestion.answerID = message.Id;
+
+            // Create next question, or finish the interview.
+            switch (nextQuestion.type)
+            {
+                case QuestionType.ERROR:
+                    break;
+                case QuestionType.TEXT_INPUT:
+                case QuestionType.BUTTONS:
+                case QuestionType.SELECTOR:
+                    await CreateQuestion(message.Channel, nextQuestion);
+
+                    // Remove other paths.
+                    currentQuestion.paths = new Dictionary<string, InterviewQuestion>
+                    {
+                        { questionString, nextQuestion }
+                    };
+
+                    Database.SaveInterview(message.Channel.Id, interviewRoot);
+                    break;
+                case QuestionType.DONE:
+                    // TODO: Remove previous interview messages.
+                    OrderedDictionary summaryFields = new OrderedDictionary();
+                    interviewRoot.GetSummary(ref summaryFields);
+
+                    DiscordEmbedBuilder embed = new DiscordEmbedBuilder()
+                    {
+                        Color = Utilities.StringToColor(nextQuestion.color),
+                        Title = "Summary:",
+                        Description = nextQuestion.message,
+                    };
+
+                    foreach (DictionaryEntry entry in summaryFields)
+                    {
+                        embed.AddField((string)entry.Key, (string)entry.Value);
+                    }
+
+                    await message.Channel.SendMessageAsync(embed);
+
+                    List<ulong> previousMessages = new List<ulong> { };
+                    interviewRoot.GetMessageIDs(ref previousMessages);
+
+                    foreach (ulong previousMessageID in previousMessages)
+                    {
+                        try
+                        {
+                            Logger.Debug("Deleting message: " + previousMessageID);
+                            DiscordMessage previousMessage = await message.Channel.GetMessageAsync(previousMessageID);
+                            await message.Channel.DeleteMessageAsync(previousMessage, "Deleting old interview message.");
+                        }
+                        catch (Exception e)
+                        {
+                            Logger.Error("Failed to delete old interview message: " + e.Message);
+                        }
+
+                    }
+
+                    if (!Database.TryDeleteInterview(message.Channel.Id))
+                    {
+                        Logger.Error("Could not delete interview from database. Channel ID: " + message.Channel.Id);
+                    }
+                    Reload();
+                    return;
+                case QuestionType.CANCEL:
+                default:
+                    // TODO: Post fail message.
+                    // TODO: Remove active interview.
+                    break;
+            }
+            return;
+        }
+
+        // TODO: No matching path found.
+
     }
 
-    private static async void CreateQuestion(DiscordChannel channel, InterviewQuestion question)
+    private static async Task CreateQuestion(DiscordChannel channel, InterviewQuestion question)
     {
         DiscordMessageBuilder msgBuilder = new DiscordMessageBuilder();
         DiscordEmbedBuilder embed = new DiscordEmbedBuilder()
@@ -190,10 +431,10 @@ public static class Interviewer
                 msgBuilder.AddComponents(selectionComponents);
                 break;
             case QuestionType.TEXT_INPUT:
-                embed.WithFooter("Reply to this message with your answer.");
+                embed.WithFooter("Reply to this message with your answer. You cannot include images or files.");
                 break;
             case QuestionType.DONE:
-            case QuestionType.FAIL:
+            case QuestionType.CANCEL:
             default:
                 break;
         }

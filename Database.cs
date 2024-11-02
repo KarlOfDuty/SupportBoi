@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using DSharpPlus;
 using MySqlConnector;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace SupportBoi;
 
@@ -731,7 +732,7 @@ public static class Database
         }
     }
 
-    public static string GetInterviewTemplates()
+    public static string GetInterviewTemplatesJSON()
     {
         using MySqlConnection c = GetConnection();
         c.Open();
@@ -748,6 +749,34 @@ public static class Database
         string templates = results.GetString("interview");
         results.Close();
         return templates;
+    }
+
+    public static Dictionary<ulong, Interviewer.InterviewQuestion> GetInterviewTemplates()
+    {
+        using MySqlConnection c = GetConnection();
+        c.Open();
+        using MySqlCommand selection = new MySqlCommand("SELECT * FROM interviews WHERE channel_id=0", c);
+        selection.Prepare();
+        MySqlDataReader results = selection.ExecuteReader();
+
+        // Check if messages exist in the database
+        if (!results.Read())
+        {
+            return new Dictionary<ulong, Interviewer.InterviewQuestion>();
+        }
+
+        string templates = results.GetString("interview");
+        results.Close();
+
+        return JsonConvert.DeserializeObject<Dictionary<ulong, Interviewer.InterviewQuestion>>(templates, new JsonSerializerSettings
+        {
+            Error = delegate (object sender, ErrorEventArgs args)
+            {
+                Logger.Error("Exception occured when trying to read interview from database:\n" + args.ErrorContext.Error.Message);
+                Logger.Debug("Detailed exception:", args.ErrorContext.Error);
+                args.ErrorContext.Handled = true;
+            }
+        });
     }
 
     public static bool SetInterviewTemplates(string templates)
@@ -852,6 +881,23 @@ public static class Database
         interview = JsonConvert.DeserializeObject<Interviewer.InterviewQuestion>(results.GetString("interview"));
         results.Close();
         return true;
+    }
+
+    public static bool TryDeleteInterview(ulong channelID)
+    {
+        try
+        {
+            using MySqlConnection c = GetConnection();
+            c.Open();
+            using MySqlCommand deletion = new MySqlCommand(@"DELETE FROM interviews WHERE channel_id=@channel_id", c);
+            deletion.Parameters.AddWithValue("@channel_id", channelID);
+            deletion.Prepare();
+            return deletion.ExecuteNonQuery() > 0;
+        }
+        catch (MySqlException)
+        {
+            return false;
+        }
     }
 
     public class Ticket
