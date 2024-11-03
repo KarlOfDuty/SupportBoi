@@ -751,7 +751,8 @@ public static class Database
         return templates;
     }
 
-    public static Dictionary<ulong, Interviewer.InterviewQuestion> GetInterviewTemplates()
+    // Still returns true if there are no templates, returns false if the templates are invalid.
+    public static bool TryGetInterviewTemplates(out Dictionary<ulong, Interviewer.InterviewQuestion> templates)
     {
         using MySqlConnection c = GetConnection();
         c.Open();
@@ -762,21 +763,31 @@ public static class Database
         // Check if messages exist in the database
         if (!results.Read())
         {
-            return new Dictionary<ulong, Interviewer.InterviewQuestion>();
+            templates = new Dictionary<ulong, Interviewer.InterviewQuestion>();
+            return true;
         }
 
-        string templates = results.GetString("interview");
+        string templatesString = results.GetString("interview");
         results.Close();
 
-        return JsonConvert.DeserializeObject<Dictionary<ulong, Interviewer.InterviewQuestion>>(templates, new JsonSerializerSettings
+        try
         {
-            Error = delegate (object sender, ErrorEventArgs args)
+            templates = JsonConvert.DeserializeObject<Dictionary<ulong, Interviewer.InterviewQuestion>>(templatesString, new JsonSerializerSettings
             {
-                Logger.Error("Error occured when trying to read interview templates from database: " + args.ErrorContext.Error.Message);
-                Logger.Debug("Detailed exception:", args.ErrorContext.Error);
-                args.ErrorContext.Handled = false;
-            }
-        });
+                Error = delegate (object sender, ErrorEventArgs args)
+                {
+                    Logger.Error("Error occured when trying to read interview templates from database: " + args.ErrorContext.Error.Message);
+                    Logger.Debug("Detailed exception:", args.ErrorContext.Error);
+                    args.ErrorContext.Handled = false;
+                }
+            });
+            return true;
+        }
+        catch (Exception)
+        {
+            templates = null;
+            return false;
+        }
     }
 
     public static bool SetInterviewTemplates(string templates)
@@ -833,7 +844,7 @@ public static class Database
             }
             catch (Exception e)
             {
-                Logger.Error("Error occured when trying to read interview from database, it will not be loaded until manually fixed in the database.\nError message: " + e.Message);
+                Logger.Warn("Error occured when trying to read interview from database, it will not be loaded until manually fixed in the database.\nError message: " + e.Message);
                 Logger.Debug("Detailed exception:", e);
             }
 

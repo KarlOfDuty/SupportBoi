@@ -40,8 +40,6 @@ public static class Interviewer
     // The entire interview tree is serialized and stored in the database in order to record responses as they are made.
     public class InterviewQuestion
     {
-        // TODO: Other selector types.
-
         // Title of the message embed.
         [JsonProperty("title")]
         public string title;
@@ -220,14 +218,10 @@ public static class Interviewer
         public Dictionary<string, ValidatedInterviewQuestion> paths;
     }
 
-    private static Dictionary<ulong, InterviewQuestion> interviewTemplates = [];
-
     private static Dictionary<ulong, InterviewQuestion> activeInterviews = [];
 
-    // TODO: Maybe split into two functions?
-    public static void Reload()
+    public static void ReloadInterviews()
     {
-        interviewTemplates = Database.GetInterviewTemplates();
         activeInterviews = Database.GetAllInterviews();
     }
 
@@ -238,11 +232,22 @@ public static class Interviewer
             return;
         }
 
-        if (interviewTemplates.TryGetValue(channel.Parent.Id, out InterviewQuestion interview))
+        if (!Database.TryGetInterviewTemplates(out Dictionary<ulong, InterviewQuestion> templates))
+        {
+            await channel.SendMessageAsync(new DiscordEmbedBuilder
+            {
+                Description = "Attempted to create interview from template, but an error occured when reading it from the database.\n\n" +
+                              "Tell a staff member to check the bot log and fix the template.",
+                Color = DiscordColor.Red
+            });
+            return;
+        }
+
+        if (templates.TryGetValue(channel.Parent.Id, out InterviewQuestion interview))
         {
             await CreateQuestion(channel, interview);
             Database.SaveInterview(channel.Id, interview);
-            Reload();
+            activeInterviews = Database.GetAllInterviews();
         }
     }
 
@@ -462,7 +467,7 @@ public static class Interviewer
                 {
                     Logger.Error("Could not delete interview from database. Channel ID: " + channel.Id);
                 }
-                Reload();
+                ReloadInterviews();
                 return;
             case QuestionType.END_WITHOUT_SUMMARY:
                 // TODO: Add command to restart interview.
@@ -478,7 +483,7 @@ public static class Interviewer
                 {
                     Logger.Error("Could not delete interview from database. Channel ID: " + channel.Id);
                 }
-                Reload();
+                ReloadInterviews();
                 break;
             case QuestionType.ERROR:
             default:

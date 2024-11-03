@@ -152,7 +152,7 @@ internal static class SupportBoi
         try
         {
             Logger.Log("Loading interviews from database...");
-            Interviewer.Reload();
+            Interviewer.ReloadInterviews();
         }
         catch (Exception e)
         {

@@ -297,7 +297,6 @@ public class AdminCommands
             }
 
             Database.SetInterviewTemplates(JsonConvert.SerializeObject(interview, Formatting.Indented));
-            Interviewer.Reload();
         }
         catch (Exception e)
         {
