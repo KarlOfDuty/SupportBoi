@@ -229,7 +229,7 @@ public class AdminCommands
     public async Task GetInterviewTemplates(SlashCommandContext command)
     {
         MemoryStream stream = new(Encoding.UTF8.GetBytes(Database.GetInterviewTemplatesJSON()));
-        await command.RespondAsync(new DiscordInteractionResponseBuilder().AddFile("interview-templates.json", stream));
+        await command.RespondAsync(new DiscordInteractionResponseBuilder().AddFile("interview-templates.json", stream).AsEphemeral());
     }
 
     [Command("setinterviewtemplates")]
@@ -240,10 +240,9 @@ public class AdminCommands
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {
-
                 Color = DiscordColor.Red,
                 Description = "The uploaded file is not a JSON file according to Discord."
-            });
+            }, true);
             return;
         }
 
@@ -293,7 +292,7 @@ public class AdminCommands
                     {
                         Text = "More detailed information may be available as debug messages in the bot logs."
                     }
-                });
+                }, true);
                 return;
             }
 
@@ -307,7 +306,7 @@ public class AdminCommands
 
                 Color = DiscordColor.Red,
                 Description = "The uploaded JSON structure could not be converted to an interview template.\n\nError message:\n```\n" + e.Message + "\n```"
-            });
+            }, true);
             return;
         }
 
@@ -316,6 +315,6 @@ public class AdminCommands
 
             Color = DiscordColor.Green,
             Description = "Uploaded interview template."
-        });
+        }, true);
     }
 }
