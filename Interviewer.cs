@@ -204,36 +204,49 @@ public static class Interviewer
 
     public static async Task ProcessButtonOrSelectorResponse(DiscordInteraction interaction)
     {
-        // TODO: Add error responses.
-
         if (interaction?.Channel == null || interaction?.Message == null)
         {
             return;
         }
 
-        // Return if the user didn't select anything
+        // Ignore if option was deselected.
         if (interaction.Data.ComponentType == DiscordComponentType.StringSelect && interaction.Data.Values.Length == 0)
         {
+            await interaction.CreateResponseAsync(DiscordInteractionResponseType.UpdateMessage);
             return;
         }
-
-        await interaction.CreateResponseAsync(DiscordInteractionResponseType.DeferredMessageUpdate);
 
         // Return if there is no active interview in this channel
         if (!activeInterviews.TryGetValue(interaction.Channel.Id, out InterviewQuestion interviewRoot))
         {
+            await interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
+                .AddEmbed(new DiscordEmbedBuilder()
+                    .WithColor(DiscordColor.Red)
+                    .WithDescription("Error: There is no active interview in this ticket, ask an admin to check the bot logs if this seems incorrect."))
+                .AsEphemeral());
             return;
         }
 
         // Return if the current question cannot be found in the interview.
         if (!interviewRoot.TryGetCurrentQuestion(out InterviewQuestion currentQuestion))
         {
+            await interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
+                .AddEmbed(new DiscordEmbedBuilder()
+                    .WithColor(DiscordColor.Red)
+                    .WithDescription("Error: Something seems to have broken in this interview, you may want to restart it."))
+                .AsEphemeral());
+            Logger.Error("The interview for channel " + interaction.Channel.Id + " exists but does not have a message ID set for it's root question");
             return;
         }
 
         // Check if this button/selector is for an older question.
         if (interaction.Message.Id != currentQuestion.messageID)
         {
+            await interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
+                .AddEmbed(new DiscordEmbedBuilder()
+                    .WithColor(DiscordColor.Red)
+                    .WithDescription("Error: You have already replied to this question, you have to reply to the latest one."))
+                .AsEphemeral());
             return;
         }
 
@@ -256,14 +269,18 @@ public static class Interviewer
         if (!int.TryParse(componentID, out int pathIndex))
         {
             Logger.Error("Invalid interview button/selector index: " + componentID);
+            await interaction.CreateResponseAsync(DiscordInteractionResponseType.UpdateMessage);
             return;
         }
 
         if (pathIndex >= currentQuestion.paths.Count || pathIndex < 0)
         {
             Logger.Error("Invalid interview button/selector index: " + pathIndex);
+            await interaction.CreateResponseAsync(DiscordInteractionResponseType.UpdateMessage);
             return;
         }
+
+        await interaction.CreateResponseAsync(DiscordInteractionResponseType.UpdateMessage);
 
         (string questionString, InterviewQuestion nextQuestion) = currentQuestion.paths.ElementAt(pathIndex);
 
@@ -303,15 +320,19 @@ public static class Interviewer
 
         foreach ((string questionString, InterviewQuestion nextQuestion) in currentQuestion.paths)
         {
-            // Skip to the matching path.
+            // Skip to the first matching path.
             if (!Regex.IsMatch(message.Content, questionString)) continue;
 
             await HandleAnswer(questionString, nextQuestion, interviewRoot, currentQuestion, message.Channel, message);
             return;
         }
 
-        // TODO: No matching path found.
-
+        // TODO: Make message configurable.
+        await message.RespondAsync(new DiscordEmbedBuilder
+        {
+            Description = "Error: Could not determine the next question based on your answer.",
+            Color = DiscordColor.Red
+        });
     }
 
     private static async Task HandleAnswer(string questionString,
