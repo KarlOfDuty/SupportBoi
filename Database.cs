@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Security.Cryptography;
@@ -772,9 +772,9 @@ public static class Database
         {
             Error = delegate (object sender, ErrorEventArgs args)
             {
-                Logger.Error("Exception occured when trying to read interview from database:\n" + args.ErrorContext.Error.Message);
+                Logger.Error("Error occured when trying to read interview templates from database: " + args.ErrorContext.Error.Message);
                 Logger.Debug("Detailed exception:", args.ErrorContext.Error);
-                args.ErrorContext.Handled = true;
+                args.ErrorContext.Handled = false;
             }
         });
     }
@@ -823,11 +823,20 @@ public static class Database
         Dictionary<ulong, Interviewer.InterviewQuestion> questions = new();
         do
         {
-            // Channel ID 0 is the interview template
-            if (results.GetUInt64("channel_id") != 0)
+            try
             {
-                questions.Add(results.GetUInt64("channel_id"), JsonConvert.DeserializeObject<Interviewer.InterviewQuestion>(results.GetString("interview")));
+                // Channel ID 0 is the interview template, don't read it here.
+                if (results.GetUInt64("channel_id") != 0)
+                {
+                    questions.Add(results.GetUInt64("channel_id"), JsonConvert.DeserializeObject<Interviewer.InterviewQuestion>(results.GetString("interview")));
+                }
             }
+            catch (Exception e)
+            {
+                Logger.Error("Error occured when trying to read interview from database, it will not be loaded until manually fixed in the database.\nError message: " + e.Message);
+                Logger.Debug("Detailed exception:", e);
+            }
+
         }
         while (results.Read());
         results.Close();
