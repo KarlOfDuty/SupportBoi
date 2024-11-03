@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Security.Cryptography;
@@ -862,7 +862,7 @@ public static class Database
             c.Open();
             using MySqlCommand cmd = new MySqlCommand(query, c);
             cmd.Parameters.AddWithValue("@channel_id", channelID);
-            cmd.Parameters.AddWithValue("@interview", JsonConvert.SerializeObject(interview));
+            cmd.Parameters.AddWithValue("@interview", JsonConvert.SerializeObject(interview, Formatting.Indented));
             cmd.Prepare();
             return cmd.ExecuteNonQuery() > 0;
         }
