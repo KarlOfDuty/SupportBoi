@@ -15,14 +15,19 @@ namespace SupportBoi;
 
 public static class Interviewer
 {
-    // TODO: Investigate other types of selectors
+    // TODO: Validate that the different types have the appropriate amount of subpaths
     public enum QuestionType
     {
+        // Support multiselector as separate type, with only one subpath supported
         ERROR,
         END_WITH_SUMMARY,
         END_WITHOUT_SUMMARY,
         BUTTONS,
         TEXT_SELECTOR,
+        USER_SELECTOR,
+        ROLE_SELECTOR,
+        MENTIONABLE_SELECTOR, // User or role
+        CHANNEL_SELECTOR,
         TEXT_INPUT
     }
 
@@ -41,6 +46,7 @@ public static class Interviewer
     // The entire interview tree is serialized and stored in the database in order to record responses as they are made.
     public class InterviewQuestion
     {
+        // TODO: Add selector placeholder
         // Title of the message embed.
         [JsonProperty("title")]
         public string title;
@@ -123,6 +129,11 @@ public static class Interviewer
 
         public void GetSummary(ref OrderedDictionary summary)
         {
+            if (messageID == 0)
+            {
+                return;
+            }
+
             if (!string.IsNullOrWhiteSpace(summaryField))
             {
                 summary.Add(summaryField, answer);
@@ -274,7 +285,7 @@ public static class Interviewer
         }
 
         // Ignore if option was deselected.
-        if (interaction.Data.ComponentType == DiscordComponentType.StringSelect && interaction.Data.Values.Length == 0)
+        if (interaction.Data.ComponentType is not DiscordComponentType.Button && interaction.Data.Values.Length == 0)
         {
             await interaction.CreateResponseAsync(DiscordInteractionResponseType.UpdateMessage);
             return;
@@ -314,13 +325,43 @@ public static class Interviewer
             return;
         }
 
-        await interaction.CreateResponseAsync(DiscordInteractionResponseType.UpdateMessage);
+        try
+        {
+            // TODO: Debug this with the new selectors
+            await interaction.CreateResponseAsync(DiscordInteractionResponseType.UpdateMessage);
+        }
+        catch (Exception e)
+        {
+            Logger.Error("Could not update original message:", e);
+        }
 
         // Parse the response index from the button/selector.
         string componentID = "";
+        string answer = "";
 
         switch (interaction.Data.ComponentType)
         {
+            case DiscordComponentType.UserSelect:
+            case DiscordComponentType.RoleSelect:
+            case DiscordComponentType.ChannelSelect:
+            case DiscordComponentType.MentionableSelect:
+                if (interaction.Data.Resolved?.Roles?.Any() ?? false)
+                {
+                    answer = interaction.Data.Resolved.Roles.First().Value.Mention;
+                }
+                else if (interaction.Data.Resolved?.Users?.Any() ?? false)
+                {
+                    answer = interaction.Data.Resolved.Users.First().Value.Mention;
+                }
+                else if (interaction.Data.Resolved?.Channels?.Any() ?? false)
+                {
+                    answer = interaction.Data.Resolved.Channels.First().Value.Mention;
+                }
+                else if (interaction.Data.Resolved?.Messages?.Any() ?? false)
+                {
+                    answer = interaction.Data.Resolved.Messages.First().Value.Id.ToString();
+                }
+                break;
             case DiscordComponentType.StringSelect:
                 componentID = interaction.Data.Values[0];
                 break;
@@ -331,21 +372,37 @@ public static class Interviewer
                 throw new ArgumentOutOfRangeException();
         }
 
-        if (!int.TryParse(componentID, out int pathIndex))
+        // The different mentionable selectors provide the actual answer, while the others just return the ID.
+        if (componentID == "")
         {
-            Logger.Error("Invalid interview button/selector index: " + componentID);
-            return;
+            // TODO: Handle multipaths
+            if (currentQuestion.paths.Count != 1)
+            {
+                Logger.Error("The interview for channel " + interaction.Channel.Id + " has a question of type " + currentQuestion.type + " and it must have exactly one subpath.");
+                return;
+            }
+
+            (string _, InterviewQuestion nextQuestion) = currentQuestion.paths.First();
+            await HandleAnswer(answer, nextQuestion, interviewRoot, currentQuestion, interaction.Channel);
+        }
+        else
+        {
+            if (!int.TryParse(componentID, out int pathIndex))
+            {
+                Logger.Error("Invalid interview button/selector index: " + componentID);
+                return;
+            }
+
+            if (pathIndex >= currentQuestion.paths.Count || pathIndex < 0)
+            {
+                Logger.Error("Invalid interview button/selector index: " + pathIndex);
+                return;
+            }
+
+            (string questionString, InterviewQuestion nextQuestion) = currentQuestion.paths.ElementAt(pathIndex);
+            await HandleAnswer(questionString, nextQuestion, interviewRoot, currentQuestion, interaction.Channel);
         }
 
-        if (pathIndex >= currentQuestion.paths.Count || pathIndex < 0)
-        {
-            Logger.Error("Invalid interview button/selector index: " + pathIndex);
-            return;
-        }
-
-        (string questionString, InterviewQuestion nextQuestion) = currentQuestion.paths.ElementAt(pathIndex);
-
-        await HandleAnswer(questionString, nextQuestion, interviewRoot, currentQuestion, interaction.Channel);
     }
 
     public static async Task ProcessResponseMessage(DiscordMessage answerMessage)
@@ -409,7 +466,7 @@ public static class Interviewer
             // Skip to the first matching path.
             if (!Regex.IsMatch(answerMessage.Content, questionString)) continue;
 
-            await HandleAnswer(questionString, nextQuestion, interviewRoot, currentQuestion, answerMessage.Channel, answerMessage);
+            await HandleAnswer(answerMessage.Content, nextQuestion, interviewRoot, currentQuestion, answerMessage.Channel, answerMessage);
             return;
         }
 
@@ -422,32 +479,26 @@ public static class Interviewer
         currentQuestion.AddRelatedMessageIDs(errorMessage.Id);
     }
 
-    private static async Task HandleAnswer(string questionString,
+    private static async Task HandleAnswer(string answer,
                                            InterviewQuestion nextQuestion,
                                            InterviewQuestion interviewRoot,
                                            InterviewQuestion previousQuestion,
                                            DiscordChannel channel,
                                            DiscordMessage answerMessage = null)
     {
+        // The error message type should not alter anything about the interview
         if (nextQuestion.type != QuestionType.ERROR)
         {
-            // The answer was provided using a button or selector
+            previousQuestion.answer = answer;
             if (answerMessage == null)
             {
-                previousQuestion.answer = questionString;
+                // The answer was provided using a button or selector
                 previousQuestion.answerID = 0;
             }
             else
             {
-                previousQuestion.answer = answerMessage.Content;
                 previousQuestion.answerID = answerMessage.Id;
             }
-
-            // Remove any other paths from the previous question.
-            previousQuestion.paths = new Dictionary<string, InterviewQuestion>
-            {
-                { questionString, nextQuestion }
-            };
         }
 
         // Create next question, or finish the interview.
@@ -456,6 +507,10 @@ public static class Interviewer
             case QuestionType.TEXT_INPUT:
             case QuestionType.BUTTONS:
             case QuestionType.TEXT_SELECTOR:
+            case QuestionType.ROLE_SELECTOR:
+            case QuestionType.USER_SELECTOR:
+            case QuestionType.CHANNEL_SELECTOR:
+            case QuestionType.MENTIONABLE_SELECTOR:
                 await CreateQuestion(channel, nextQuestion);
                 Database.SaveInterview(channel.Id, interviewRoot);
                 break;
@@ -485,7 +540,6 @@ public static class Interviewer
                 ReloadInterviews();
                 return;
             case QuestionType.END_WITHOUT_SUMMARY:
-                // TODO: Add command to restart interview.
                 await channel.SendMessageAsync(new DiscordEmbedBuilder()
                 {
                     Color = Utilities.StringToColor(nextQuestion.color),
@@ -583,10 +637,22 @@ public static class Interviewer
                     {
                         categoryOptions.Add(new DiscordSelectComponentOption(question.paths.ToArray()[selectionOptions].Key, selectionOptions.ToString()));
                     }
-                    selectionComponents.Add(new DiscordSelectComponent("supportboi_interviewselector " + selectionBoxes, "Select an option...", categoryOptions, false, 0, 1));
+                    selectionComponents.Add(new DiscordSelectComponent("supportboi_interviewselector " + selectionBoxes, "Select an option...", categoryOptions));
                 }
 
                 msgBuilder.AddComponents(selectionComponents);
+                break;
+            case QuestionType.ROLE_SELECTOR:
+                msgBuilder.AddComponents(new DiscordRoleSelectComponent("supportboi_interviewroleselector", "Select a role..."));
+                break;
+            case QuestionType.USER_SELECTOR:
+                msgBuilder.AddComponents(new DiscordUserSelectComponent("supportboi_interviewuserselector", "Select a user..."));
+                break;
+            case QuestionType.CHANNEL_SELECTOR:
+                msgBuilder.AddComponents(new DiscordChannelSelectComponent("supportboi_interviewchannelselector", "Select a channel..."));
+                break;
+            case QuestionType.MENTIONABLE_SELECTOR:
+                msgBuilder.AddComponents(new DiscordMentionableSelectComponent("supportboi_interviewmentionableselector", "Select a mentionable..."));
                 break;
             case QuestionType.TEXT_INPUT:
                 embed.WithFooter("Reply to this message with your answer. You cannot include images or files.");
