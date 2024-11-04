@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -249,6 +250,20 @@ public static class Interviewer
             Database.SaveInterview(channel.Id, interview);
             activeInterviews = Database.GetAllInterviews();
         }
+    }
+
+    public static async Task RestartInterview(SlashCommandContext command)
+    {
+        if (activeInterviews.TryGetValue(command.Channel.Id, out InterviewQuestion interviewRoot))
+        {
+            await DeletePreviousMessages(interviewRoot, command.Channel);
+            if (!Database.TryDeleteInterview(command.Channel.Id))
+            {
+                Logger.Error("Could not delete interview from database. Channel ID: " + command.Channel.Id);
+            }
+            ReloadInterviews();
+        }
+        StartInterview(command.Channel);
     }
 
     public static async Task ProcessButtonOrSelectorResponse(DiscordInteraction interaction)

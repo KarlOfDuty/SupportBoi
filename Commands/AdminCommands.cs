@@ -211,6 +211,7 @@ public class AdminCommands
         }
     }
 
+    [RequireGuild]
     [Command("reload")]
     [Description("Reloads the bot config.")]
     public async Task Reload(SlashCommandContext command)
@@ -224,6 +225,7 @@ public class AdminCommands
         await SupportBoi.Reload();
     }
 
+    [RequireGuild]
     [Command("getinterviewtemplates")]
     [Description("Provides a copy of the interview templates which you can edit and then reupload.")]
     public async Task GetInterviewTemplates(SlashCommandContext command)
@@ -232,6 +234,7 @@ public class AdminCommands
         await command.RespondAsync(new DiscordInteractionResponseBuilder().AddFile("interview-templates.json", stream).AsEphemeral());
     }
 
+    [RequireGuild]
     [Command("setinterviewtemplates")]
     [Description("Uploads an interview template file.")]
     public async Task SetInterviewTemplates(SlashCommandContext command, [Parameter("file")] DiscordAttachment file)

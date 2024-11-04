@@ -190,6 +190,7 @@ internal static class SupportBoi
                     typeof(AddCommand),
                     typeof(AddMessageCommand),
                     typeof(AddStaffCommand),
+                    typeof(AdminCommands),
                     typeof(AssignCommand),
                     typeof(BlacklistCommand),
                     typeof(CloseCommand),
@@ -205,6 +206,7 @@ internal static class SupportBoi
                     typeof(RemoveCategoryCommand),
                     typeof(RemoveMessageCommand),
                     typeof(RemoveStaffCommand),
+                    typeof(RestartInterviewCommand),
                     typeof(SayCommand),
                     typeof(SetSummaryCommand),
                     typeof(StatusCommand),
@@ -213,7 +215,6 @@ internal static class SupportBoi
                     typeof(TranscriptCommand),
                     typeof(UnassignCommand),
                     typeof(UnblacklistCommand),
-                    typeof(AdminCommands)
                 ]);
                 extension.AddProcessor(new SlashCommandProcessor());
                 extension.CommandErrored += EventHandler.OnCommandError;
