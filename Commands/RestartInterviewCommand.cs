@@ -12,7 +12,7 @@ public class RestartInterviewCommand
   [Description("Restarts the automated interview in this channel, using an updated template if available.")]
   public async Task OnExecute(SlashCommandContext command)
   {
-    await command.DeferResponseAsync();
+    await command.DeferResponseAsync(true);
     await Interviewer.RestartInterview(command);
     await command.RespondAsync(new DiscordEmbedBuilder
     {
