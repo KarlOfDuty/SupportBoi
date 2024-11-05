@@ -279,6 +279,24 @@ public class AdminCommands
                 }
             });
 
+            if (interview != null)
+            {
+                foreach (KeyValuePair<ulong, Interviewer.ValidatedInterviewQuestion> interviewRoot in interview)
+                {
+                    interviewRoot.Value.Validate(ref errors, out int summaryCount, out int summaryMaxLength);
+
+                    if (summaryCount > 25)
+                    {
+                        errors.Add("A summary cannot contain more than 25 fields, but you have " + summaryCount + " fields in one of your interview branches.");
+                    }
+
+                    if (summaryMaxLength >= 6000)
+                    {
+                        errors.Add("A summary cannot contain more than 6000 characters, but one of your branches has the possibility of its summary reaching " + summaryMaxLength + " characters.");
+                    }
+                }
+            }
+
             if (errors.Count != 0)
             {
                 string errorString = string.Join("\n\n", errors);
