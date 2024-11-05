@@ -46,7 +46,6 @@ public static class Interviewer
     // The entire interview tree is serialized and stored in the database in order to record responses as they are made.
     public class InterviewQuestion
     {
-        // TODO: Add selector placeholder
         // Title of the message embed.
         [JsonProperty("title")]
         public string title;
@@ -73,9 +72,15 @@ public static class Interviewer
         [JsonProperty("button-style")]
         public ButtonType buttonStyle;
 
+        // If this question is on a selector, give it this placeholder.
+        [JsonProperty("selector-placeholder")]
+        public string selectorPlaceholder;
+
+        // The maximum length of a text input.
         [JsonProperty("max-length")]
         public int maxLength;
 
+        // The minimum length of a text input.
         [JsonProperty("min-length", Required = Required.Default)]
         public int minLength;
 
@@ -219,6 +224,9 @@ public static class Interviewer
         [JsonConverter(typeof(StringEnumConverter))]
         [JsonProperty("button-style", Required = Required.Default)]
         public ButtonType buttonStyle;
+
+        [JsonProperty("selector-placeholder", Required = Required.Default)]
+        public string selectorPlaceholder;
 
         [JsonProperty("max-length", Required = Required.Default)]
         public int maxLength;
@@ -603,8 +611,8 @@ public static class Interviewer
 
     private static async Task CreateQuestion(DiscordChannel channel, InterviewQuestion question)
     {
-        DiscordMessageBuilder msgBuilder = new DiscordMessageBuilder();
-        DiscordEmbedBuilder embed = new DiscordEmbedBuilder()
+        DiscordMessageBuilder msgBuilder = new();
+        DiscordEmbedBuilder embed = new()
         {
             Color = Utilities.StringToColor(question.color),
             Title = question.title,
@@ -637,22 +645,28 @@ public static class Interviewer
                     {
                         categoryOptions.Add(new DiscordSelectComponentOption(question.paths.ToArray()[selectionOptions].Key, selectionOptions.ToString()));
                     }
-                    selectionComponents.Add(new DiscordSelectComponent("supportboi_interviewselector " + selectionBoxes, "Select an option...", categoryOptions));
+
+                    selectionComponents.Add(new DiscordSelectComponent("supportboi_interviewselector " + selectionBoxes, string.IsNullOrWhiteSpace(question.selectorPlaceholder)
+                                                                                                                           ? "Select an option..." : question.selectorPlaceholder, categoryOptions));
                 }
 
                 msgBuilder.AddComponents(selectionComponents);
                 break;
             case QuestionType.ROLE_SELECTOR:
-                msgBuilder.AddComponents(new DiscordRoleSelectComponent("supportboi_interviewroleselector", "Select a role..."));
+                msgBuilder.AddComponents(new DiscordRoleSelectComponent("supportboi_interviewroleselector", string.IsNullOrWhiteSpace(question.selectorPlaceholder)
+                                                                                                              ? "Select a role..." : question.selectorPlaceholder));
                 break;
             case QuestionType.USER_SELECTOR:
-                msgBuilder.AddComponents(new DiscordUserSelectComponent("supportboi_interviewuserselector", "Select a user..."));
+                msgBuilder.AddComponents(new DiscordUserSelectComponent("supportboi_interviewuserselector", string.IsNullOrWhiteSpace(question.selectorPlaceholder)
+                                                                                                              ? "Select a user..." : question.selectorPlaceholder));
                 break;
             case QuestionType.CHANNEL_SELECTOR:
-                msgBuilder.AddComponents(new DiscordChannelSelectComponent("supportboi_interviewchannelselector", "Select a channel..."));
+                msgBuilder.AddComponents(new DiscordChannelSelectComponent("supportboi_interviewchannelselector", string.IsNullOrWhiteSpace(question.selectorPlaceholder)
+                                                                                                                    ? "Select a channel..." : question.selectorPlaceholder));
                 break;
             case QuestionType.MENTIONABLE_SELECTOR:
-                msgBuilder.AddComponents(new DiscordMentionableSelectComponent("supportboi_interviewmentionableselector", "Select a mentionable..."));
+                msgBuilder.AddComponents(new DiscordMentionableSelectComponent("supportboi_interviewmentionableselector", string.IsNullOrWhiteSpace(question.selectorPlaceholder)
+                                                                                                                            ? "Select a user or role..." : question.selectorPlaceholder));
                 break;
             case QuestionType.TEXT_INPUT:
                 embed.WithFooter("Reply to this message with your answer. You cannot include images or files.");
