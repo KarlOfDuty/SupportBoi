@@ -15,7 +15,6 @@ namespace SupportBoi;
 
 public static class Interviewer
 {
-    // TODO: Validate that the different types have the appropriate amount of subpaths
     public enum QuestionType
     {
         // Support multiselector as separate type, with only one subpath supported
@@ -46,8 +45,6 @@ public static class Interviewer
     // The entire interview tree is serialized and stored in the database in order to record responses as they are made.
     public class InterviewQuestion
     {
-        // TODO: String selector entry description
-
         // Title of the message embed.
         [JsonProperty("title")]
         public string title;
@@ -77,6 +74,10 @@ public static class Interviewer
         // If this question is on a selector, give it this placeholder.
         [JsonProperty("selector-placeholder")]
         public string selectorPlaceholder;
+
+        // If this question is on a selector, give it this description.
+        [JsonProperty("selector-description")]
+        public string selectorDescription;
 
         // The maximum length of a text input.
         [JsonProperty("max-length")]
@@ -229,6 +230,9 @@ public static class Interviewer
 
         [JsonProperty("selector-placeholder", Required = Required.Default)]
         public string selectorPlaceholder;
+
+        [JsonProperty("selector-description", Required = Required.Default)]
+        public string selectorDescription;
 
         [JsonProperty("max-length", Required = Required.Default)]
         public int maxLength;
@@ -725,7 +729,8 @@ public static class Interviewer
                     List<DiscordSelectComponentOption> categoryOptions = [];
                     for (; selectionOptions < 25 * (selectionBoxes + 1) && selectionOptions < question.paths.Count; selectionOptions++)
                     {
-                        categoryOptions.Add(new DiscordSelectComponentOption(question.paths.ToArray()[selectionOptions].Key, selectionOptions.ToString()));
+                        (string questionString, InterviewQuestion nextQuestion) = question.paths.ToArray()[selectionOptions];
+                        categoryOptions.Add(new DiscordSelectComponentOption(questionString, selectionOptions.ToString(), nextQuestion.selectorDescription));
                     }
 
                     selectionComponents.Add(new DiscordSelectComponent("supportboi_interviewselector " + selectionBoxes, string.IsNullOrWhiteSpace(question.selectorPlaceholder)
