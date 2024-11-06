@@ -23,7 +23,7 @@ internal static class SupportBoi
     internal static DiscordClient client = null;
     public class CommandLineArguments
     {
-        [CommandLine.Option('c',
+        [Option('c',
                             "config",
                             Required = false,
                             HelpText = "Select a config file to use.",
@@ -31,7 +31,7 @@ internal static class SupportBoi
                             MetaValue = "PATH")]
         public string configPath { get; set; }
 
-        [CommandLine.Option('t',
+        [Option('t',
                             "transcripts",
                             Required = false,
                             HelpText = "Select directory to store transcripts in.",
@@ -39,7 +39,7 @@ internal static class SupportBoi
                             MetaValue = "PATH")]
         public string transcriptDir { get; set; }
 
-        [CommandLine.Option(
+        [Option(
             "leave",
             Required = false,
             HelpText = "Leaves one or more Discord servers. " +
