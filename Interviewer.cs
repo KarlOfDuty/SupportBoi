@@ -469,15 +469,22 @@ public static class Interviewer
         // The different mentionable selectors provide the actual answer, while the others just return the ID.
         if (componentID == "")
         {
-            // TODO: Handle multipaths
-            if (currentQuestion.paths.Count != 1)
+            foreach (KeyValuePair<string, InterviewQuestion> path in currentQuestion.paths)
             {
-                Logger.Error("The interview for channel " + interaction.Channel.Id + " has a question of type " + currentQuestion.type + " and it must have exactly one subpath.");
-                return;
+                // Skip to the first matching path.
+                if (Regex.IsMatch(answer, path.Key))
+                {
+                    await HandleAnswer(answer, path.Value, interviewRoot, currentQuestion, interaction.Channel);
+                    return;
+                }
             }
 
-            (string _, InterviewQuestion nextQuestion) = currentQuestion.paths.First();
-            await HandleAnswer(answer, nextQuestion, interviewRoot, currentQuestion, interaction.Channel);
+            Logger.Error("The interview for channel " + interaction.Channel.Id + " reached a question of type " + currentQuestion.type + " which has no valid next question. Their selection was:\n" + answer);
+            await interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().AddEmbed(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Red,
+                Description = "Error: Could not determine the next question based on your answer. Check your response and ask an admin to check the bot logs if this seems incorrect."
+            }).AsEphemeral());
         }
         else
         {
@@ -564,10 +571,10 @@ public static class Interviewer
             return;
         }
 
-        // TODO: Make message configurable.
+        Logger.Error("The interview for channel " + answerMessage.Channel.Id + " reached a question of type " + currentQuestion.type + " which has no valid next question. Their message was:\n" + answerMessage.Content);
         DiscordMessage errorMessage =await answerMessage.RespondAsync(new DiscordEmbedBuilder
         {
-            Description = "Error: Could not determine the next question based on your answer.",
+            Description = "Error: Could not determine the next question based on your answer. Check your response and ask an admin to check the bot logs if this seems incorrect.",
             Color = DiscordColor.Red
         });
         currentQuestion.AddRelatedMessageIDs(errorMessage.Id);
