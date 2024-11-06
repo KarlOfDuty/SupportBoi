@@ -47,11 +47,9 @@ public class CloseCommand
     public static async Task OnConfirmed(DiscordInteraction interaction)
     {
         await interaction.CreateResponseAsync(DiscordInteractionResponseType.DeferredMessageUpdate);
-        ulong channelID = interaction.Channel.Id;
-        string channelName = interaction.Channel.Name;
 
         // Check if ticket exists in the database
-        if (!Database.TryGetOpenTicket(channelID, out Database.Ticket ticket))
+        if (!Database.TryGetOpenTicket(interaction.Channel.Id, out Database.Ticket ticket))
         {
             await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
             {
@@ -78,7 +76,7 @@ public class CloseCommand
         }
 
         string closeReason = "";
-        if (closeReasons.TryGetValue(channelID, out string cachedReason))
+        if (closeReasons.TryGetValue(interaction.Channel.Id, out string cachedReason))
         {
             closeReason = "\nReason: " + cachedReason + "\n";
         }
@@ -139,7 +137,7 @@ public class CloseCommand
         }
 
         Database.ArchiveTicket(ticket);
-        Database.TryDeleteInterview(channelID);
+        Database.TryDeleteInterview(interaction.Channel.Id);
 
         await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
         {
@@ -155,6 +153,6 @@ public class CloseCommand
 
         Database.DeleteOpenTicket(ticket.id);
 
-        closeReasons.Remove(channelID);
+        closeReasons.Remove(interaction.Channel.Id);
     }
 }
