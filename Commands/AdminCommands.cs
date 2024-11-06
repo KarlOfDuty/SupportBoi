@@ -115,11 +115,10 @@ public class AdminCommands
         DiscordUser ticketUser = (user == null ? command.User : user);
 
         long id = Database.NewTicket(ticketUser.Id, 0, command.Channel.Id);
-        string ticketID = id.ToString("00000");
         await command.RespondAsync(new DiscordEmbedBuilder
         {
             Color = DiscordColor.Green,
-            Description = "Channel has been designated ticket " + ticketID + "."
+            Description = "Channel has been designated ticket " + id.ToString("00000") + "."
         });
 
         try
@@ -129,7 +128,11 @@ public class AdminCommands
             await logChannel.SendMessageAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Green,
-                Description = command.Channel.Mention + " has been designated ticket " + ticketID + " by " + command.Member.Mention + "."
+                Description = command.Channel.Mention + " has been designated ticket " + id.ToString("00000") + " by " + command.Member?.Mention + ".",
+                Footer = new DiscordEmbedBuilder.EmbedFooter
+                {
+                    Text = "Ticket: " + id.ToString("00000")
+                }
             });
         }
         catch (NotFoundException)
@@ -189,7 +192,11 @@ public class AdminCommands
                 await logChannel.SendMessageAsync(new DiscordEmbedBuilder
                 {
                     Color = DiscordColor.Green,
-                    Description = command.Channel.Mention + " has been undesignated as a ticket by " + command.Member.Mention + "."
+                    Description = command.Channel.Mention + " has been undesignated as a ticket by " + command.User.Mention + ".",
+                    Footer = new DiscordEmbedBuilder.EmbedFooter
+                    {
+                        Text = "Ticket: " + ticket.id.ToString("00000")
+                    }
                 });
             }
             catch (NotFoundException)
@@ -217,6 +224,21 @@ public class AdminCommands
             Color = DiscordColor.Green,
             Description = "Reloading bot application..."
         });
+
+        try
+        {
+            DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
+            await logChannel.SendMessageAsync(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Green,
+                Description = command.Channel.Mention + " reloaded the bot.",
+            });
+        }
+        catch (NotFoundException)
+        {
+            Logger.Error("Could not find the log channel.");
+        }
+
         Logger.Log("Reloading bot...");
         await SupportBoi.Reload();
     }
@@ -328,9 +350,22 @@ public class AdminCommands
 
         await command.RespondAsync(new DiscordEmbedBuilder
         {
-
             Color = DiscordColor.Green,
             Description = "Uploaded interview template."
         }, true);
+
+        try
+        {
+            DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
+            await logChannel.SendMessageAsync(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Green,
+                Description = command.Channel.Mention + " uploaded new interview templates.",
+            });
+        }
+        catch (NotFoundException)
+        {
+            Logger.Error("Could not find the log channel.");
+        }
     }
 }

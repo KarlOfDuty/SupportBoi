@@ -6,6 +6,7 @@ using DSharpPlus.Commands;
 using DSharpPlus.Commands.ContextChecks;
 using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
+using DSharpPlus.Exceptions;
 
 namespace SupportBoi.Commands;
 
@@ -49,5 +50,19 @@ public class CreateButtonPanelCommand
             Color = DiscordColor.Green,
             Description = "Successfully created message, make sure to run this command again if you add new categories to the bot."
         }, true);
+
+        try
+        {
+            DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
+            await logChannel.SendMessageAsync(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Green,
+                Description = command.User.Mention + " created a new button panel in " + command.Channel.Mention + "."
+            });
+        }
+        catch (NotFoundException)
+        {
+            Logger.Error("Could not find the log channel.");
+        }
     }
 }

@@ -4,6 +4,7 @@ using DSharpPlus.Commands;
 using DSharpPlus.Commands.ContextChecks;
 using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
+using DSharpPlus.Exceptions;
 
 namespace SupportBoi.Commands;
 
@@ -71,6 +72,24 @@ public class AddCategoryCommand
                 Color = DiscordColor.Red,
                 Description = "Error: Failed adding the category to the database."
             }, true);
+        }
+
+        try
+        {
+            DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
+            await logChannel.SendMessageAsync(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Green,
+                Description = command.User.Mention + " added `" + category.Name + "` to the category list.",
+                Footer = new DiscordEmbedBuilder.EmbedFooter
+                {
+                    Text = "Category: " + title
+                }
+            });
+        }
+        catch (NotFoundException)
+        {
+            Logger.Error("Could not find the log channel.");
         }
     }
 }

@@ -4,6 +4,7 @@ using DSharpPlus.Commands;
 using DSharpPlus.Commands.ContextChecks;
 using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
+using DSharpPlus.Exceptions;
 
 namespace SupportBoi.Commands;
 
@@ -29,11 +30,24 @@ public class ToggleActiveCommand
 
         if (Database.SetStaffActive(staffUser.Id, !staffMember.active))
         {
-            await command.RespondAsync(new DiscordEmbedBuilder
+            if (user != null && user.Id != command.User.Id)
             {
-                Color = DiscordColor.Green,
-                Description = staffMember.active ? "Staff member is now set as inactive and will no longer be randomly assigned any support tickets." : "Staff member is now set as active and will be randomly assigned support tickets again."
-            }, true);
+                await command.RespondAsync(new DiscordEmbedBuilder
+                {
+                    Color = DiscordColor.Green,
+                    Description = staffUser.Mention + (staffMember.active ? " is now set as inactive and will no longer be randomly assigned any support tickets."
+                                                                          : " is now set as active and will be randomly assigned support tickets again.")
+                }, true);
+            }
+            else
+            {
+                await command.RespondAsync(new DiscordEmbedBuilder
+                {
+                    Color = DiscordColor.Green,
+                    Description = staffMember.active ? "You are now set as inactive and will no longer be randomly assigned any support tickets."
+                                                     : "You are now set as active and will be randomly assigned support tickets again."
+                }, true);
+            }
         }
         else
         {
@@ -42,6 +56,32 @@ public class ToggleActiveCommand
                 Color = DiscordColor.Red,
                 Description = "Error: Unable to update active status in database."
             }, true);
+        }
+
+        try
+        {
+            DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
+
+            if (user != null && user.Id != command.User.Id)
+            {
+                await logChannel.SendMessageAsync(new DiscordEmbedBuilder
+                {
+                    Color = DiscordColor.Green,
+                    Description = staffUser.Mention + " set " + command.Channel.Mention + "'s status to " + (staffMember.active ? "active" : "inactive")
+                });
+            }
+            else
+            {
+                await logChannel.SendMessageAsync(new DiscordEmbedBuilder
+                {
+                    Color = DiscordColor.Green,
+                    Description = staffUser.Mention + " set their own status to " + (staffMember.active ? "active" : "inactive")
+                });
+            }
+        }
+        catch (NotFoundException)
+        {
+            Logger.Error("Could not find the log channel.");
         }
     }
 }

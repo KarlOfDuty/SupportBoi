@@ -65,7 +65,7 @@ public class AddStaffCommand
             await logChannel.SendMessageAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Green,
-                Description = staffMember.Mention + " was added to staff.\n"
+                Description = staffMember.Mention + " was added to staff by " + command.User.Mention + "."
             });
         }
         catch (NotFoundException)

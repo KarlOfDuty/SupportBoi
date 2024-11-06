@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using DSharpPlus.Commands;
 using DSharpPlus.Commands.ContextChecks;
 using DSharpPlus.Commands.Processors.SlashCommands;
+using DSharpPlus.Exceptions;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 
@@ -40,6 +41,20 @@ public class SayCommand
             Color = DiscordColor.Cyan,
             Description = message.message.Replace("\\n", "\n")
         });
+
+        try
+        {
+            DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
+            await logChannel.SendMessageAsync(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Green,
+                Description = command.User.Mention + " posted the " + message.identifier + " message in " + command.Channel.Mention + "."
+            });
+        }
+        catch (NotFoundException)
+        {
+            Logger.Error("Could not find the log channel.");
+        }
     }
 
     private static async void SendMessageList(SlashCommandContext command)

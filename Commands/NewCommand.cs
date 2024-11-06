@@ -165,11 +165,9 @@ public class NewCommand
         }
 
         long id = Database.NewTicket(member.Id, staffID, ticketChannel.Id);
-        string ticketID = id.ToString("00000");
-
         try
         {
-            await ticketChannel.ModifyAsync(modifiedAttributes => modifiedAttributes.Name = "ticket-" + ticketID);
+            await ticketChannel.ModifyAsync(modifiedAttributes => modifiedAttributes.Name = "ticket-" + id.ToString("00000"));
         }
         catch (DiscordException e)
         {
@@ -244,8 +242,11 @@ public class NewCommand
             await logChannel.SendMessageAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Green,
-                Description = "Ticket " + ticketChannel.Mention + " opened by " + member.Mention + ".\n",
-                Footer = new DiscordEmbedBuilder.EmbedFooter {Text = "Ticket " + ticketID}
+                Description = "Ticket " + ticketChannel.Mention + " opened by " + member.Mention + ".",
+                Footer = new DiscordEmbedBuilder.EmbedFooter
+                {
+                    Text = "Ticket: " + id.ToString("00000")
+                }
             });
         }
         catch (NotFoundException)

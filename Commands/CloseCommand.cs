@@ -92,7 +92,10 @@ public class CloseCommand
                 Color = DiscordColor.Green,
                 Description = "Ticket " + ticket.id.ToString("00000") + " closed by " +
                               interaction.User.Mention + ".\n" + closeReason,
-                Footer = new DiscordEmbedBuilder.EmbedFooter { Text = '#' + channelName }
+                Footer = new DiscordEmbedBuilder.EmbedFooter
+                {
+                    Text = "Ticket: " + ticket.id.ToString("00000")
+                }
             };
 
             await using FileStream file = new FileStream(Transcriber.GetPath(ticket.id), FileMode.Open, FileAccess.Read);
@@ -114,7 +117,10 @@ public class CloseCommand
                 Color = DiscordColor.Green,
                 Description = "Ticket " + ticket.id.ToString("00000") + " which you opened has now been closed, " +
                               "check the transcript for more info.\n" + closeReason,
-                Footer = new DiscordEmbedBuilder.EmbedFooter { Text = '#' + channelName }
+                Footer = new DiscordEmbedBuilder.EmbedFooter
+                {
+                    Text = "Ticket: " + ticket.id.ToString("00000")
+                }
             };
 
             try

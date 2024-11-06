@@ -47,7 +47,7 @@ public class RemoveStaffCommand
             await logChannel.SendMessageAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Green,
-                Description = "User was removed from staff.\n"
+                Description = user.Mention + " was removed from staff by " + command.User.Mention + "."
             });
         }
         catch (NotFoundException)

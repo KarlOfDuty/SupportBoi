@@ -18,7 +18,7 @@ public class AddCommand
         [Parameter("user")] [Description("User to add to ticket.")] DiscordUser user)
     {
         // Check if ticket exists in the database
-        if (!Database.IsOpenTicket(command.Channel.Id))
+        if (!Database.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {
@@ -62,7 +62,6 @@ public class AddCommand
                 Description = "Added " + member.Mention + " to ticket."
             });
 
-            // Log it if the log channel exists
             try
             {
                 DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
@@ -70,7 +69,11 @@ public class AddCommand
                 {
                     Color = DiscordColor.Green,
                     Description = member.Mention + " was added to " + command.Channel.Mention +
-                                  " by " + command.Member?.Mention + "."
+                                  " by " + command.User.Mention + ".",
+                    Footer = new DiscordEmbedBuilder.EmbedFooter
+                    {
+                        Text = "Ticket: " + ticket.id.ToString("00000")
+                    }
                 });
             }
             catch (NotFoundException)

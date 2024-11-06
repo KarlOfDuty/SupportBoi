@@ -4,6 +4,7 @@ using DSharpPlus.Commands;
 using DSharpPlus.Commands.ContextChecks;
 using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
+using DSharpPlus.Exceptions;
 using MySqlConnector;
 
 namespace SupportBoi.Commands;
@@ -17,7 +18,7 @@ public class SetSummaryCommand
     {
         ulong channelID = command.Channel.Id;
         // Check if ticket exists in the database
-        if (!Database.TryGetOpenTicket(command.Channel.Id, out Database.Ticket _))
+        if (!Database.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {
@@ -41,5 +42,23 @@ public class SetSummaryCommand
             Color = DiscordColor.Green,
             Description = "Summary set."
         }, true);
+
+        try
+        {
+            DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
+            await logChannel.SendMessageAsync(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Green,
+                Description = command.User.Mention + " set the summary for " + command.Channel.Mention + " to:\n\n" + summary,
+                Footer = new DiscordEmbedBuilder.EmbedFooter
+                {
+                    Text = "Ticket: " + ticket.id.ToString("00000")
+                }
+            });
+        }
+        catch (NotFoundException)
+        {
+            Logger.Error("Could not find the log channel.");
+        }
     }
 }

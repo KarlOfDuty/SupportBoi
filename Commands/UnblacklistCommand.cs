@@ -31,7 +31,7 @@ public class UnblacklistCommand
             await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Green,
-                Description = "Removed " + user.Mention + " from blacklist."
+                Description = "Unblocked " + user.Mention + " from opening new tickets."
             }, true);
 
             try
@@ -41,14 +41,13 @@ public class UnblacklistCommand
                 await logChannel.SendMessageAsync(new DiscordEmbedBuilder
                 {
                     Color = DiscordColor.Green,
-                    Description = user.Mention + " was unblacklisted from opening tickets by " + command.Member.Mention + "."
+                    Description = user.Mention + " was unblocked from opening tickets by " + command.User.Mention + "."
                 });
             }
             catch (NotFoundException)
             {
                 Logger.Error("Could not find the log channel.");
             }
-
         }
         catch (Exception)
         {

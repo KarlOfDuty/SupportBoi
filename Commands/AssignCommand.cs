@@ -99,7 +99,11 @@ public class AssignCommand
             await logChannel.SendMessageAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Green,
-                Description = member.Mention + " was assigned to " + command.Channel.Mention + " by " + command.Member.Mention + "."
+                Description = member.Mention + " was assigned to " + command.Channel.Mention + " by " + command.User.Mention + ".",
+                Footer = new DiscordEmbedBuilder.EmbedFooter
+                {
+                    Text = "Ticket: " + ticket.id.ToString("00000")
+                }
             });
         }
         catch (NotFoundException)

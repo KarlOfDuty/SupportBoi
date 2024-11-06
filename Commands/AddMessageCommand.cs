@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using DSharpPlus.Commands;
 using DSharpPlus.Commands.ContextChecks;
 using DSharpPlus.Commands.Processors.SlashCommands;
+using DSharpPlus.Exceptions;
 
 namespace SupportBoi.Commands;
 
@@ -51,6 +52,24 @@ public class AddMessageCommand
                 Color = DiscordColor.Red,
                 Description = "Error: Failed adding the message to the database."
             }, true);
+        }
+
+        try
+        {
+            DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
+            await logChannel.SendMessageAsync(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Green,
+                Description = command.User.Mention + " added or updated `" + identifier + "` in the /say command.\n\nContent:\n\n" + message,
+                Footer = new DiscordEmbedBuilder.EmbedFooter
+                {
+                    Text = "Identifier: " + identifier
+                }
+            });
+        }
+        catch (NotFoundException)
+        {
+            Logger.Error("Could not find the log channel.");
         }
     }
 }

@@ -20,7 +20,7 @@ public class MoveCommand
         [Parameter("category")] [Description("The category to move the ticket to. Only has to be the beginning of the name.")] string category)
     {
         // Check if ticket exists in the database
-        if (!Database.TryGetOpenTicket(command.Channel.Id, out Database.Ticket _))
+        if (!Database.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {
@@ -83,5 +83,23 @@ public class MoveCommand
             Color = DiscordColor.Green,
             Description = "Ticket was moved to `" + categoryChannel.Name + "`."
         });
+
+        try
+        {
+            DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
+            await logChannel.SendMessageAsync(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Green,
+                Description = command.User.Mention + " moved " + command.Channel.Mention + " to `" + categoryChannel.Name + "`.",
+                Footer = new DiscordEmbedBuilder.EmbedFooter
+                {
+                    Text = "Ticket: " + ticket.id.ToString("00000")
+                }
+            });
+        }
+        catch (NotFoundException)
+        {
+            Logger.Error("Could not find the log channel.");
+        }
     }
 }

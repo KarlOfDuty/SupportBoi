@@ -32,7 +32,7 @@ public class BlacklistCommand
             await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Green,
-                Description = "Blacklisted " + user.Mention + "."
+                Description = "Blocked " + user.Mention + " from opening new tickets."
             }, true);
 
             try
@@ -42,7 +42,7 @@ public class BlacklistCommand
                 await logChannel.SendMessageAsync(new DiscordEmbedBuilder
                 {
                     Color = DiscordColor.Green,
-                    Description = user.Mention + " was blacklisted from opening tickets by " + command.Member.Mention + "."
+                    Description = user.Mention + " was blocked from opening tickets by " + command.User.Mention + "."
                 });
             }
             catch (NotFoundException)
