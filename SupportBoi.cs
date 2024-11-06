@@ -24,28 +24,27 @@ internal static class SupportBoi
     public class CommandLineArguments
     {
         [Option('c',
-                            "config",
-                            Required = false,
-                            HelpText = "Select a config file to use.",
-                            Default = "config.yml",
-                            MetaValue = "PATH")]
+                "config",
+                Required = false,
+                HelpText = "Select a config file to use.",
+                Default = "config.yml",
+                MetaValue = "PATH")]
         public string configPath { get; set; }
 
         [Option('t',
-                            "transcripts",
-                            Required = false,
-                            HelpText = "Select directory to store transcripts in.",
-                            Default = "./transcripts",
-                            MetaValue = "PATH")]
+                "transcripts",
+                Required = false,
+                HelpText = "Select directory to store transcripts in.",
+                Default = "./transcripts",
+                MetaValue = "PATH")]
         public string transcriptDir { get; set; }
 
-        [Option(
-            "leave",
-            Required = false,
-            HelpText = "Leaves one or more Discord servers. " +
-                       "You can check which servers your bot is in when it starts up.",
-            MetaValue = "ID,ID,ID...",
-            Separator = ','
+        [Option("leave",
+                Required = false,
+                HelpText = "Leaves one or more Discord servers. " +
+                           "You can check which servers your bot is in when it starts up.",
+                MetaValue = "ID,ID,ID...",
+                Separator = ','
         )]
         public IEnumerable<ulong> serversToLeave { get; set; }
     }
