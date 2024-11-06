@@ -75,6 +75,12 @@ public class Logger : ILogger
         if (!IsEnabled(logLevel))
             return;
 
+        // Ratelimit messages are usually warnings, but they are unimportant in this case so downgrade them to debug.
+        if (formatter(state, exception).StartsWith("Hit Discord ratelimit on route "))
+        {
+            logLevel = LogLevel.Debug;
+        }
+
         string[] logLevelParts = logLevel switch
         {
             LogLevel.Trace       => ["[", "Trace", "] "],
