@@ -85,11 +85,11 @@ public class Logger : ILogger
         {
             LogLevel.Trace       => ["[", "Trace", "] "],
             LogLevel.Debug       => ["[", "Debug", "] "],
-            LogLevel.Information => ["[", "Info", "]  "],
-            LogLevel.Warning     => ["[", "Warn", "]  "],
+            LogLevel.Information => [" [", "Info", "] "],
+            LogLevel.Warning     => [" [", "Warn", "] "],
             LogLevel.Error       => ["[", "Error", "] "],
-            LogLevel.Critical    => ["[", "\u001b[1mCrit\u001b[0m", "]  "],
-            _                    => ["[", "None", "]  "],
+            LogLevel.Critical    => [" [", "\u001b[1mCrit\u001b[0m", "] "],
+            _                    => [" [", "None", "] "],
         };
 
         lock (@lock)
