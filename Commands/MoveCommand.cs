@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -54,7 +54,7 @@ public class MoveCommand
             return;
         }
 
-        if (command.Channel.Id == categoryChannel.Id)
+        if (command.Channel.Parent.Id == categoryChannel.Id)
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {
