@@ -673,6 +673,8 @@ public static class Interviewer
                     DiscordMessage errorMessage = await answerMessage.RespondAsync(errorMessageBuilder);
                     previousQuestion.AddRelatedMessageIDs(errorMessage.Id, answerMessage.Id);
                 }
+
+                Database.SaveInterview(channel.Id, interviewRoot);
                 break;
         }
     }
