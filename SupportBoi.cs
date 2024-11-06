@@ -149,17 +149,6 @@ internal static class SupportBoi
             return false;
         }
 
-        try
-        {
-            Logger.Log("Loading interviews from database...");
-            Interviewer.ReloadInterviews();
-        }
-        catch (Exception e)
-        {
-            Logger.Fatal("Could not load interviews from database. Error: ", e);
-            return false;
-        }
-
         Logger.Log("Setting up Discord client...");
         DiscordClientBuilder clientBuilder = DiscordClientBuilder.CreateDefault(Config.token, DiscordIntents.All)
             .SetReconnectOnFatalGatewayErrors()

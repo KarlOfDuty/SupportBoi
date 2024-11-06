@@ -323,13 +323,6 @@ public static class Interviewer
         }
     }
 
-    private static Dictionary<ulong, InterviewQuestion> activeInterviews = [];
-
-    public static void ReloadInterviews()
-    {
-        activeInterviews = Database.GetAllInterviews();
-    }
-
     public static async void StartInterview(DiscordChannel channel)
     {
         if (channel.Parent == null)
@@ -352,20 +345,18 @@ public static class Interviewer
         {
             await CreateQuestion(channel, interview);
             Database.SaveInterview(channel.Id, interview);
-            activeInterviews = Database.GetAllInterviews();
         }
     }
 
     public static async Task RestartInterview(SlashCommandContext command)
     {
-        if (activeInterviews.TryGetValue(command.Channel.Id, out InterviewQuestion interviewRoot))
+        if (Database.TryGetInterview(command.Channel.Id, out InterviewQuestion interviewRoot))
         {
             await DeletePreviousMessages(interviewRoot, command.Channel);
             if (!Database.TryDeleteInterview(command.Channel.Id))
             {
                 Logger.Error("Could not delete interview from database. Channel ID: " + command.Channel.Id);
             }
-            ReloadInterviews();
         }
         StartInterview(command.Channel);
     }
@@ -385,7 +376,7 @@ public static class Interviewer
         }
 
         // Return if there is no active interview in this channel
-        if (!activeInterviews.TryGetValue(interaction.Channel.Id, out InterviewQuestion interviewRoot))
+        if (!Database.TryGetInterview(interaction.Channel.Id, out InterviewQuestion interviewRoot))
         {
             await interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
                 .AddEmbed(new DiscordEmbedBuilder()
@@ -515,7 +506,7 @@ public static class Interviewer
         }
 
         // The channel does not have an active interview.
-        if (!activeInterviews.TryGetValue(answerMessage.ReferencedMessage.Channel.Id, out InterviewQuestion interviewRoot))
+        if (!Database.TryGetInterview(answerMessage.ReferencedMessage.Channel.Id, out InterviewQuestion interviewRoot))
         {
             return;
         }
@@ -638,7 +629,6 @@ public static class Interviewer
                 {
                     Logger.Error("Could not delete interview from database. Channel ID: " + channel.Id);
                 }
-                ReloadInterviews();
                 return;
             case QuestionType.END_WITHOUT_SUMMARY:
                 await channel.SendMessageAsync(new DiscordEmbedBuilder()
@@ -653,7 +643,6 @@ public static class Interviewer
                 {
                     Logger.Error("Could not delete interview from database. Channel ID: " + channel.Id);
                 }
-                ReloadInterviews();
                 break;
             case QuestionType.ERROR:
             default:
