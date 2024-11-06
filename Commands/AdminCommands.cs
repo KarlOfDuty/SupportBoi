@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using DSharpPlus.Commands;
@@ -15,9 +14,6 @@ using DSharpPlus.Exceptions;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Schema;
-using ErrorEventArgs = Newtonsoft.Json.Serialization.ErrorEventArgs;
 
 namespace SupportBoi.Commands;
 
@@ -261,7 +257,7 @@ public class AdminCommands
             {
                 //NullValueHandling = NullValueHandling.Include,
                 MissingMemberHandling = MissingMemberHandling.Error,
-                Error = delegate (object sender, ErrorEventArgs args)
+                Error = delegate (object sender, Newtonsoft.Json.Serialization.ErrorEventArgs args)
                 {
                     // I noticed the main exception mainly has information for developers, not administrators,
                     // so I switched to using the inner message if available.

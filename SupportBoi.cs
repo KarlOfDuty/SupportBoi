@@ -12,12 +12,7 @@ using DSharpPlus.Commands;
 using Microsoft.Extensions.Logging;
 using SupportBoi.Commands;
 using CommandLine;
-using DSharpPlus.Commands.ContextChecks;
-using DSharpPlus.Commands.EventArgs;
-using DSharpPlus.Commands.Exceptions;
 using DSharpPlus.Commands.Processors.SlashCommands;
-using DSharpPlus.Commands.Processors.TextCommands.Parsing;
-using DSharpPlus.Entities;
 using DSharpPlus.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
 

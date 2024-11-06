@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -582,19 +581,13 @@ public static class Interviewer
                                            DiscordChannel channel,
                                            DiscordMessage answerMessage = null)
     {
-        // The error message type should not alter anything about the interview
+        // The error message type should not alter anything about the interview.
         if (nextQuestion.type != QuestionType.ERROR)
         {
             previousQuestion.answer = answer;
-            if (answerMessage == null)
-            {
-                // The answer was provided using a button or selector
-                previousQuestion.answerID = 0;
-            }
-            else
-            {
-                previousQuestion.answerID = answerMessage.Id;
-            }
+
+            // There is no message ID if the question is not a text input.
+            previousQuestion.answerID = answerMessage == null ? 0 : answerMessage.Id;
         }
 
         // Create next question, or finish the interview.
@@ -686,7 +679,7 @@ public static class Interviewer
 
     private static async Task DeletePreviousMessages(InterviewQuestion interviewRoot, DiscordChannel channel)
     {
-        List<ulong> previousMessages = new List<ulong> { };
+        List<ulong> previousMessages = [];
         interviewRoot.GetMessageIDs(ref previousMessages);
 
         foreach (ulong previousMessageID in previousMessages)
