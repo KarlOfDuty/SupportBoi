@@ -26,6 +26,10 @@ internal static class Config
     internal static bool assignmentNotifications = false;
     internal static bool closingNotifications = false;
 
+    internal static bool interviewsEnabled = false;
+    internal static bool deleteMessagesAfterSummary = false;
+    internal static bool deleteMessagesAfterNoSummary = false;
+
     internal static string hostName = "127.0.0.1";
     internal static int port = 3306;
     internal static string database = "supportbot";
@@ -69,16 +73,15 @@ internal static class Config
         if (!Enum.TryParse(stringLogLevel, true, out LogLevel logLevel))
         {
             logLevel = LogLevel.Information;
-            Logger.Warn("Log level '" + stringLogLevel + "' invalid, using 'Information' instead.");
+            Logger.Warn("Log level '" + stringLogLevel + "' is invalid, using 'Information' instead.");
         }
         Logger.SetLogLevel(logLevel);
 
         string stringTimestampFormat = json.SelectToken("bot.timestamp-format")?.Value<string>() ?? "RelativeTime";
-
         if (!Enum.TryParse(stringTimestampFormat, true, out timestampFormat))
         {
             timestampFormat = TimestampFormat.RelativeTime;
-            Logger.Warn("Timestamp '" + stringTimestampFormat + "' invalid, using 'RelativeTime' instead.");
+            Logger.Warn("Timestamp '" + stringTimestampFormat + "' is invalid, using 'RelativeTime' instead.");
         }
 
         randomAssignment = json.SelectToken("bot.random-assignment")?.Value<bool>() ?? false;
@@ -93,6 +96,10 @@ internal static class Config
         ticketUpdatedNotificationDelay = json.SelectToken("notifications.ticket-updated-delay")?.Value<double>() ?? 0.0;
         assignmentNotifications = json.SelectToken("notifications.assignment")?.Value<bool>() ?? false;
         closingNotifications = json.SelectToken("notifications.closing")?.Value<bool>() ?? false;
+
+        interviewsEnabled = json.SelectToken("interviews.enabled")?.Value<bool>() ?? false;
+        deleteMessagesAfterSummary = json.SelectToken("interviews.delete-messages-after-summary")?.Value<bool>() ?? false;
+        deleteMessagesAfterNoSummary = json.SelectToken("interviews.delete-messages-after-no-summary")?.Value<bool>() ?? false;
 
         // Reads database info
         hostName = json.SelectToken("database.address")?.Value<string>() ?? "";

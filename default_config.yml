@@ -48,10 +48,21 @@ notifications:
     ticket-updated-delay: 0.5
 
     # Notifies staff when they are assigned to tickets.
-    assignment: true
+    assignment: true # TODO: Add option to be notified only when the initial interview is finished.
 
     # Notifies the user opening the ticket that their ticket was closed and includes the transcript.
     closing: true
+
+interviews: # TODO: Implement
+    # Enable the interview system. You must use the admin commands to set up interview templates before you can start using it.
+    # Any existing interviews can still be completed while interviews are disabled, but new ones will not be created.
+    enabled: true
+
+    # Whether to delete the interview question and answer messages after an interview summary is posted.
+    delete-messages-after-summary: true
+
+    # Whether to delete the interview question and answer messages after an interview ends without a summary.
+    delete-messages-after-no-summary: true
 
 database:
     # Address and port of the mysql server.

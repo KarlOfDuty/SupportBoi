@@ -204,7 +204,7 @@ public class NewCommand
         // Refreshes the channel as changes were made to it above
         ticketChannel = await SupportBoi.client.GetChannelAsync(ticketChannel.Id);
 
-        if (ticketChannel.Parent?.IsCategory ?? false)
+        if (Config.interviewsEnabled)
         {
             Interviewer.StartInterview(ticketChannel);
         }

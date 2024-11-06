@@ -352,7 +352,11 @@ public static class Interviewer
     {
         if (Database.TryGetInterview(command.Channel.Id, out InterviewQuestion interviewRoot))
         {
-            await DeletePreviousMessages(interviewRoot, command.Channel);
+            if (Config.deleteMessagesAfterNoSummary)
+            {
+                await DeletePreviousMessages(interviewRoot, command.Channel);
+            }
+
             if (!Database.TryDeleteInterview(command.Channel.Id))
             {
                 Logger.Error("Could not delete interview from database. Channel ID: " + command.Channel.Id);
@@ -624,7 +628,11 @@ public static class Interviewer
 
                 await channel.SendMessageAsync(embed);
 
-                await DeletePreviousMessages(interviewRoot, channel);
+                if (Config.deleteMessagesAfterSummary)
+                {
+                    await DeletePreviousMessages(interviewRoot, channel);
+                }
+
                 if (!Database.TryDeleteInterview(channel.Id))
                 {
                     Logger.Error("Could not delete interview from database. Channel ID: " + channel.Id);
@@ -638,7 +646,11 @@ public static class Interviewer
                     Description = nextQuestion.message
                 });
 
-                await DeletePreviousMessages(interviewRoot, channel);
+                if (Config.deleteMessagesAfterNoSummary)
+                {
+                    await DeletePreviousMessages(interviewRoot, channel);
+                }
+
                 if (!Database.TryDeleteInterview(channel.Id))
                 {
                     Logger.Error("Could not delete interview from database. Channel ID: " + channel.Id);
