@@ -100,55 +100,6 @@ public class NewCommand
         await command.RespondAsync(new DiscordInteractionResponseBuilder().AddComponents(selectionComponents).AsEphemeral());
     }
 
-    public static async Task OnCategorySelection(DiscordInteraction interaction)
-    {
-        string stringID;
-        switch (interaction.Data.ComponentType)
-        {
-            case DiscordComponentType.Button:
-                stringID = interaction.Data.CustomId.Replace("supportboi_newcommandbutton ", "");
-                break;
-            case DiscordComponentType.StringSelect:
-                if (interaction.Data.Values == null || interaction.Data.Values.Length <= 0)
-                {
-                    return;
-                }
-                stringID = interaction.Data.Values[0];
-                break;
-
-            case DiscordComponentType.ActionRow:
-            case DiscordComponentType.FormInput:
-            default:
-                return;
-        }
-
-        if (!ulong.TryParse(stringID, out ulong categoryID) || categoryID == 0)
-        {
-            return;
-        }
-
-        await interaction.CreateResponseAsync(DiscordInteractionResponseType.DeferredMessageUpdate, new DiscordInteractionResponseBuilder().AsEphemeral());
-
-        (bool success, string message) = await OpenNewTicket(interaction.User.Id, interaction.ChannelId, categoryID);
-
-        if (success)
-        {
-            await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
-            {
-                Color = DiscordColor.Green,
-                Description = message
-            }));
-        }
-        else
-        {
-            await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
-            {
-                Color = DiscordColor.Red,
-                Description = message
-            }));
-        }
-    }
-
     public static async Task<(bool, string)> OpenNewTicket(ulong userID, ulong commandChannelID, ulong categoryID)
     {
         // Check if user is blacklisted
@@ -162,7 +113,9 @@ public class NewCommand
             return (false, "You cannot use this command in a ticket channel.");
         }
 
-        if (!Database.IsStaff(userID) && Database.TryGetOpenTickets(userID, out List<Database.Ticket> ownTickets) && ownTickets.Count >= Config.ticketLimit)
+        if (!Database.IsStaff(userID)
+          && Database.TryGetOpenTickets(userID, out List<Database.Ticket> ownTickets)
+          && (ownTickets.Count >= Config.ticketLimit && Config.ticketLimit != 0))
         {
             return (false, "You have reached the limit for maximum open tickets.");
         }
@@ -250,6 +203,11 @@ public class NewCommand
 
         // Refreshes the channel as changes were made to it above
         ticketChannel = await SupportBoi.client.GetChannelAsync(ticketChannel.Id);
+
+        if (Config.interviewsEnabled)
+        {
+            Interviewer.StartInterview(ticketChannel);
+        }
 
         if (staffID != 0)
         {

@@ -12,12 +12,7 @@ using DSharpPlus.Commands;
 using Microsoft.Extensions.Logging;
 using SupportBoi.Commands;
 using CommandLine;
-using DSharpPlus.Commands.ContextChecks;
-using DSharpPlus.Commands.EventArgs;
-using DSharpPlus.Commands.Exceptions;
 using DSharpPlus.Commands.Processors.SlashCommands;
-using DSharpPlus.Commands.Processors.TextCommands.Parsing;
-using DSharpPlus.Entities;
 using DSharpPlus.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -93,7 +88,11 @@ internal static class SupportBoi
         Logger.Log("Starting " + Assembly.GetEntryAssembly()?.GetName().Name + " version " + GetVersion() + "...");
         try
         {
-            Reload();
+            if (!await Reload())
+            {
+                Logger.Fatal("Aborting startup due to a fatal error...");
+                return;
+            }
 
             // Block this task until the program is closed.
             await Task.Delay(-1);
@@ -115,7 +114,7 @@ internal static class SupportBoi
              + " (" + ThisAssembly.Git.Commit + ")";
     }
 
-    public static async void Reload()
+    public static async Task<bool> Reload()
     {
         if (client != null)
         {
@@ -141,86 +140,93 @@ internal static class SupportBoi
         }
         catch (Exception e)
         {
-            Logger.Fatal("Could not set up database tables, please confirm connection settings, status of the server and permissions of MySQL user. Error: " + e);
-            throw;
+            Logger.Fatal("Could not set up database tables, please confirm connection settings, status of the server and permissions of MySQL user. Error: ", e);
+            return false;
         }
 
         Logger.Log("Setting up Discord client...");
-        DiscordClientBuilder clientBuilder = DiscordClientBuilder.CreateDefault(Config.token, DiscordIntents.All)
-            .SetReconnectOnFatalGatewayErrors()
-            .ConfigureServices(configure =>
-            {
-                configure.AddSingleton<IClientErrorHandler>(new ErrorHandler());
-            })
-            .ConfigureEventHandlers(builder =>
-            {
-                builder.HandleGuildDownloadCompleted(EventHandler.OnReady);
-                builder.HandleGuildAvailable(EventHandler.OnGuildAvailable);
-                builder.HandleMessageCreated(EventHandler.OnMessageCreated);
-                builder.HandleGuildMemberAdded(EventHandler.OnMemberAdded);
-                builder.HandleGuildMemberRemoved(EventHandler.OnMemberRemoved);
-                builder.HandleComponentInteractionCreated(EventHandler.OnComponentInteractionCreated);
-            })
-            .UseInteractivity(new InteractivityConfiguration
-            {
-                PaginationBehaviour = PaginationBehaviour.Ignore,
-                PaginationDeletion = PaginationDeletion.DeleteMessage,
-                Timeout = TimeSpan.FromMinutes(15)
-            })
-            .UseCommands((_, extension) =>
-            {
-                extension.AddCommands(
-                [
-                    typeof(AddCategoryCommand),
-                    typeof(AddCommand),
-                    typeof(AddMessageCommand),
-                    typeof(AddStaffCommand),
-                    typeof(AssignCommand),
-                    typeof(BlacklistCommand),
-                    typeof(CloseCommand),
-                    typeof(CreateButtonPanelCommand),
-                    typeof(CreateSelectionBoxPanelCommand),
-                    typeof(ListAssignedCommand),
-                    typeof(ListCommand),
-                    typeof(ListOpen),
-                    typeof(ListUnassignedCommand),
-                    typeof(MoveCommand),
-                    typeof(NewCommand),
-                    typeof(RandomAssignCommand),
-                    typeof(RemoveCategoryCommand),
-                    typeof(RemoveMessageCommand),
-                    typeof(RemoveStaffCommand),
-                    typeof(SayCommand),
-                    typeof(SetSummaryCommand),
-                    typeof(StatusCommand),
-                    typeof(SummaryCommand),
-                    typeof(ToggleActiveCommand),
-                    typeof(TranscriptCommand),
-                    typeof(UnassignCommand),
-                    typeof(UnblacklistCommand),
-                    typeof(AdminCommands)
-                ]);
-                extension.AddProcessor(new SlashCommandProcessor());
-                extension.CommandErrored += EventHandler.OnCommandError;
-            }, new CommandsConfiguration()
-            {
-                RegisterDefaultCommandProcessors = false,
-                UseDefaultCommandErrorHandler = false
-            })
-            .ConfigureExtraFeatures(clientConfig =>
-            {
-                clientConfig.LogUnknownEvents = false;
-                clientConfig.LogUnknownAuditlogs = false;
-            })
-            .ConfigureLogging(config =>
-            {
-                config.AddProvider(new LogTestFactory());
-            });
+        DiscordClientBuilder clientBuilder = DiscordClientBuilder.CreateDefault(Config.token, DiscordIntents.All).SetReconnectOnFatalGatewayErrors();
+
+        clientBuilder.ConfigureServices(configure =>
+        {
+            configure.AddSingleton<IClientErrorHandler>(new ErrorHandler());
+        });
+
+        clientBuilder.ConfigureEventHandlers(builder =>
+        {
+            builder.HandleGuildDownloadCompleted(EventHandler.OnReady);
+            builder.HandleGuildAvailable(EventHandler.OnGuildAvailable);
+            builder.HandleMessageCreated(EventHandler.OnMessageCreated);
+            builder.HandleGuildMemberAdded(EventHandler.OnMemberAdded);
+            builder.HandleGuildMemberRemoved(EventHandler.OnMemberRemoved);
+            builder.HandleComponentInteractionCreated(EventHandler.OnComponentInteractionCreated);
+        });
+
+        clientBuilder.UseInteractivity(new InteractivityConfiguration
+        {
+            PaginationBehaviour = PaginationBehaviour.Ignore,
+            PaginationDeletion = PaginationDeletion.DeleteMessage,
+            Timeout = TimeSpan.FromMinutes(15)
+        });
+
+        clientBuilder.UseCommands((_, extension) =>
+        {
+            extension.AddCommands(
+            [
+                typeof(AddCategoryCommand),
+                typeof(AddCommand),
+                typeof(AddMessageCommand),
+                typeof(AddStaffCommand),
+                typeof(AdminCommands),
+                typeof(AssignCommand),
+                typeof(BlacklistCommand),
+                typeof(CloseCommand),
+                typeof(CreateButtonPanelCommand),
+                typeof(CreateSelectionBoxPanelCommand),
+                typeof(ListAssignedCommand),
+                typeof(ListCommand),
+                typeof(ListOpen),
+                typeof(ListUnassignedCommand),
+                typeof(MoveCommand),
+                typeof(NewCommand),
+                typeof(RandomAssignCommand),
+                typeof(RemoveCategoryCommand),
+                typeof(RemoveMessageCommand),
+                typeof(RemoveStaffCommand),
+                typeof(RestartInterviewCommand),
+                typeof(SayCommand),
+                typeof(SetSummaryCommand),
+                typeof(StatusCommand),
+                typeof(SummaryCommand),
+                typeof(ToggleActiveCommand),
+                typeof(TranscriptCommand),
+                typeof(UnassignCommand),
+                typeof(UnblacklistCommand),
+            ]);
+            extension.AddProcessor(new SlashCommandProcessor());
+            extension.CommandErrored += EventHandler.OnCommandError;
+        }, new CommandsConfiguration()
+        {
+            RegisterDefaultCommandProcessors = false,
+            UseDefaultCommandErrorHandler = false
+        });
+
+        clientBuilder.ConfigureExtraFeatures(clientConfig =>
+        {
+            clientConfig.LogUnknownEvents = false;
+            clientConfig.LogUnknownAuditlogs = false;
+        });
+
+        clientBuilder.ConfigureLogging(config =>
+        {
+            config.AddProvider(new LogTestFactory());
+        });
 
         client = clientBuilder.Build();
 
         Logger.Log("Connecting to Discord...");
         await client.ConnectAsync();
+        return true;
     }
 }
 

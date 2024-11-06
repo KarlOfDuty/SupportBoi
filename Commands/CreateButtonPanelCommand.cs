@@ -50,34 +50,4 @@ public class CreateButtonPanelCommand
             Description = "Successfully created message, make sure to run this command again if you add new categories to the bot."
         }, true);
     }
-
-    public static async Task OnButtonUsed(DiscordInteraction interaction)
-    {
-        await interaction.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral());
-
-        if (!ulong.TryParse(interaction.Data.CustomId.Replace("supportboi_newticketbutton ", ""), out ulong categoryID) || categoryID == 0)
-        {
-            Logger.Warn("Invalid ID: " + interaction.Data.CustomId.Replace("supportboi_newticketbutton ", ""));
-            return;
-        }
-
-        (bool success, string message) = await NewCommand.OpenNewTicket(interaction.User.Id, interaction.ChannelId, categoryID);
-
-        if (success)
-        {
-            await interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().AddEmbed(new DiscordEmbedBuilder
-            {
-                Color = DiscordColor.Green,
-                Description = message
-            }));
-        }
-        else
-        {
-            await interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().AddEmbed(new DiscordEmbedBuilder
-            {
-                Color = DiscordColor.Red,
-                Description = message
-            }));
-        }
-    }
 }

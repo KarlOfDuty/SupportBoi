@@ -58,15 +58,36 @@ public static class EventHandler
             return;
         }
 
-        // Check if ticket exists in the database and ticket notifications are enabled
-        if (!Database.TryGetOpenTicket(e.Channel.Id, out Database.Ticket ticket) || !Config.ticketUpdatedNotifications)
+        // Ignore messages outside of tickets.
+        if (!Database.TryGetOpenTicket(e.Channel.Id, out Database.Ticket ticket))
         {
             return;
         }
 
-        // Sends a DM to the assigned staff member if at least a day has gone by since the last message and the user sending the message isn't staff
+        // Send staff notification if applicable.
+        if (Config.ticketUpdatedNotifications)
+        {
+            await SendTicketUpdatedMessage(e, ticket);
+        }
+
+        // Try to process the message as an interview response if the ticket owner replied to this bot.
+        if (ticket.creatorID == e.Author.Id && e.Message.ReferencedMessage?.Author == client.CurrentUser)
+        {
+            await Interviewer.ProcessResponseMessage(e.Message);
+        }
+    }
+
+    private static async Task SendTicketUpdatedMessage(MessageCreatedEventArgs e, Database.Ticket ticket)
+    {
+        // Ignore staff messages
+        if (Database.IsStaff(e.Author.Id))
+        {
+            return;
+        }
+
+        // Sends a DM to the assigned staff member if at least a day has gone by since the last message
         IReadOnlyList<DiscordMessage> messages = await e.Channel.GetMessagesAsync(2);
-        if (messages.Count > 1 && messages[1].Timestamp < DateTimeOffset.UtcNow.AddDays(Config.ticketUpdatedNotificationDelay * -1) && !Database.IsStaff(e.Author.Id))
+        if (messages.Count > 1 && messages[1].Timestamp < DateTimeOffset.UtcNow.AddDays(Config.ticketUpdatedNotificationDelay * -1))
         {
             try
             {
@@ -108,7 +129,7 @@ public static class EventHandler
                     catch (DiscordException ex)
                     {
                         Logger.Error("Exception occurred trying to add channel permissions: " + ex);
-                        Logger.Error("JsomMessage: " + ex.JsonMessage);
+                        Logger.Error("JsonMessage: " + ex.JsonMessage);
                     }
 
                 }
@@ -177,19 +198,18 @@ public static class EventHandler
                             await CloseCommand.OnConfirmed(e.Interaction);
                             return;
                         case not null when e.Id.StartsWith("supportboi_newcommandbutton"):
-                            await NewCommand.OnCategorySelection(e.Interaction);
+                            await OnNewTicketSelectorUsed(e.Interaction);
                             return;
                         case not null when e.Id.StartsWith("supportboi_newticketbutton"):
-                            await CreateButtonPanelCommand.OnButtonUsed(e.Interaction);
+                            await OnNewTicketButtonUsed(e.Interaction);
+                            return;
+                        case not null when e.Id.StartsWith("supportboi_interviewbutton"):
+                            await Interviewer.ProcessButtonOrSelectorResponse(e.Interaction);
                             return;
                         case "right":
-                            return;
                         case "left":
-                            return;
                         case "rightskip":
-                            return;
                         case "leftskip":
-                            return;
                         case "stop":
                             return;
                         default:
@@ -200,10 +220,13 @@ public static class EventHandler
                     switch (e.Id)
                     {
                         case not null when e.Id.StartsWith("supportboi_newcommandselector"):
-                            await NewCommand.OnCategorySelection(e.Interaction);
+                            await OnNewTicketSelectorUsed(e.Interaction);
                             return;
                         case not null when e.Id.StartsWith("supportboi_newticketselector"):
                             await CreateSelectionBoxPanelCommand.OnSelectionMenuUsed(e.Interaction);
+                            return;
+                        case not null when e.Id.StartsWith("supportboi_interviewselector"):
+                            await Interviewer.ProcessButtonOrSelectorResponse(e.Interaction);
                             return;
                         default:
                             Logger.Warn("Unknown selection box option received! '" + e.Id + "'");
@@ -215,6 +238,46 @@ public static class EventHandler
                 case DiscordComponentType.FormInput:
                     Logger.Warn("Unknown form input received! '" + e.Id + "'");
                     return;
+                case DiscordComponentType.UserSelect:
+                    switch (e.Id)
+                    {
+                        case not null when e.Id.StartsWith("supportboi_interviewuserselector"):
+                            await Interviewer.ProcessButtonOrSelectorResponse(e.Interaction);
+                            return;
+                        default:
+                            Logger.Warn("Unknown selection box option received! '" + e.Id + "'");
+                            return;
+                    }
+                case DiscordComponentType.RoleSelect:
+                    switch (e.Id)
+                    {
+                        case not null when e.Id.StartsWith("supportboi_interviewroleselector"):
+                            await Interviewer.ProcessButtonOrSelectorResponse(e.Interaction);
+                            return;
+                        default:
+                            Logger.Warn("Unknown selection box option received! '" + e.Id + "'");
+                            return;
+                    }
+                case DiscordComponentType.MentionableSelect:
+                    switch (e.Id)
+                    {
+                        case not null when e.Id.StartsWith("supportboi_interviewmentionableselector"):
+                            await Interviewer.ProcessButtonOrSelectorResponse(e.Interaction);
+                            return;
+                        default:
+                            Logger.Warn("Unknown selection box option received! '" + e.Id + "'");
+                            return;
+                    }
+                case DiscordComponentType.ChannelSelect:
+                    switch (e.Id)
+                    {
+                        case not null when e.Id.StartsWith("supportboi_interviewchannelselector"):
+                            await Interviewer.ProcessButtonOrSelectorResponse(e.Interaction);
+                            return;
+                        default:
+                            Logger.Warn("Unknown selection box option received! '" + e.Id + "'");
+                            return;
+                    }
                 default:
                     Logger.Warn("Unknown interaction type received! '" + e.Interaction.Data.ComponentType + "'");
                     break;
@@ -230,6 +293,86 @@ public static class EventHandler
             Logger.Error("Interaction Exception occured: " + ex.GetType() + ": " + ex);
         }
     }
+
+    private static async Task OnNewTicketButtonUsed(DiscordInteraction interaction)
+    {
+        await interaction.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral());
+
+        if (!ulong.TryParse(interaction.Data.CustomId.Replace("supportboi_newticketbutton ", ""), out ulong categoryID) || categoryID == 0)
+        {
+            Logger.Warn("Invalid ticket button ID: " + interaction.Data.CustomId.Replace("supportboi_newticketbutton ", ""));
+            return;
+        }
+
+        (bool success, string message) = await NewCommand.OpenNewTicket(interaction.User.Id, interaction.ChannelId, categoryID);
+
+        if (success)
+        {
+            await interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().AddEmbed(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Green,
+                Description = message
+            }));
+        }
+        else
+        {
+            await interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().AddEmbed(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Red,
+                Description = message
+            }));
+        }
+    }
+
+    private static async Task OnNewTicketSelectorUsed(DiscordInteraction interaction)
+    {
+        string stringID;
+        switch (interaction.Data.ComponentType)
+        {
+            case DiscordComponentType.Button:
+                stringID = interaction.Data.CustomId.Replace("supportboi_newcommandbutton ", "");
+                break;
+            case DiscordComponentType.StringSelect:
+                if (interaction.Data.Values == null || interaction.Data.Values.Length <= 0)
+                {
+                    return;
+                }
+                stringID = interaction.Data.Values[0];
+                break;
+
+            case DiscordComponentType.ActionRow:
+            case DiscordComponentType.FormInput:
+            default:
+                return;
+        }
+
+        if (!ulong.TryParse(stringID, out ulong categoryID) || categoryID == 0)
+        {
+            return;
+        }
+
+        await interaction.CreateResponseAsync(DiscordInteractionResponseType.DeferredMessageUpdate, new DiscordInteractionResponseBuilder().AsEphemeral());
+
+        (bool success, string message) = await NewCommand.OpenNewTicket(interaction.User.Id, interaction.ChannelId, categoryID);
+
+        if (success)
+        {
+            await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Green,
+                Description = message
+            }));
+        }
+        else
+        {
+            await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Red,
+                Description = message
+            }));
+        }
+    }
+
     public static async Task OnCommandError(CommandsExtension commandSystem, CommandErroredEventArgs e)
     {
         switch (e.Exception)

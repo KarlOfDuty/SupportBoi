@@ -133,6 +133,7 @@ public class CloseCommand
         }
 
         Database.ArchiveTicket(ticket);
+        Database.TryDeleteInterview(channelID);
 
         await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
         {

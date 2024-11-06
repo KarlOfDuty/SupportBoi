@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using DSharpPlus;
 using MySqlConnector;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace SupportBoi;
 
@@ -107,6 +109,11 @@ public static class Database
             "name VARCHAR(256) NOT NULL UNIQUE," +
             "category_id BIGINT UNSIGNED NOT NULL PRIMARY KEY)",
             c);
+        using MySqlCommand createInterviews = new MySqlCommand(
+            "CREATE TABLE IF NOT EXISTS interviews(" +
+            "channel_id BIGINT UNSIGNED NOT NULL PRIMARY KEY," +
+            "interview JSON NOT NULL)",
+            c);
         c.Open();
         createTickets.ExecuteNonQuery();
         createBlacklisted.ExecuteNonQuery();
@@ -114,6 +121,7 @@ public static class Database
         createStaffList.ExecuteNonQuery();
         createMessages.ExecuteNonQuery();
         createCategories.ExecuteNonQuery();
+        createInterviews.ExecuteNonQuery();
     }
 
     public static bool IsOpenTicket(ulong channelID)
@@ -717,6 +725,194 @@ public static class Database
             cmd.Parameters.AddWithValue("@category_id", categoryID);
             cmd.Prepare();
             return cmd.ExecuteNonQuery() > 0;
+        }
+        catch (MySqlException)
+        {
+            return false;
+        }
+    }
+
+    public static string GetInterviewTemplatesJSON()
+    {
+        using MySqlConnection c = GetConnection();
+        c.Open();
+        using MySqlCommand selection = new MySqlCommand("SELECT * FROM interviews WHERE channel_id=0", c);
+        selection.Prepare();
+        MySqlDataReader results = selection.ExecuteReader();
+
+        // Check if messages exist in the database
+        if (!results.Read())
+        {
+            return "{}";
+        }
+
+        string templates = results.GetString("interview");
+        results.Close();
+        return templates;
+    }
+
+    // Still returns true if there are no templates, returns false if the templates are invalid.
+    public static bool TryGetInterviewTemplates(out Dictionary<ulong, Interviewer.InterviewQuestion> templates)
+    {
+        using MySqlConnection c = GetConnection();
+        c.Open();
+        using MySqlCommand selection = new MySqlCommand("SELECT * FROM interviews WHERE channel_id=0", c);
+        selection.Prepare();
+        MySqlDataReader results = selection.ExecuteReader();
+
+        // Check if messages exist in the database
+        if (!results.Read())
+        {
+            templates = new Dictionary<ulong, Interviewer.InterviewQuestion>();
+            return true;
+        }
+
+        string templatesString = results.GetString("interview");
+        results.Close();
+
+        try
+        {
+            templates = JsonConvert.DeserializeObject<Dictionary<ulong, Interviewer.InterviewQuestion>>(templatesString, new JsonSerializerSettings
+            {
+                Error = delegate (object sender, ErrorEventArgs args)
+                {
+                    Logger.Error("Error occured when trying to read interview templates from database: " + args.ErrorContext.Error.Message);
+                    Logger.Debug("Detailed exception:", args.ErrorContext.Error);
+                    args.ErrorContext.Handled = false;
+                }
+            });
+            return true;
+        }
+        catch (Exception)
+        {
+            templates = null;
+            return false;
+        }
+    }
+
+    public static bool SetInterviewTemplates(string templates)
+    {
+        try
+        {
+            string query;
+            if (TryGetInterview(0, out _))
+            {
+                query = "UPDATE interviews SET interview = @interview WHERE channel_id = 0";
+            }
+            else
+            {
+                query = "INSERT INTO interviews (channel_id,interview) VALUES (0, @interview)";
+            }
+
+            using MySqlConnection c = GetConnection();
+            c.Open();
+            using MySqlCommand cmd = new MySqlCommand(query, c);
+            cmd.Parameters.AddWithValue("@interview", templates);
+            cmd.Prepare();
+            return cmd.ExecuteNonQuery() > 0;
+        }
+        catch (MySqlException)
+        {
+            return false;
+        }
+    }
+
+    public static Dictionary<ulong, Interviewer.InterviewQuestion> GetAllInterviews()
+    {
+        using MySqlConnection c = GetConnection();
+        c.Open();
+        using MySqlCommand selection = new MySqlCommand("SELECT * FROM interviews", c);
+        selection.Prepare();
+        MySqlDataReader results = selection.ExecuteReader();
+
+        // Check if messages exist in the database
+        if (!results.Read())
+        {
+            return new Dictionary<ulong, Interviewer.InterviewQuestion>();
+        }
+
+        Dictionary<ulong, Interviewer.InterviewQuestion> questions = new();
+        do
+        {
+            try
+            {
+                // Channel ID 0 is the interview template, don't read it here.
+                if (results.GetUInt64("channel_id") != 0)
+                {
+                    questions.Add(results.GetUInt64("channel_id"), JsonConvert.DeserializeObject<Interviewer.InterviewQuestion>(results.GetString("interview")));
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Warn("Error occured when trying to read interview from database, it will not be loaded until manually fixed in the database.\nError message: " + e.Message);
+                Logger.Debug("Detailed exception:", e);
+            }
+
+        }
+        while (results.Read());
+        results.Close();
+
+        return questions;
+    }
+
+    public static bool SaveInterview(ulong channelID, Interviewer.InterviewQuestion interview)
+    {
+        try
+        {
+            string query;
+            if (TryGetInterview(channelID, out _))
+            {
+                query = "UPDATE interviews SET interview = @interview WHERE channel_id = @channel_id";
+            }
+            else
+            {
+                query = "INSERT INTO interviews (channel_id,interview) VALUES (@channel_id, @interview)";
+            }
+
+            using MySqlConnection c = GetConnection();
+            c.Open();
+            using MySqlCommand cmd = new MySqlCommand(query, c);
+            cmd.Parameters.AddWithValue("@channel_id", channelID);
+            cmd.Parameters.AddWithValue("@interview", JsonConvert.SerializeObject(interview, Formatting.Indented));
+            cmd.Prepare();
+            return cmd.ExecuteNonQuery() > 0;
+        }
+        catch (MySqlException)
+        {
+            return false;
+        }
+    }
+
+    public static bool TryGetInterview(ulong channelID, out Interviewer.InterviewQuestion interview)
+    {
+        using MySqlConnection c = GetConnection();
+        c.Open();
+        using MySqlCommand selection = new MySqlCommand(@"SELECT * FROM interviews WHERE channel_id=@channel_id", c);
+        selection.Parameters.AddWithValue("@channel_id", channelID);
+        selection.Prepare();
+        MySqlDataReader results = selection.ExecuteReader();
+
+        // Check if ticket exists in the database
+        if (!results.Read())
+        {
+            interview = null;
+            return false;
+        }
+        interview = JsonConvert.DeserializeObject<Interviewer.InterviewQuestion>(results.GetString("interview"));
+        results.Close();
+        return true;
+    }
+
+    public static bool TryDeleteInterview(ulong channelID)
+    {
+        try
+        {
+            using MySqlConnection c = GetConnection();
+            c.Open();
+            using MySqlCommand deletion = new MySqlCommand(@"DELETE FROM interviews WHERE channel_id=@channel_id", c);
+            deletion.Parameters.AddWithValue("@channel_id", channelID);
+            deletion.Prepare();
+            return deletion.ExecuteNonQuery() > 0;
         }
         catch (MySqlException)
         {
