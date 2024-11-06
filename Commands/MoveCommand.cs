@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -64,6 +64,17 @@ public class MoveCommand
             return;
         }
 
+        if (categoryChannel.Children.Count == 50)
+        {
+            Logger.Warn("Could not move ticket " + ticket.id.ToString("00000") + " to the category '" + categoryChannel.Name + "', likely because it is full.");
+            await command.RespondAsync(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Red,
+                Description = "Error: Unable to move ticket to that category, is it full?"
+            }, true);
+            return;
+        }
+
         try
         {
             await command.Channel.ModifyAsync(modifiedAttributes => modifiedAttributes.Parent = categoryChannel);
@@ -74,6 +85,16 @@ public class MoveCommand
             {
                 Color = DiscordColor.Red,
                 Description = "Error: Not authorized to move this ticket to that category."
+            }, true);
+            return;
+        }
+        catch (BadRequestException)
+        {
+            Logger.Warn("Could not move ticket " + ticket.id.ToString("00000") + " to the category '" + categoryChannel.Name + "', likely because it is full.");
+            await command.RespondAsync(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Red,
+                Description = "Error: Unable to move ticket to that category, is it full?"
             }, true);
             return;
         }
