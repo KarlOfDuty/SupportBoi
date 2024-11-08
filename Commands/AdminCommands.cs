@@ -244,19 +244,72 @@ public class AdminCommands
     }
 
     [RequireGuild]
-    [Command("getinterviewtemplates")]
-    [Description("Provides a copy of the interview templates which you can edit and then reupload.")]
-    public async Task GetInterviewTemplates(SlashCommandContext command)
+    [Command("getinterviewtemplate")]
+    [Description("Provides a copy of the interview template for a category which you can edit and then reupload.")]
+    public async Task GetInterviewTemplate(SlashCommandContext command,
+        [Parameter("category")] [Description("The category to get the template for.")] DiscordChannel category)
     {
-        MemoryStream stream = new(Encoding.UTF8.GetBytes(Database.GetInterviewTemplatesJSON()));
-        await command.RespondAsync(new DiscordInteractionResponseBuilder().AddFile("interview-templates.json", stream).AsEphemeral());
+        if (!category?.IsCategory ?? true)
+        {
+            await command.RespondAsync(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Red,
+                Description = "That channel is not a category."
+            }, true);
+            return;
+        }
+
+        if (!Database.TryGetCategory(category.Id, out Database.Category categoryData))
+        {
+            await command.RespondAsync(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Red,
+                Description = "That category is not registered with the bot."
+            }, true);
+            return;
+        }
+
+        string interviewTemplateJSON = Database.GetInterviewTemplateJSON(category.Id);
+        if (interviewTemplateJSON == null)
+        {
+            string defaultTemplate =
+            "{\n" +
+            "  \"category-id\": \"" + category.Id + "\",\n" +
+            "  \"interview\":\n" +
+            "  {\n" +
+            "    \"message\": \"\",\n" +
+            "    \"type\": \"\",\n" +
+            "    \"color\": \"\",\n" +
+            "    \"paths\":\n" +
+            "    {\n" +
+            "      \n" +
+            "    }\n" +
+            "  }\n" +
+            "}";
+            MemoryStream stream = new(Encoding.UTF8.GetBytes(defaultTemplate));
+
+            DiscordInteractionResponseBuilder response = new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Green,
+                Description = "No interview template found for this category. A default template has been generated."
+            }).AddFile("interview-template-" + category.Id + ".json", stream).AsEphemeral();
+            await command.RespondAsync(response);
+        }
+        else
+        {
+            MemoryStream stream = new(Encoding.UTF8.GetBytes(interviewTemplateJSON));
+            await command.RespondAsync(new DiscordInteractionResponseBuilder().AddFile("interview-template-" + category.Id + ".json", stream).AsEphemeral());
+        }
     }
 
     [RequireGuild]
-    [Command("setinterviewtemplates")]
+    [Command("setinterviewtemplate")]
     [Description("Uploads an interview template file.")]
-    public async Task SetInterviewTemplates(SlashCommandContext command, [Parameter("file")] DiscordAttachment file)
+    public async Task SetInterviewTemplate(SlashCommandContext command,
+        [Parameter("file")] [Description("The file containing the template.")] DiscordAttachment file)
     {
+        await command.DeferResponseAsync(true);
+
         if (!file.MediaType?.Contains("application/json") ?? false)
         {
             await command.RespondAsync(new DiscordEmbedBuilder
@@ -275,7 +328,7 @@ public class AdminCommands
             List<string> errors = [];
 
             // Convert it to an interview object to validate the template
-            Dictionary<ulong, Interviewer.ValidatedInterviewQuestion> interview = JsonConvert.DeserializeObject<Dictionary<ulong, Interviewer.ValidatedInterviewQuestion>>(json, new JsonSerializerSettings()
+            Interviews.ValidatedTemplate template = JsonConvert.DeserializeObject<Interviews.ValidatedTemplate>(json, new JsonSerializerSettings()
             {
                 //NullValueHandling = NullValueHandling.Include,
                 MissingMemberHandling = MissingMemberHandling.Error,
@@ -293,26 +346,41 @@ public class AdminCommands
                     }
 
                     Logger.Debug("Exception occured when trying to upload interview template:\n" + args.ErrorContext.Error);
-                    args.ErrorContext.Handled = true;
+                    args.ErrorContext.Handled = false;
                 }
             });
 
-            if (interview != null)
+            DiscordChannel category = await SupportBoi.client.GetChannelAsync(template.categoryID);
+            if (!category.IsCategory)
             {
-                foreach (KeyValuePair<ulong, Interviewer.ValidatedInterviewQuestion> interviewRoot in interview)
+                await command.RespondAsync(new DiscordEmbedBuilder
                 {
-                    interviewRoot.Value.Validate(ref errors, out int summaryCount, out int summaryMaxLength);
+                    Color = DiscordColor.Red,
+                    Description = "The category ID in the uploaded JSON structure is not a valid category."
+                }, true);
+                return;
+            }
 
-                    if (summaryCount > 25)
-                    {
-                        errors.Add("A summary cannot contain more than 25 fields, but you have " + summaryCount + " fields in one of your interview branches.");
-                    }
+            if (!Database.TryGetCategory(category.Id, out Database.Category _))
+            {
+                await command.RespondAsync(new DiscordEmbedBuilder
+                {
+                    Color = DiscordColor.Red,
+                    Description = "The category ID in the uploaded JSON structure is not a category registered with the bot, use /addcategory first."
+                }, true);
+                return;
+            }
 
-                    if (summaryMaxLength >= 6000)
-                    {
-                        errors.Add("A summary cannot contain more than 6000 characters, but one of your branches has the possibility of its summary reaching " + summaryMaxLength + " characters.");
-                    }
-                }
+            template.interview.Validate(ref errors, out int summaryCount, out int summaryMaxLength);
+
+            if (summaryCount > 25)
+            {
+                errors.Add("A summary cannot contain more than 25 fields, but you have " + summaryCount + " fields in at least one of your interview branches.");
+            }
+
+            if (summaryMaxLength >= 6000)
+            {
+                errors.Add("A summary cannot contain more than 6000 characters, but at least one of your branches has the possibility of its summary reaching " + summaryMaxLength + " characters.");
             }
 
             if (errors.Count != 0)
@@ -335,7 +403,32 @@ public class AdminCommands
                 return;
             }
 
-            Database.SetInterviewTemplates(JsonConvert.SerializeObject(interview, Formatting.Indented));
+            if (!Database.SetInterviewTemplate(template))
+            {
+                await command.RespondAsync(new DiscordEmbedBuilder
+                {
+                    Color = DiscordColor.Red,
+                    Description = "An error occured trying to write the new template to database."
+                }, true);
+                return;
+            }
+
+            try
+            {
+                MemoryStream memStream = new(Encoding.UTF8.GetBytes(Database.GetInterviewTemplateJSON(template.categoryID)));
+
+                // Log it if the log channel exists
+                DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
+                await logChannel.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(new DiscordEmbedBuilder
+                {
+                    Color = DiscordColor.Green,
+                    Description = command.User.Mention + " uploaded a new interview template for the `" + category.Name +"` category."
+                }).AddFile("interview-template-" + template.categoryID + ".json", memStream));
+            }
+            catch (NotFoundException)
+            {
+                Logger.Error("Could not find the log channel.");
+            }
         }
         catch (Exception e)
         {
@@ -354,18 +447,5 @@ public class AdminCommands
             Description = "Uploaded interview template."
         }, true);
 
-        try
-        {
-            DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
-            await logChannel.SendMessageAsync(new DiscordEmbedBuilder
-            {
-                Color = DiscordColor.Green,
-                Description = command.Channel.Mention + " uploaded new interview templates.",
-            });
-        }
-        catch (NotFoundException)
-        {
-            Logger.Error("Could not find the log channel.");
-        }
     }
 }

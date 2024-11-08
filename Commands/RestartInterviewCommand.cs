@@ -4,6 +4,7 @@ using DSharpPlus.Commands;
 using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
 using DSharpPlus.Exceptions;
+using SupportBoi.Interviews;
 
 namespace SupportBoi.Commands;
 

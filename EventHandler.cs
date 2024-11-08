@@ -12,6 +12,7 @@ using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using DSharpPlus.Exceptions;
 using SupportBoi.Commands;
+using SupportBoi.Interviews;
 
 namespace SupportBoi;
 
