@@ -1,10 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 using DSharpPlus.Commands;
 using DSharpPlus.Commands.ContextChecks;
 using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
+using DSharpPlus.Exceptions;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 
@@ -27,10 +30,32 @@ public class ListOpen
             return;
         }
 
+        // Get all channels in all guilds the bot is part of
+        List<DiscordChannel> allChannels = new List<DiscordChannel>();
+        foreach (KeyValuePair<ulong,DiscordGuild> guild in SupportBoi.client.Guilds)
+        {
+            try
+            {
+                allChannels.AddRange(await guild.Value.GetChannelsAsync());
+            }
+            catch (Exception) { /*ignored*/ }
+        }
+
         List<string> listItems = new List<string>();
         foreach (Database.Ticket ticket in openTickets)
         {
-            listItems.Add("**" + ticket.DiscordRelativeTime() + ":** <#" + ticket.channelID + "> by <@" + ticket.creatorID + ">\n");
+            try
+            {
+                DiscordChannel channel = allChannels.FirstOrDefault(c => c.Id == ticket.channelID);
+                if (channel != null)
+                {
+                    if (command.Member!.PermissionsIn(channel).HasPermission(DiscordPermissions.AccessChannels))
+                    {
+                        listItems.Add("**" + ticket.DiscordRelativeTime() + ":** <#" + ticket.channelID + "> by <@" + ticket.creatorID + ">\n");
+                    }
+                }
+            }
+            catch (NotFoundException) { /*ignored*/ }
         }
 
         List<DiscordEmbedBuilder> embeds = new List<DiscordEmbedBuilder>();
