@@ -182,6 +182,7 @@ internal static class SupportBoi
                 typeof(CloseCommand),
                 typeof(CreateButtonPanelCommand),
                 typeof(CreateSelectionBoxPanelCommand),
+                typeof(InterviewTemplateCommands),
                 typeof(ListAssignedCommand),
                 typeof(ListCommand),
                 typeof(ListInvalidCommand),

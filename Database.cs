@@ -832,6 +832,23 @@ public static class Database
         }
     }
 
+    public static bool TryDeleteInterviewTemplate(ulong categoryID)
+    {
+        try
+        {
+            using MySqlConnection c = GetConnection();
+            c.Open();
+            using MySqlCommand deletion = new MySqlCommand(@"DELETE FROM interview_templates WHERE category_id=@category_id", c);
+            deletion.Parameters.AddWithValue("@category_id", categoryID);
+            deletion.Prepare();
+            return deletion.ExecuteNonQuery() > 0;
+        }
+        catch (MySqlException)
+        {
+            return false;
+        }
+    }
+
     public static bool SaveInterview(ulong channelID, Interviews.InterviewQuestion interview)
     {
         try
