@@ -11,7 +11,7 @@ public class SummaryCommand
 {
     [RequireGuild]
     [Command("summary")]
-    [Description("Lists tickets assigned to a user.")]
+    [Description("Shows ticket information and summary if there is one.")]
     public async Task OnExecute(SlashCommandContext command)
     {
         if (!Database.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
