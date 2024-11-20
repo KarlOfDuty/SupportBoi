@@ -184,6 +184,7 @@ internal static class SupportBoi
                 typeof(CreateSelectionBoxPanelCommand),
                 typeof(ListAssignedCommand),
                 typeof(ListCommand),
+                typeof(ListInvalidCommand),
                 typeof(ListOpen),
                 typeof(ListUnassignedCommand),
                 typeof(MoveCommand),
