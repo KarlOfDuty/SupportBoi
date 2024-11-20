@@ -1,5 +1,7 @@
 using Microsoft.Extensions.Logging;
 using System;
+using DSharpPlus;
+using DSharpPlus.Exceptions;
 
 namespace SupportBoi;
 
@@ -76,7 +78,12 @@ public class Logger : ILogger
             return;
 
         // Ratelimit messages are usually warnings, but they are unimportant in this case so downgrade them to debug.
-        if (formatter(state, exception).StartsWith("Hit Discord ratelimit on route "))
+        if (formatter(state, exception).StartsWith("Hit Discord ratelimit on route ") && logLevel == LogLevel.Warning)
+        {
+            logLevel = LogLevel.Debug;
+        }
+        // The bot will handle NotFoundExceptions on its own, downgrade to debug
+        else if (exception is NotFoundException && eventId == LoggerEvents.RestError)
         {
             logLevel = LogLevel.Debug;
         }

@@ -47,16 +47,27 @@ public class AdminCommands
         }
 
         // Check which tickets channels no longer exist
-        List<string> listItems = new List<string>();
+        List<string> invalidTickets = new List<string>();
         foreach (Database.Ticket ticket in openTickets)
         {
-            if (allChannels.All(channel => channel.Id != ticket.channelID))
+            DiscordChannel channel = allChannels.FirstOrDefault(c => c.Id == ticket.channelID);
+            if (channel == null)
             {
-                listItems.Add("ID: **" + ticket.id.ToString("00000") + ":** <#" + ticket.channelID + ">\n");
+                invalidTickets.Add("**`ticket-" + ticket.id.ToString("00000") + ":`** Channel no longer exists (<#" + ticket.channelID + ">)\n");
+                continue;
+            }
+
+            try
+            {
+                await channel.Guild.GetMemberAsync(ticket.creatorID);
+            }
+            catch (NotFoundException)
+            {
+                invalidTickets.Add("**`ticket-" + ticket.id.ToString("00000") + ":`** Creator has left (<#" + ticket.channelID + ">)\n");
             }
         }
 
-        if (listItems.Count == 0)
+        if (invalidTickets.Count == 0)
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {
@@ -67,7 +78,7 @@ public class AdminCommands
         }
 
         List<DiscordEmbedBuilder> embeds = new List<DiscordEmbedBuilder>();
-        foreach (string message in Utilities.ParseListIntoMessages(listItems))
+        foreach (string message in Utilities.ParseListIntoMessages(invalidTickets))
         {
             embeds.Add(new DiscordEmbedBuilder
             {
@@ -145,7 +156,7 @@ public class AdminCommands
     [Command("unsetticket")]
     [Description("Deletes a ticket from the ticket system without deleting the channel.")]
     public async Task UnsetTicket(SlashCommandContext command,
-        [Parameter("ticket-id")] [Description("(Optional) Ticket to unset. Uses the channel you are in by default.")] long ticketID = 0)
+        [Parameter("ticket-id")] [Description("(Optional) Ticket to unset. Uses the channel you are in by default. Use ticket ID, not channel ID!")] long ticketID = 0)
     {
         Database.Ticket ticket;
 
