@@ -226,7 +226,7 @@ public class InterviewTemplateCommands
 
     [RequireGuild]
     [Command("delete")]
-    [Description("Provides a copy of the interview template for a category which you can edit and then reupload.")]
+    [Description("Deletes the interview template for a category.")]
     public async Task Delete(SlashCommandContext command,
         [Parameter("category")] [Description("The category to delete the template for.")] DiscordChannel category)
     {
@@ -240,7 +240,7 @@ public class InterviewTemplateCommands
             return;
         }
 
-        if (!Database.TryGetCategory(category.Id, out Database.Category categoryData))
+        if (!Database.TryGetCategory(category.Id, out Database.Category _))
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {
