@@ -6,6 +6,7 @@ using DSharpPlus;
 using MySqlConnector;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using SupportBoi.Interviews;
 
 namespace SupportBoi;
 
@@ -797,7 +798,7 @@ public static class Database
         }
     }
 
-    public static bool SetInterviewTemplate(Interviews.ValidatedTemplate template)
+    public static bool SetInterviewTemplate(Interviews.Template template)
     {
         try
         {
@@ -805,7 +806,8 @@ public static class Database
             {
                 NullValueHandling = NullValueHandling.Ignore,
                 MissingMemberHandling = MissingMemberHandling.Error,
-                Formatting = Formatting.Indented
+                Formatting = Formatting.Indented,
+                ContractResolver = new InterviewQuestion.StripInternalPropertiesResolver()
             });
 
             string query;

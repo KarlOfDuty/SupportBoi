@@ -1,0 +1,173 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "id": "https://github.com/KarlOfDuty/SupportBoi/tree/main/Interviews/interview_template.schema.json",
+  "title": "Interview Template",
+  "description": "An interview dialog tree template for SupportBoi",
+  "definitions":
+  {
+    "step":
+    {
+      "type": "object",
+      "title": "Interview",
+      "description": "Contains the interview dialog tree.",
+      "properties":
+      {
+        "heading":
+        {
+          "type": "string",
+          "title": "Heading",
+          "description": "The title of the message.",
+          "minLength": 1
+        },
+        "message":
+        {
+          "type": "string",
+          "title": "Message",
+          "description": "The message text.",
+          "minLength": 1
+        },
+        "message-type":
+        {
+          "type": "string",
+          "title": "Message Type",
+          "description": "The type of message, decides what the bot will do when the user gets to this step.",
+          "enum":
+          [
+            "ERROR",
+            "END_WITH_SUMMARY",
+            "END_WITHOUT_SUMMARY",
+            "BUTTONS",
+            "TEXT_SELECTOR",
+            "USER_SELECTOR",
+            "ROLE_SELECTOR",
+            "MENTIONABLE_SELECTOR",
+            "CHANNEL_SELECTOR",
+            "TEXT_INPUT"
+          ]
+        },
+        "color":
+        {
+          "type": "string",
+          "title": "Color",
+          "description": "Colour of the embed message.",
+          "examples":
+          [
+            "BLACK",
+            "WHITE",
+            "GRAY",
+            "DARKGRAY",
+            "LIGHTGRAY",
+            "VERYDARKGRAY",
+            "BLURPLE",
+            "GRAYPLE",
+            "DARKBUTNOTBLACK",
+            "NOTQUITEBLACK",
+            "RED",
+            "DARKRED",
+            "GREEN",
+            "DARKGREEN",
+            "BLUE",
+            "DARKBLUE",
+            "YELLOW",
+            "CYAN",
+            "MAGENTA",
+            "TEAL",
+            "AQUAMARINE",
+            "GOLD",
+            "GOLDENROD",
+            "AZURE",
+            "ROSE",
+            "SPRINGGREEN",
+            "CHARTREUSE",
+            "ORANGE",
+            "PURPLE",
+            "VIOLET",
+            "BROWN",
+            "HOTPINK",
+            "LILAC",
+            "CORNFLOWERBLUE",
+            "MIDNIGHTBLUE",
+            "WHEAT",
+            "INDIANRED",
+            "TURQUOISE",
+            "SAPGREEN",
+            "PHTHALOBLUE",
+            "PHTHALOGREEN",
+            "SIENNA"
+          ],
+          "minLength": 1
+        },
+        "paths":
+        {
+          "type": "object",
+          "title": "Paths",
+          "description": "The possible next steps, the name of the path is matched against the user input, use \".*\" to match anything.",
+          "patternProperties":
+          {
+            ".*":
+            {
+              "$ref": "#/definitions/step"
+            }
+          }
+        },
+        "summary-field":
+        {
+          "type": "string",
+          "title": "Summary Field",
+          "description": "If this interview ends with a summary this will be the name of the answer the user used in this field.",
+          "minLength": 1
+        },
+        "button-style":
+        {
+          "type": "string",
+          "title": "Button Style",
+          "description": "The style of the button that leads to this step, the step before this one must be a button step for this to work.",
+          "enum":
+          [
+            "PRIMARY",
+            "SECONDARY",
+            "SUCCESS",
+            "DANGER"
+          ]
+        },
+        "selector-description":
+        {
+          "type": "string",
+          "title": "Selector Description",
+          "description": "The description of the selector.",
+          "minLength": 1
+        },
+        "max-length":
+        {
+          "type": "number",
+          "title": "Max Length",
+          "description": "The maximum length of the text input."
+        },
+        "min-length":
+        {
+          "type": "number",
+          "title": "Min Length",
+          "description": "The minimum length of the text input."
+        }
+      },
+      "required": [ "message", "message-type", "color", "paths" ],
+      "unevaluatedProperties": false
+    }
+  },
+  "type": "object",
+  "properties":
+  {
+    "category-id":
+    {
+      "type": "string",
+      "title": "Category ID",
+      "description": "The category the template applies to. Change this to apply the template to a different category."
+    },
+    "interview":
+    {
+      "$ref": "#/definitions/step"
+    }
+  },
+  "required": [ "category-id", "interview" ],
+  "unevaluatedProperties": false
+}

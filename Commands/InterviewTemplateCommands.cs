@@ -11,6 +11,7 @@ using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
 using DSharpPlus.Exceptions;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Schema;
 using SupportBoi.Interviews;
 
 namespace SupportBoi.Commands;
@@ -19,6 +20,8 @@ namespace SupportBoi.Commands;
 [Description("Administrative commands.")]
 public class InterviewTemplateCommands
 {
+    private static string jsonSchema = Utilities.ReadManifestData("Interviews.interview_template.schema.json");
+
     [RequireGuild]
     [Command("get")]
     [Description("Provides a copy of the interview template for a category which you can edit and then reupload.")]
@@ -96,35 +99,20 @@ public class InterviewTemplateCommands
             return;
         }
 
-        Stream stream = await new HttpClient().GetStreamAsync(file.Url);
-        string json = await new StreamReader(stream).ReadToEndAsync();
-
         try
         {
             List<string> errors = [];
 
-            // Convert it to an interview object to validate the template
-            Interviews.ValidatedTemplate template = JsonConvert.DeserializeObject<Interviews.ValidatedTemplate>(json, new JsonSerializerSettings()
-            {
-                //NullValueHandling = NullValueHandling.Include,
-                MissingMemberHandling = MissingMemberHandling.Error,
-                Error = delegate (object sender, Newtonsoft.Json.Serialization.ErrorEventArgs args)
-                {
-                    // I noticed the main exception mainly has information for developers, not administrators,
-                    // so I switched to using the inner message if available.
-                    if (string.IsNullOrEmpty(args.ErrorContext.Error.InnerException?.Message))
-                    {
-                        errors.Add(args.ErrorContext.Error.Message);
-                    }
-                    else
-                    {
-                        errors.Add(args.ErrorContext.Error.InnerException.Message);
-                    }
+            Stream stream = await new HttpClient().GetStreamAsync(file.Url);
+            JSchemaValidatingReader validatingReader = new(new JsonTextReader(new StreamReader(stream)));
+            validatingReader.Schema = JSchema.Parse(jsonSchema);
 
-                    Logger.Debug("Exception occured when trying to upload interview template:\n" + args.ErrorContext.Error);
-                    args.ErrorContext.Handled = false;
-                }
-            });
+            // The schema seems to throw an additional error with incorrect information if an invalid parameter is included
+            // in the template. Throw here in order to only show the first correct error to the user, also skips unnecessary validation further down.
+            validatingReader.ValidationEventHandler += (o, a) => throw new JsonException(a.Message);
+
+            JsonSerializer serializer = new();
+            Template template = serializer.Deserialize<Template>(validatingReader);
 
             DiscordChannel category = await SupportBoi.client.GetChannelAsync(template.categoryID);
             if (!category.IsCategory)
@@ -170,11 +158,7 @@ public class InterviewTemplateCommands
                 await command.RespondAsync(new DiscordEmbedBuilder
                 {
                     Color = DiscordColor.Red,
-                    Description = "The uploaded JSON structure could not be converted to an interview template.\n\nErrors:\n```\n" + errorString + "\n```",
-                    Footer = new DiscordEmbedBuilder.EmbedFooter()
-                    {
-                        Text = "More detailed information may be available as debug messages in the bot logs."
-                    }
+                    Description = "The uploaded JSON structure could not be parsed as an interview template.\n\nErrors:\n```\n" + errorString + "\n```"
                 }, true);
                 return;
             }
@@ -208,11 +192,15 @@ public class InterviewTemplateCommands
         }
         catch (Exception e)
         {
+            Logger.Debug("Exception occured when trying to upload interview template:\n", e);
             await command.RespondAsync(new DiscordEmbedBuilder
             {
-
                 Color = DiscordColor.Red,
-                Description = "The uploaded JSON structure could not be converted to an interview template.\n\nError message:\n```\n" + e.Message + "\n```"
+                Description = "The uploaded JSON structure could not be parsed as an interview template.\n\nError message:\n```\n" + e.Message + "\n```",
+                Footer = new DiscordEmbedBuilder.EmbedFooter
+                {
+                    Text = "More detailed information may be available as debug messages in the bot logs."
+                }
             }, true);
             return;
         }

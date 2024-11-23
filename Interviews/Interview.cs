@@ -1,15 +1,18 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Reflection;
 using DSharpPlus.Entities;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Serialization;
 
 namespace SupportBoi.Interviews;
 
 public enum QuestionType
 {
-    // Support multiselector as separate type, with only one subpath supported
+    // TODO: Support multiselector as separate type, with only one subpath supported
     ERROR,
     END_WITH_SUMMARY,
     END_WITHOUT_SUMMARY,
@@ -46,7 +49,7 @@ public class InterviewQuestion
 
     // The type of question.
     [JsonConverter(typeof(StringEnumConverter))]
-    [JsonProperty("type")]
+    [JsonProperty("message-type")]
     public QuestionType type;
 
     // Colour of the message embed.
@@ -191,6 +194,106 @@ public class InterviewQuestion
             ButtonType.DANGER    => DiscordButtonStyle.Danger,
             _                    => DiscordButtonStyle.Secondary
         };
+    }
+
+    public void Validate(ref List<string> errors, out int summaryCount, out int summaryMaxLength)
+    {
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            errors.Add("Message cannot be empty.");
+        }
+
+        if (type is QuestionType.ERROR or QuestionType.END_WITH_SUMMARY or QuestionType.END_WITHOUT_SUMMARY)
+        {
+            if (paths.Count > 0)
+            {
+                errors.Add("'" + type + "' questions cannot have child paths.");
+            }
+        }
+        else if (paths.Count == 0)
+        {
+            errors.Add("'" + type + "' questions must have at least one child path.");
+        }
+
+        List<int> summaryCounts = [];
+        Dictionary<string, int> childMaxLengths = new Dictionary<string, int>();
+        foreach (KeyValuePair<string,InterviewQuestion> path in paths)
+        {
+            path.Value.Validate(ref errors, out int summaries, out int maxLen);
+            summaryCounts.Add(summaries);
+            childMaxLengths.Add(path.Key, maxLen);
+        }
+
+        summaryCount = summaryCounts.Count == 0 ? 0 : summaryCounts.Max();
+
+        string childPathString = "";
+        int childMaxLength = 0;
+        if (childMaxLengths.Count != 0)
+        {
+            (childPathString, childMaxLength) = childMaxLengths.ToArray().MaxBy(x => x.Key.Length + x.Value);
+        }
+
+        summaryMaxLength = childMaxLength;
+
+        if (string.IsNullOrWhiteSpace(summaryField))
+        {
+            ++summaryCount;
+        }
+
+        // Only count summaries that end in a summary question.
+        if (type == QuestionType.END_WITH_SUMMARY)
+        {
+            summaryMaxLength = message?.Length ?? 0;
+            summaryMaxLength += title?.Length ?? 0;
+        }
+        // Only add to the total max length if the summary field is not empty. That way we know this branch ends in a summary.
+        else if (summaryMaxLength > 0 && !string.IsNullOrEmpty(summaryField))
+        {
+            summaryMaxLength += summaryField.Length;
+            switch (type)
+            {
+                case QuestionType.BUTTONS:
+                case QuestionType.TEXT_SELECTOR:
+                    summaryMaxLength += childPathString.Length;
+                    break;
+                case QuestionType.USER_SELECTOR:
+                case QuestionType.ROLE_SELECTOR:
+                case QuestionType.MENTIONABLE_SELECTOR:
+                case QuestionType.CHANNEL_SELECTOR:
+                    // Approximate length of a mention
+                    summaryMaxLength += 23;
+                    break;
+                case QuestionType.TEXT_INPUT:
+                    summaryMaxLength += Math.Min(maxLength ?? 1024, 1024);
+                    break;
+                case QuestionType.END_WITH_SUMMARY:
+                case QuestionType.END_WITHOUT_SUMMARY:
+                case QuestionType.ERROR:
+                default:
+                    break;
+            }
+        }
+    }
+
+    public class StripInternalPropertiesResolver : DefaultContractResolver
+    {
+        private static readonly HashSet<string> ignoreProps =
+        [
+            "message-id",
+            "answer",
+            "answer-id",
+            "related-message-ids"
+        ];
+
+        protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
+        {
+            JsonProperty property = base.CreateProperty(member, memberSerialization);
+            if (ignoreProps.Contains(property.PropertyName))
+            {
+                property.ShouldSerialize = _ => false;
+            }
+            return property;
+        }
     }
 }
 
