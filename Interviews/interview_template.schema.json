@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "id": "https://github.com/KarlOfDuty/SupportBoi/tree/main/Interviews/interview_template.schema.json",
+  "id": "https://raw.githubusercontent.com/KarlOfDuty/SupportBoi/refs/heads/main/Interviews/interview_template.schema.json",
   "title": "Interview Template",
   "description": "An interview dialog tree template for SupportBoi",
   "definitions":
