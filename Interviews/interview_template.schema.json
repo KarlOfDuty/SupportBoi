@@ -8,8 +8,8 @@
     "step":
     {
       "type": "object",
-      "title": "Interview",
-      "description": "Contains the interview dialog tree.",
+      "title": "Interview Step",
+      "description": "Contains a question, error message or end of an interview.",
       "properties":
       {
         "heading":

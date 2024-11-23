@@ -54,7 +54,7 @@ notifications:
     closing: true
 
 interviews:
-    # Enable the interview system. You must use the admin commands to set up interview templates before you can start using it.
+    # Enable the interview system. You must set up interview templates before you can start using it.
     # Any existing interviews can still be completed while interviews are disabled, but new ones will not be created.
     enabled: true
 

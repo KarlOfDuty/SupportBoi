@@ -93,6 +93,7 @@ public class AdminCommands
             }
         }
 
+        // TODO: Delete interview
 
         if (Database.DeleteOpenTicket(ticket.id))
         {

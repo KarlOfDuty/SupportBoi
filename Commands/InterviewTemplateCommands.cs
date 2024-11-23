@@ -182,7 +182,7 @@ public class InterviewTemplateCommands
                 await logChannel.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(new DiscordEmbedBuilder
                 {
                     Color = DiscordColor.Green,
-                    Description = command.User.Mention + " uploaded a new interview template for the `" + category.Name +"` category."
+                    Description = command.User.Mention + " uploaded a new interview template for the `" + category.Name + "` category."
                 }).AddFile("interview-template-" + template.categoryID + ".json", memStream));
             }
             catch (NotFoundException)
