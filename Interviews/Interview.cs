@@ -196,7 +196,12 @@ public class InterviewQuestion
         };
     }
 
-    public void Validate(ref List<string> errors, ref List<string> warnings, string stepID, int summaryFieldCount, int summaryMaxLength)
+    public void Validate(ref List<string> errors,
+                         ref List<string> warnings,
+                         string stepID,
+                         int summaryFieldCount = 0,
+                         int summaryMaxLength = 0,
+                         InterviewQuestion parent = null)
     {
         if (!string.IsNullOrWhiteSpace(summaryField))
         {
@@ -234,17 +239,17 @@ public class InterviewQuestion
         {
             if (paths.Count > 0)
             {
-                warnings.Add("'" + type + "' paths cannot have child paths.\n\n" + stepID + ".message-type");
+                warnings.Add("Paths of the type '" + type + "' cannot have child paths.\n\n" + stepID + ".message-type");
             }
 
             if (!string.IsNullOrWhiteSpace(summaryField))
             {
-                warnings.Add("'" + type + "' paths cannot have summary field names.\n\n" + stepID + ".summary-field");
+                warnings.Add("Paths of the type '" + type + "' cannot have summary field names.\n\n" + stepID + ".summary-field");
             }
         }
         else if (paths.Count == 0)
         {
-            errors.Add("'" + type + "' paths must have at least one child path.\n\n" + stepID + ".message-type");
+            errors.Add("Paths of the type '" + type + "' must have at least one child path.\n\n" + stepID + ".message-type");
         }
 
         if (type is QuestionType.END_WITH_SUMMARY)
@@ -262,6 +267,31 @@ public class InterviewQuestion
             }
         }
 
+        if (parent?.type is not QuestionType.BUTTONS && buttonStyle != null)
+        {
+            warnings.Add("Button styles have no effect on child paths of a '" + parent?.type + "' path.\n\n" + stepID + ".button-style");
+        }
+
+        if (parent?.type is not QuestionType.TEXT_SELECTOR && selectorDescription != null)
+        {
+            warnings.Add("Selector descriptions have no effect on child paths of a '" + parent?.type + "' path.\n\n" + stepID + ".selector-description");
+        }
+
+        if (type is not QuestionType.TEXT_SELECTOR && selectorPlaceholder != null)
+        {
+            warnings.Add("Selector placeholders have no effect on paths of the type '" + type + "'.\n\n" + stepID + ".selector-placeholder");
+        }
+
+        if (type is not QuestionType.TEXT_INPUT && maxLength != null)
+        {
+            warnings.Add("Max length has no effect on paths of the type '" + type + "'.\n\n" + stepID + ".max-length");
+        }
+
+        if (type is not QuestionType.TEXT_INPUT && minLength != null)
+        {
+            warnings.Add("Min length has no effect on paths of the type '" + type + "'.\n\n" + stepID + ".min-length");
+        }
+
         foreach (KeyValuePair<string,InterviewQuestion> path in paths)
         {
             // The JSON schema error messages use this format for the JSON path, so we use it here too.
@@ -270,7 +300,7 @@ public class InterviewQuestion
                 ? ".paths['" + path.Key + "']"
                 : ".paths." + path.Key;
 
-            path.Value.Validate(ref errors, ref warnings, nextStepID, summaryFieldCount, summaryMaxLength);
+            path.Value.Validate(ref errors, ref warnings, nextStepID, summaryFieldCount, summaryMaxLength, this);
         }
     }
 
