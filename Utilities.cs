@@ -8,6 +8,19 @@ using DSharpPlus.Entities;
 
 namespace SupportBoi;
 
+public static class Extensions
+{
+    public static bool ContainsAny(this string haystack, params string[] needles)
+    {
+        return needles.Any(haystack.Contains);
+    }
+
+    public static bool ContainsAny(this string haystack, params char[] needles)
+    {
+        return needles.Any(haystack.Contains);
+    }
+}
+
 public static class Utilities
 {
     private static readonly Random rng = new Random();

@@ -196,65 +196,21 @@ public class InterviewQuestion
         };
     }
 
-    public void Validate(ref List<string> errors, out int summaryCount, out int summaryMaxLength)
+    public void Validate(ref List<string> errors, ref List<string> warnings, string stepID, int summaryFieldCount, int summaryMaxLength)
     {
-        if (string.IsNullOrWhiteSpace(message))
+        if (!string.IsNullOrWhiteSpace(summaryField))
         {
-            errors.Add("Message cannot be empty.");
-        }
-
-        if (type is QuestionType.ERROR or QuestionType.END_WITH_SUMMARY or QuestionType.END_WITHOUT_SUMMARY)
-        {
-            if (paths.Count > 0)
-            {
-                errors.Add("'" + type + "' questions cannot have child paths.");
-            }
-        }
-        else if (paths.Count == 0)
-        {
-            errors.Add("'" + type + "' questions must have at least one child path.");
-        }
-
-        List<int> summaryCounts = [];
-        Dictionary<string, int> childMaxLengths = new Dictionary<string, int>();
-        foreach (KeyValuePair<string,InterviewQuestion> path in paths)
-        {
-            path.Value.Validate(ref errors, out int summaries, out int maxLen);
-            summaryCounts.Add(summaries);
-            childMaxLengths.Add(path.Key, maxLen);
-        }
-
-        summaryCount = summaryCounts.Count == 0 ? 0 : summaryCounts.Max();
-
-        string childPathString = "";
-        int childMaxLength = 0;
-        if (childMaxLengths.Count != 0)
-        {
-            (childPathString, childMaxLength) = childMaxLengths.ToArray().MaxBy(x => x.Key.Length + x.Value);
-        }
-
-        summaryMaxLength = childMaxLength;
-
-        if (string.IsNullOrWhiteSpace(summaryField))
-        {
-            ++summaryCount;
-        }
-
-        // Only count summaries that end in a summary question.
-        if (type == QuestionType.END_WITH_SUMMARY)
-        {
-            summaryMaxLength = message?.Length ?? 0;
-            summaryMaxLength += title?.Length ?? 0;
-        }
-        // Only add to the total max length if the summary field is not empty. That way we know this branch ends in a summary.
-        else if (summaryMaxLength > 0 && !string.IsNullOrEmpty(summaryField))
-        {
+            ++summaryFieldCount;
             summaryMaxLength += summaryField.Length;
             switch (type)
             {
                 case QuestionType.BUTTONS:
                 case QuestionType.TEXT_SELECTOR:
-                    summaryMaxLength += childPathString.Length;
+                    // Get the longest button/selector text
+                    if (paths.Count > 0)
+                    {
+                        summaryMaxLength += paths.Max(kv => kv.Key.Length);
+                    }
                     break;
                 case QuestionType.USER_SELECTOR:
                 case QuestionType.ROLE_SELECTOR:
@@ -272,6 +228,49 @@ public class InterviewQuestion
                 default:
                     break;
             }
+        }
+
+        if (type is QuestionType.ERROR or QuestionType.END_WITH_SUMMARY or QuestionType.END_WITHOUT_SUMMARY)
+        {
+            if (paths.Count > 0)
+            {
+                warnings.Add("'" + type + "' paths cannot have child paths.\n\n" + stepID + ".message-type");
+            }
+
+            if (!string.IsNullOrWhiteSpace(summaryField))
+            {
+                warnings.Add("'" + type + "' paths cannot have summary field names.\n\n" + stepID + ".summary-field");
+            }
+        }
+        else if (paths.Count == 0)
+        {
+            errors.Add("'" + type + "' paths must have at least one child path.\n\n" + stepID + ".message-type");
+        }
+
+        if (type is QuestionType.END_WITH_SUMMARY)
+        {
+            summaryMaxLength += message?.Length ?? 0;
+            summaryMaxLength += title?.Length ?? 0;
+            if (summaryFieldCount > 25)
+            {
+                errors.Add("A summary cannot contain more than 25 fields, but you have " + summaryFieldCount + " fields in this branch.\n\n" + stepID);
+            }
+            else if (summaryMaxLength >= 6000)
+            {
+                warnings.Add("A summary cannot contain more than 6000 characters, but this branch may reach " + summaryMaxLength + " characters.\n" +
+                             "Use the \"max-length\" parameter to limit text input field lengths, or shorten other parts of the summary message.\n\n" + stepID);
+            }
+        }
+
+        foreach (KeyValuePair<string,InterviewQuestion> path in paths)
+        {
+            // The JSON schema error messages use this format for the JSON path, so we use it here too.
+            string nextStepID = stepID;
+            nextStepID += path.Key.ContainsAny('.', ' ', '[', ']', '(', ')', '/', '\\')
+                ? ".paths['" + path.Key + "']"
+                : ".paths." + path.Key;
+
+            path.Value.Validate(ref errors, ref warnings, nextStepID, summaryFieldCount, summaryMaxLength);
         }
     }
 

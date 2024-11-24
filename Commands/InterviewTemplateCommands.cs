@@ -38,7 +38,7 @@ public class InterviewTemplateCommands
             return;
         }
 
-        if (!Database.TryGetCategory(category.Id, out Database.Category categoryData))
+        if (!Database.TryGetCategory(category.Id, out Database.Category _))
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {
@@ -99,17 +99,15 @@ public class InterviewTemplateCommands
             return;
         }
 
+        Stream stream = await new HttpClient().GetStreamAsync(file.Url);
         try
         {
-            List<string> errors = [];
-
-            Stream stream = await new HttpClient().GetStreamAsync(file.Url);
             JSchemaValidatingReader validatingReader = new(new JsonTextReader(new StreamReader(stream)));
             validatingReader.Schema = JSchema.Parse(jsonSchema);
 
             // The schema seems to throw an additional error with incorrect information if an invalid parameter is included
             // in the template. Throw here in order to only show the first correct error to the user, also skips unnecessary validation further down.
-            validatingReader.ValidationEventHandler += (o, a) => throw new JsonException(a.Message);
+            validatingReader.ValidationEventHandler += (_, a) => throw new JsonException(a.Message);
 
             JsonSerializer serializer = new();
             Template template = serializer.Deserialize<Template>(validatingReader);
@@ -135,24 +133,15 @@ public class InterviewTemplateCommands
                 return;
             }
 
-            template.interview.Validate(ref errors, out int summaryCount, out int summaryMaxLength);
-
-            if (summaryCount > 25)
-            {
-                errors.Add("A summary cannot contain more than 25 fields, but you have " + summaryCount + " fields in at least one of your interview branches.");
-            }
-
-            if (summaryMaxLength >= 6000)
-            {
-                errors.Add("A summary cannot contain more than 6000 characters, but at least one of your branches has the possibility of its summary reaching " + summaryMaxLength + " characters.");
-            }
-
+            List<string> errors = [];
+            List<string> warnings = [];
+            template.interview.Validate(ref errors, ref warnings, "interview", 0, 0);
             if (errors.Count != 0)
             {
-                string errorString = string.Join("\n\n", errors);
-                if (errorString.Length > 1500)
+                string errorString = string.Join("```\n```", errors);
+                if (errorString.Length > 4000)
                 {
-                    errorString = errorString.Substring(0, 1500);
+                    errorString = errorString.Substring(0, 4000);
                 }
 
                 await command.RespondAsync(new DiscordEmbedBuilder
@@ -171,6 +160,29 @@ public class InterviewTemplateCommands
                     Description = "An error occured trying to write the new template to database."
                 }, true);
                 return;
+            }
+
+            if (warnings.Count == 0)
+            {
+                await command.RespondAsync(new DiscordEmbedBuilder
+                {
+                    Color = DiscordColor.Green,
+                    Description = "Uploaded interview template."
+                }, true);
+            }
+            else
+            {
+                string warningString = string.Join("```\n```", warnings);
+                if (warningString.Length > 4000)
+                {
+                    warningString = warningString.Substring(0, 4000);
+                }
+
+                await command.RespondAsync(new DiscordEmbedBuilder
+                {
+                    Color = DiscordColor.Orange,
+                    Description = "Uploaded interview template.\n\n**Warnings:**\n```\n" + warningString + "\n```"
+                }, true);
             }
 
             try
@@ -204,12 +216,6 @@ public class InterviewTemplateCommands
             }, true);
             return;
         }
-
-        await command.RespondAsync(new DiscordEmbedBuilder
-        {
-            Color = DiscordColor.Green,
-            Description = "Uploaded interview template."
-        }, true);
     }
 
     [RequireGuild]

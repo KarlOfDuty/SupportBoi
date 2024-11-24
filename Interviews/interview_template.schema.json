@@ -141,13 +141,15 @@
         {
           "type": "number",
           "title": "Max Length",
-          "description": "The maximum length of the text input."
+          "description": "The maximum length of the text input.",
+          "maximum": 1024
         },
         "min-length":
         {
           "type": "number",
           "title": "Min Length",
-          "description": "The minimum length of the text input."
+          "description": "The minimum length of the text input.",
+          "minimum": 0
         }
       },
       "required": [ "message", "message-type", "color", "paths" ],
