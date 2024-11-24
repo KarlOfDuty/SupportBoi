@@ -20,7 +20,7 @@ namespace SupportBoi.Commands;
 [Description("Administrative commands.")]
 public class InterviewTemplateCommands
 {
-    private static string jsonSchema = Utilities.ReadManifestData("Interviews.interview_template.schema.json");
+    private static readonly string jsonSchema = Utilities.ReadManifestData("Interviews.interview_template.schema.json");
 
     [RequireGuild]
     [Command("get")]
@@ -57,7 +57,7 @@ public class InterviewTemplateCommands
             "  \"interview\":\n" +
             "  {\n" +
             "    \"message\": \"\",\n" +
-            "    \"type\": \"\",\n" +
+            "    \"message-type\": \"\",\n" +
             "    \"color\": \"\",\n" +
             "    \"paths\":\n" +
             "    {\n" +
