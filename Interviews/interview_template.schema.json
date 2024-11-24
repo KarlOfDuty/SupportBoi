@@ -152,7 +152,7 @@
           "minimum": 0
         }
       },
-      "required": [ "message", "message-type", "color", "paths" ],
+      "required": [ "message", "message-type", "color" ],
       "unevaluatedProperties": false
     }
   },

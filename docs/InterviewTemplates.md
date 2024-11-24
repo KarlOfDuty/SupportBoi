@@ -82,6 +82,7 @@ It is highly recommended to use the interview template JSON schema to get live v
 This section lists all the properties that can be used in an interview template.
 If you have set up your editor as suggested above it will handle a lot of this for you automatically.
 
+Here is a simple example of an interview asking a user for their favourite colour out of the different button colours:
 ```json
 {
   "category-id": "1006863882301755503",
@@ -93,7 +94,7 @@ If you have set up your editor as suggested above it will handle a lot of this f
     "summary-field": "Favourite colour",
     "paths":
     {
-      "PRIMARY":
+      "Blue":
       {
         "message": "Summary",
         "message-type": "END_WITH_SUMMARY",
@@ -101,7 +102,7 @@ If you have set up your editor as suggested above it will handle a lot of this f
         "button-style": "PRIMARY",
         "paths": {}
       },
-      "SECONDARY":
+      "Gray":
       {
         "message": "Summary",
         "message-type": "END_WITH_SUMMARY",
@@ -109,7 +110,7 @@ If you have set up your editor as suggested above it will handle a lot of this f
         "button-style": "SECONDARY",
         "paths": {}
       },
-      "SUCCESS":
+      "Green":
       {
         "message": "Summary",
         "message-type": "END_WITH_SUMMARY",
@@ -117,7 +118,7 @@ If you have set up your editor as suggested above it will handle a lot of this f
         "button-style": "SUCCESS",
         "paths": {}
       },
-      "DANGER":
+      "Red":
       {
         "message": "Summary",
         "message-type": "END_WITH_SUMMARY",
@@ -167,7 +168,7 @@ The text in the embed message that will be sent to the user when they reach this
       <td>Yes</td>
       <td>String</td>
       <td>
-The type of message, decides what the bot will do when the user gets to this step.
+The type of message, decides what the bot will do when the user gets to this step. See the list of message types below for more info.
 
 <!-- For whatever reason this tag cannot be indented -->
 </td>
@@ -189,7 +190,7 @@ Colour of the message embed. You can either enter a colour name or a hexadecimal
       <td>
 `paths`
       </td>
-      <td>Yes</td>
+      <td>No</td>
       <td>Steps</td>
       <td>
 One or more interview steps. The name of the step is used as a regex match against the user's answer,
