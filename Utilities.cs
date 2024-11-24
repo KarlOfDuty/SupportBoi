@@ -55,7 +55,7 @@ public static class Utilities
         return messages;
     }
 
-    public static async Task<List<Database.Category>> GetVerifiedChannels()
+    public static async Task<List<Database.Category>> GetVerifiedCategories()
     {
         List<Database.Category> verifiedCategories = new List<Database.Category>();
         foreach (Database.Category category in Database.GetAllCategories())

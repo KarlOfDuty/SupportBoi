@@ -38,16 +38,6 @@ public class InterviewTemplateCommands
             return;
         }
 
-        if (!Database.TryGetCategory(category.Id, out Database.Category _))
-        {
-            await command.RespondAsync(new DiscordEmbedBuilder
-            {
-                Color = DiscordColor.Red,
-                Description = "That category is not registered with the bot."
-            }, true);
-            return;
-        }
-
         string interviewTemplateJSON = Database.GetInterviewTemplateJSON(category.Id);
         if (interviewTemplateJSON == null)
         {
@@ -119,16 +109,6 @@ public class InterviewTemplateCommands
                 {
                     Color = DiscordColor.Red,
                     Description = "The category ID in the uploaded JSON structure is not a valid category."
-                }, true);
-                return;
-            }
-
-            if (!Database.TryGetCategory(category.Id, out Database.Category _))
-            {
-                await command.RespondAsync(new DiscordEmbedBuilder
-                {
-                    Color = DiscordColor.Red,
-                    Description = "The category ID in the uploaded JSON structure is not a category registered with the bot, use /addcategory first."
                 }, true);
                 return;
             }
@@ -230,16 +210,6 @@ public class InterviewTemplateCommands
             {
                 Color = DiscordColor.Red,
                 Description = "That channel is not a category."
-            }, true);
-            return;
-        }
-
-        if (!Database.TryGetCategory(category.Id, out Database.Category _))
-        {
-            await command.RespondAsync(new DiscordEmbedBuilder
-            {
-                Color = DiscordColor.Red,
-                Description = "That category is not registered with the bot."
             }, true);
             return;
         }

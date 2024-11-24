@@ -46,7 +46,7 @@ public class CreateSelectionBoxPanelCommand
 
     public static async Task<List<DiscordSelectComponent>> GetSelectComponents(SlashCommandContext command, string placeholder)
     {
-        List<Database.Category> verifiedCategories = await Utilities.GetVerifiedChannels();
+        List<Database.Category> verifiedCategories = await Utilities.GetVerifiedCategories();
 
         if (verifiedCategories.Count == 0)
         {

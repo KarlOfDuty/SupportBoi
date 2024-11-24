@@ -18,7 +18,7 @@ public class CreateButtonPanelCommand
     public async Task OnExecute(SlashCommandContext command)
     {
         DiscordMessageBuilder builder = new DiscordMessageBuilder().WithContent(" ");
-        List<Database.Category> verifiedCategories = await Utilities.GetVerifiedChannels();
+        List<Database.Category> verifiedCategories = await Utilities.GetVerifiedCategories();
 
         if (verifiedCategories.Count == 0)
         {

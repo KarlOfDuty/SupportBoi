@@ -18,7 +18,7 @@ public class NewCommand
     [Description("Opens a new ticket.")]
     public async Task OnExecute(SlashCommandContext command)
     {
-        List<Database.Category> verifiedCategories = await Utilities.GetVerifiedChannels();
+        List<Database.Category> verifiedCategories = await Utilities.GetVerifiedCategories();
         switch (verifiedCategories.Count)
         {
             case 0:
