@@ -15,9 +15,9 @@ A support ticket Discord bot. Uses a MySQL database for storage of ticket inform
 
 4. Download the bot for your operating system, either a [release version](https://github.com/KarlOfDuty/SupportBoi/releases) or a [dev build](https://jenkins.karlofduty.com/blue/organizations/jenkins/SupportBoi/activity).
 
-5. Run `./SupportBoi_Linux` on Linux or `./SupportBoi_Windows.exe` on Windows.
+5. Run `./SupportBoi_Linux` on Linux or `./SupportBoi_Windows.exe` on Windows, this creates a config file in the current directory.
 
-6. Set up the config (`config.yml`) to your specifications, there are instructions inside and also further down on this page. If you need more help either contact me in Discord or through an issue here.
+6. Set up the config, there are instructions inside. If you need more help either contact me in Discord or through an issue here.
 
 7. Restart the bot.
 
