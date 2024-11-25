@@ -759,7 +759,7 @@ public static class Database
         return templates;
     }
 
-    public static bool TryGetInterviewTemplate(ulong categoryID, out Interviews.InterviewQuestion template)
+    public static bool TryGetInterviewTemplate(ulong categoryID, out Interviews.InterviewStep template)
     {
         using MySqlConnection c = GetConnection();
         c.Open();
@@ -807,7 +807,7 @@ public static class Database
                 NullValueHandling = NullValueHandling.Ignore,
                 MissingMemberHandling = MissingMemberHandling.Error,
                 Formatting = Formatting.Indented,
-                ContractResolver = new InterviewQuestion.StripInternalPropertiesResolver()
+                ContractResolver = new InterviewStep.StripInternalPropertiesResolver()
             });
 
             string query;
@@ -851,7 +851,7 @@ public static class Database
         }
     }
 
-    public static bool SaveInterview(ulong channelID, Interviews.InterviewQuestion interview)
+    public static bool SaveInterview(ulong channelID, Interviews.InterviewStep interview)
     {
         try
         {
@@ -879,7 +879,7 @@ public static class Database
         }
     }
 
-    public static bool TryGetInterview(ulong channelID, out Interviews.InterviewQuestion interview)
+    public static bool TryGetInterview(ulong channelID, out Interviews.InterviewStep interview)
     {
         using MySqlConnection c = GetConnection();
         c.Open();
@@ -894,7 +894,7 @@ public static class Database
             interview = null;
             return false;
         }
-        interview = JsonConvert.DeserializeObject<Interviews.InterviewQuestion>(results.GetString("interview"));
+        interview = JsonConvert.DeserializeObject<Interviews.InterviewStep>(results.GetString("interview"));
         results.Close();
         return true;
     }

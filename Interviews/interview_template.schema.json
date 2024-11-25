@@ -97,11 +97,11 @@
           ],
           "minLength": 1
         },
-        "paths":
+        "steps":
         {
           "type": "object",
-          "title": "Paths",
-          "description": "The possible next steps, the name of the path is matched against the user input, use \".*\" to match anything.",
+          "title": "Steps",
+          "description": "The possible next steps, the name of the step is matched against the user input using regex, use \".*\" to match anything.",
           "patternProperties":
           {
             ".*":
@@ -135,6 +135,13 @@
           "type": "string",
           "title": "Selector Description",
           "description": "The description of the selector.",
+          "minLength": 1
+        },
+        "selector-placeholder":
+        {
+          "type": "string",
+          "title": "Selector Placeholder",
+          "description": "The placeholder shown before an option is selected.",
           "minLength": 1
         },
         "max-length":

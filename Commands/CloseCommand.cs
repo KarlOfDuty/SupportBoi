@@ -106,13 +106,13 @@ public class CloseCommand
             // If the zip transcript doesn't exist, use the html file.
             try
             {
-                FileInfo fi = new FileInfo(filePath);
-                if (!fi.Exists || fi.Length >= 26214400)
+                FileInfo fileInfo = new FileInfo(filePath);
+                if (!fileInfo.Exists || fileInfo.Length >= 26214400)
                 {
                     fileName = Transcriber.GetHTMLFilename(ticket.id);
                     filePath = Transcriber.GetHtmlPath(ticket.id);
                 }
-                zipSize = fi.Length;
+                zipSize = fileInfo.Length;
             }
             catch (Exception e)
             {

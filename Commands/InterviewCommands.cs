@@ -78,7 +78,7 @@ public class InterviewCommands
       return;
     }
 
-    if (!Database.TryGetInterview(command.Channel.Id, out InterviewQuestion interviewRoot))
+    if (!Database.TryGetInterview(command.Channel.Id, out InterviewStep interviewRoot))
     {
       await command.RespondAsync(new DiscordEmbedBuilder
       {

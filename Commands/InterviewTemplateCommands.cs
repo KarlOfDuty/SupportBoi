@@ -49,7 +49,7 @@ public class InterviewTemplateCommands
             "    \"message\": \"\",\n" +
             "    \"message-type\": \"\",\n" +
             "    \"color\": \"\",\n" +
-            "    \"paths\":\n" +
+            "    \"steps\":\n" +
             "    {\n" +
             "      \n" +
             "    }\n" +
@@ -214,7 +214,7 @@ public class InterviewTemplateCommands
             return;
         }
 
-        if (!Database.TryGetInterviewTemplate(category.Id, out InterviewQuestion _))
+        if (!Database.TryGetInterviewTemplate(category.Id, out InterviewStep _))
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {

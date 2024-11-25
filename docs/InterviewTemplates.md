@@ -92,7 +92,7 @@ Here is a simple example of an interview asking a user for their favourite colou
     "message-type": "BUTTONS",
     "color": "BLUE",
     "summary-field": "Favourite colour",
-    "paths":
+    "steps":
     {
       "Blue":
       {
@@ -100,7 +100,7 @@ Here is a simple example of an interview asking a user for their favourite colou
         "message-type": "END_WITH_SUMMARY",
         "color": "BLUE",
         "button-style": "PRIMARY",
-        "paths": {}
+        "steps": {}
       },
       "Gray":
       {
@@ -108,7 +108,7 @@ Here is a simple example of an interview asking a user for their favourite colou
         "message-type": "END_WITH_SUMMARY",
         "color": "GRAY",
         "button-style": "SECONDARY",
-        "paths": {}
+        "steps": {}
       },
       "Green":
       {
@@ -116,7 +116,7 @@ Here is a simple example of an interview asking a user for their favourite colou
         "message-type": "END_WITH_SUMMARY",
         "color": "GREEN",
         "button-style": "SUCCESS",
-        "paths": {}
+        "steps": {}
       },
       "Red":
       {
@@ -124,7 +124,7 @@ Here is a simple example of an interview asking a user for their favourite colou
         "message-type": "END_WITH_SUMMARY",
         "color": "RED",
         "button-style": "DANGER",
-        "paths": {}
+        "steps": {}
       }
     }
   }
@@ -136,9 +136,9 @@ Here is a simple example of an interview asking a user for their favourite colou
 | Property&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Required | Description                                                                                                                          |
 |----------------------------------------------------------------------------|----------|--------------------------------------------------------------------------------------------------------------------------------------|
 | `category-id`                                                              | Yes      | The id of the category this template applies to. You can change this and re-upload the template to apply it to a different category. |
-| `interview`                                                                | Yes      | Contains the interview conversation tree, starting with one path which branches into many.                                           |
+| `interview`                                                                | Yes      | Contains the interview conversation tree, starting with one interview step which branches into many.                                 |
 
-### Interview Paths
+### Interview Steps
 
 <!-- This is an HTML table to allow for markdown formatting inside -->
 <table>
@@ -188,7 +188,7 @@ Colour of the message embed. You can either enter a colour name or a hexadecimal
     </tr>
     <tr>
       <td>
-`paths`
+`steps`
       </td>
       <td>No</td>
       <td>Steps</td>
