@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -13,6 +13,7 @@ namespace SupportBoi.Commands;
 
 public class TranscriptCommand
 {
+    // TODO: Refactor the hell out of this
     [RequireGuild]
     [Command("transcript")]
     [Description("Creates a transcript of a ticket.")]
@@ -80,11 +81,49 @@ public class TranscriptCommand
             }
         }
 
+        string fileName = Transcriber.GetZipFilename(ticket.id);
+        string filePath = Transcriber.GetZipPath(ticket.id);
+        long zipSize = 0;
+
+        // If the zip transcript doesn't exist, use the html file.
+        try
+        {
+            FileInfo fi = new FileInfo(filePath);
+            if (!fi.Exists || fi.Length >= 26214400)
+            {
+                fileName = Transcriber.GetHTMLFilename(ticket.id);
+                filePath = Transcriber.GetHtmlPath(ticket.id);
+            }
+            zipSize = fi.Length;
+        }
+        catch (Exception e)
+        {
+            await command.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Red,
+                Description = "ERROR: Could not find transcript file. Aborting..."
+            }));
+            Logger.Error("Failed to access transcript file:", e);
+            return;
+        }
+
+        // Check if the chosen file path works.
+        if (!File.Exists(filePath))
+        {
+            await command.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Red,
+                Description = "ERROR: Could not find transcript file. Aborting..."
+            }));
+            Logger.Error("Transcript file does not exist: \"" + filePath + "\"");
+            return;
+        }
+
         try
         {
             // Log it if the log channel exists
             DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
-            await using FileStream file = new FileStream(Transcriber.GetPath(ticket.id), FileMode.Open, FileAccess.Read);
+            await using FileStream file = new FileStream(filePath, FileMode.Open, FileAccess.Read);
 
             DiscordMessageBuilder message = new DiscordMessageBuilder();
             message.AddEmbed(new DiscordEmbedBuilder
@@ -96,7 +135,7 @@ public class TranscriptCommand
                     Text = "Ticket: " + ticket.id.ToString("00000")
                 }
             });
-            message.AddFiles(new Dictionary<string, Stream> { { Transcriber.GetFilename(ticket.id), file } });
+            message.AddFiles(new Dictionary<string, Stream> { { fileName, file } });
 
             await logChannel.SendMessageAsync(message);
         }
@@ -105,20 +144,54 @@ public class TranscriptCommand
             Logger.Error("Could not send message in log channel.");
         }
 
+        if (await SendDirectMessage(command, fileName, filePath, zipSize, ticket.id))
+        {
+            await command.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Green,
+                Description = "Transcript sent!\n"
+            }));
+        }
+    }
+
+    private static async Task<bool> SendDirectMessage(SlashCommandContext command, string fileName, string filePath, long zipSize, uint ticketID)
+    {
         try
         {
             // Send transcript in a direct message
-            await using FileStream file = new FileStream(Transcriber.GetPath(ticket.id), FileMode.Open, FileAccess.Read);
+            await using FileStream file = new FileStream(filePath, FileMode.Open, FileAccess.Read);
 
             DiscordMessageBuilder directMessage = new DiscordMessageBuilder();
-            directMessage.AddEmbed(new DiscordEmbedBuilder
+
+            if (zipSize >= 26214400)
             {
-                Color = DiscordColor.Green,
-                Description = "Transcript generated!\n"
-            });
-            directMessage.AddFiles(new Dictionary<string, Stream> { { Transcriber.GetFilename(ticket.id), file } });
+                directMessage.AddEmbed(new DiscordEmbedBuilder
+                {
+                    Color = DiscordColor.Orange,
+                    Description = "Transcript generated.\n\nThe zip file is too large, sending only the HTML file. Ask an administrator for the zip if you need it.",
+                    Footer = new DiscordEmbedBuilder.EmbedFooter
+                    {
+                        Text = "Ticket: " + ticketID.ToString("00000")
+                    }
+                });
+            }
+            else
+            {
+                directMessage.AddEmbed(new DiscordEmbedBuilder
+                {
+                    Color = DiscordColor.Green,
+                    Description = "Transcript generated!\n",
+                    Footer = new DiscordEmbedBuilder.EmbedFooter
+                    {
+                        Text = "Ticket: " + ticketID.ToString("00000")
+                    }
+                });
+            }
+
+            directMessage.AddFiles(new Dictionary<string, Stream> { { fileName, file } });
 
             await command.Member.SendMessageAsync(directMessage);
+            return true;
         }
         catch (UnauthorizedException)
         {
@@ -127,13 +200,7 @@ public class TranscriptCommand
                 Color = DiscordColor.Red,
                 Description = "Not allowed to send direct message to you, please check your privacy settings.\n"
             }));
-            return;
+            return false;
         }
-
-        await command.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
-        {
-            Color = DiscordColor.Green,
-            Description = "Transcript sent!\n"
-        }));
     }
 }

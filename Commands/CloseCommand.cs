@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -13,6 +13,7 @@ namespace SupportBoi.Commands;
 
 public class CloseCommand
 {
+    // TODO: Refactor this class a whole lot
     private static Dictionary<ulong, string> closeReasons = new Dictionary<ulong, string>();
 
     [RequireGuild]
@@ -81,11 +82,52 @@ public class CloseCommand
             closeReason = "\nReason: " + cachedReason + "\n";
         }
 
+        string fileName = Transcriber.GetZipFilename(ticket.id);
+        string filePath = Transcriber.GetZipPath(ticket.id);
+        long zipSize = 0;
+
+        // If the zip transcript doesn't exist, use the html file.
+        try
+        {
+            FileInfo fi = new FileInfo(filePath);
+            if (!fi.Exists || fi.Length >= 26214400)
+            {
+                fileName = Transcriber.GetHTMLFilename(ticket.id);
+                filePath = Transcriber.GetHtmlPath(ticket.id);
+            }
+            zipSize = fi.Length;
+        }
+        catch (Exception e)
+        {
+            await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Red,
+                Description = "ERROR: Could not find transcript file. Aborting..."
+            }));
+            Logger.Error("Failed to access transcript file:", e);
+            return;
+        }
+
+        // Check if the chosen file path works.
+        if (!File.Exists(filePath))
+        {
+            await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Red,
+                Description = "ERROR: Could not find transcript file. Aborting..."
+            }));
+            Logger.Error("Transcript file does not exist: \"" + filePath + "\"");
+            return;
+        }
+
         try
         {
             // Log it if the log channel exists
             DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
-            DiscordEmbed embed = new DiscordEmbedBuilder
+
+            await using FileStream file = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+            DiscordMessageBuilder message = new DiscordMessageBuilder();
+            message.AddEmbed(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Green,
                 Description = "Ticket " + ticket.id.ToString("00000") + " closed by " +
@@ -94,12 +136,8 @@ public class CloseCommand
                 {
                     Text = "Ticket: " + ticket.id.ToString("00000")
                 }
-            };
-
-            await using FileStream file = new FileStream(Transcriber.GetPath(ticket.id), FileMode.Open, FileAccess.Read);
-            DiscordMessageBuilder message = new DiscordMessageBuilder();
-            message.AddEmbed(embed);
-            message.AddFiles(new Dictionary<string, Stream> { { Transcriber.GetFilename(ticket.id), file } });
+            });
+            message.AddFiles(new Dictionary<string, Stream> { { fileName, file } });
 
             await logChannel.SendMessageAsync(message);
         }
@@ -110,25 +148,41 @@ public class CloseCommand
 
         if (Config.closingNotifications)
         {
-            DiscordEmbed embed = new DiscordEmbedBuilder
-            {
-                Color = DiscordColor.Green,
-                Description = "Ticket " + ticket.id.ToString("00000") + " which you opened has now been closed, " +
-                              "check the transcript for more info.\n" + closeReason,
-                Footer = new DiscordEmbedBuilder.EmbedFooter
-                {
-                    Text = "Ticket: " + ticket.id.ToString("00000")
-                }
-            };
-
             try
             {
                 DiscordUser staffMember = await SupportBoi.client.GetUserAsync(ticket.creatorID);
-                await using FileStream file = new FileStream(Transcriber.GetPath(ticket.id), FileMode.Open, FileAccess.Read);
+                await using FileStream file = new(filePath, FileMode.Open, FileAccess.Read);
 
-                DiscordMessageBuilder message = new DiscordMessageBuilder();
-                message.AddEmbed(embed);
-                message.AddFiles(new Dictionary<string, Stream> { { Transcriber.GetFilename(ticket.id), file } });
+                DiscordMessageBuilder message = new();
+
+                if (zipSize >= 26214400)
+                {
+                    message.AddEmbed(new DiscordEmbedBuilder
+                    {
+                        Color = DiscordColor.Orange,
+                        Description = "Ticket " + ticket.id.ToString("00000") + " which you opened has now been closed, check the transcript for more info.\n\n" +
+                                      "The zip file is too large, sending only the HTML file. Ask an administrator for the zip if you need it.\"\n" + closeReason,
+                        Footer = new DiscordEmbedBuilder.EmbedFooter
+                        {
+                            Text = "Ticket: " + ticket.id.ToString("00000")
+                        }
+                    });
+                }
+                else
+                {
+                    message.AddEmbed(new DiscordEmbedBuilder
+                    {
+                        Color = DiscordColor.Green,
+                        Description = "Ticket " + ticket.id.ToString("00000") + " which you opened has now been closed, " + "check the transcript for more info.\n" + closeReason,
+                        Footer = new DiscordEmbedBuilder.EmbedFooter
+                        {
+                            Text = "Ticket: " + ticket.id.ToString("00000")
+                        }
+                    });
+                }
+
+
+                message.AddFiles(new Dictionary<string, Stream> { { fileName, file } });
 
                 await staffMember.SendMessageAsync(message);
             }
