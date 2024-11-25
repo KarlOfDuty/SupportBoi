@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -102,7 +102,7 @@ public class TranscriptCommand
         }
         catch (NotFoundException)
         {
-            Logger.Error("Could not find the log channel.");
+            Logger.Error("Could not send message in log channel.");
         }
 
         try

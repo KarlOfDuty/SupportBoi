@@ -70,7 +70,7 @@ public class AddStaffCommand
         }
         catch (NotFoundException)
         {
-            Logger.Error("Could not find the log channel.");
+            Logger.Error("Could not send message in log channel.");
         }
     }
 }

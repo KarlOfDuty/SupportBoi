@@ -60,7 +60,7 @@ public class InterviewCommands
     }
     catch (NotFoundException)
     {
-      Logger.Error("Could not find the log channel.");
+      Logger.Error("Could not send message in log channel.");
     }
   }
 
@@ -122,7 +122,7 @@ public class InterviewCommands
     }
     catch (NotFoundException)
     {
-      Logger.Error("Could not find the log channel.");
+      Logger.Error("Could not send message in log channel.");
     }
   }
 }

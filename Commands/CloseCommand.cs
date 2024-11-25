@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -105,7 +105,7 @@ public class CloseCommand
         }
         catch (NotFoundException)
         {
-            Logger.Error("Could not find the log channel.");
+            Logger.Error("Could not send message in log channel.");
         }
 
         if (Config.closingNotifications)
