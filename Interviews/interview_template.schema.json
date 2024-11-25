@@ -23,7 +23,7 @@
         {
           "type": "string",
           "title": "Message",
-          "description": "The message text.",
+          "description": "The text in the embed message that will be sent to the user when they reach this step.",
           "minLength": 1
         },
         "message-type":
@@ -49,7 +49,7 @@
         {
           "type": "string",
           "title": "Color",
-          "description": "Colour of the embed message.",
+          "description": "Colour of the message embed. You can either enter a colour name or a hexadecimal RGB value.",
           "examples":
           [
             "BLACK",
@@ -101,7 +101,7 @@
         {
           "type": "object",
           "title": "Steps",
-          "description": "The possible next steps, the name of the step is matched against the user input using regex, use \".*\" to match anything.",
+          "description": "One or more interview steps. The name of the step is used as a regex match against the user's answer, except for selection boxes and buttons where each step becomes a button or selection option.",
           "patternProperties":
           {
             ".*":
@@ -114,14 +114,14 @@
         {
           "type": "string",
           "title": "Summary Field",
-          "description": "If this interview ends with a summary this will be the name of the answer the user used in this field.",
+          "description": "When an interview ends all previous answers with this property will be put in a summary. If this property is not specified the answer will not be shown in the summary. The value of this property is the name which will be displayed next to the answer in the summary.",
           "minLength": 1
         },
         "button-style":
         {
           "type": "string",
           "title": "Button Style",
-          "description": "The style of the button that leads to this step, the step before this one must be a button step for this to work.",
+          "description": "The style of the button that leads to this step. Requires that the parent step is a 'BUTTONS' step.",
           "enum":
           [
             "PRIMARY",
@@ -134,28 +134,28 @@
         {
           "type": "string",
           "title": "Selector Description",
-          "description": "The description of the selector.",
+          "description": "Description for this option in the parent step's selection box. Requires that the parent step is a 'TEXT_SELECTOR'.",
           "minLength": 1
         },
         "selector-placeholder":
         {
           "type": "string",
           "title": "Selector Placeholder",
-          "description": "The placeholder shown before an option is selected.",
+          "description": "The placeholder text shown before a value is selected in the selection box. Requires that this step is a TEXT_SELECTOR.",
           "minLength": 1
         },
         "max-length":
         {
           "type": "number",
           "title": "Max Length",
-          "description": "The maximum length of the text input.",
+          "description": "The maximum length of the user's response message. Requires that this step is a 'TEXT_INPUT'.",
           "maximum": 1024
         },
         "min-length":
         {
           "type": "number",
           "title": "Min Length",
-          "description": "The minimum length of the text input.",
+          "description": "The minimum length of the user's response message. Requires that this step is a 'TEXT_INPUT'.",
           "minimum": 0
         }
       },
@@ -170,7 +170,7 @@
     {
       "type": "string",
       "title": "Category ID",
-      "description": "The category the template applies to. Change this to apply the template to a different category."
+      "description": "The id of the category this template applies to. You can change this and re-upload the template to apply it to a different category."
     },
     "interview":
     {
