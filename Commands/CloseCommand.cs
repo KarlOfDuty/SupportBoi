@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -15,6 +15,7 @@ public class CloseCommand
 {
     // TODO: Refactor this class a whole lot
     private static Dictionary<ulong, string> closeReasons = new Dictionary<ulong, string>();
+    private static List<ulong> currentlyClosingTickets = new List<ulong>();
 
     [RequireGuild]
     [Command("close")]
@@ -47,166 +48,195 @@ public class CloseCommand
 
     public static async Task OnConfirmed(DiscordInteraction interaction)
     {
-        await interaction.CreateResponseAsync(DiscordInteractionResponseType.DeferredMessageUpdate);
-
-        // Check if ticket exists in the database
-        if (!Database.TryGetOpenTicket(interaction.Channel.Id, out Database.Ticket ticket))
+        if (currentlyClosingTickets.Contains(interaction.Channel.Id))
         {
-            await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
+            await interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
+                                                  new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Red,
-                Description = "This channel is not a ticket."
-            }));
-            return;
-        }
-
-        // Build transcript
-        try
-        {
-            await Transcriber.ExecuteAsync(interaction.Channel.Id, ticket.id);
-        }
-        catch (Exception e)
-        {
-            Logger.Error("Exception occured when trying to save transcript while closing ticket: " + e);
-            await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
-            {
-                Color = DiscordColor.Red,
-                Description = "ERROR: Could not save transcript file. Aborting..."
-            }));
-            return;
-        }
-
-        string closeReason = "";
-        if (closeReasons.TryGetValue(interaction.Channel.Id, out string cachedReason))
-        {
-            closeReason = "\nReason: " + cachedReason + "\n";
-        }
-
-        string fileName = Transcriber.GetZipFilename(ticket.id);
-        string filePath = Transcriber.GetZipPath(ticket.id);
-        long zipSize = 0;
-
-        // If the zip transcript doesn't exist, use the html file.
-        try
-        {
-            FileInfo fi = new FileInfo(filePath);
-            if (!fi.Exists || fi.Length >= 26214400)
-            {
-                fileName = Transcriber.GetHTMLFilename(ticket.id);
-                filePath = Transcriber.GetHtmlPath(ticket.id);
-            }
-            zipSize = fi.Length;
-        }
-        catch (Exception e)
-        {
-            await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
-            {
-                Color = DiscordColor.Red,
-                Description = "ERROR: Could not find transcript file. Aborting..."
-            }));
-            Logger.Error("Failed to access transcript file:", e);
-            return;
-        }
-
-        // Check if the chosen file path works.
-        if (!File.Exists(filePath))
-        {
-            await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
-            {
-                Color = DiscordColor.Red,
-                Description = "ERROR: Could not find transcript file. Aborting..."
-            }));
-            Logger.Error("Transcript file does not exist: \"" + filePath + "\"");
+                Description = "This ticket is already closing."
+            }).AsEphemeral());
             return;
         }
 
         try
         {
-            // Log it if the log channel exists
-            DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
+            currentlyClosingTickets.Add(interaction.Channel.Id);
+            await interaction.CreateResponseAsync(DiscordInteractionResponseType.DeferredMessageUpdate);
 
-            await using FileStream file = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-            DiscordMessageBuilder message = new DiscordMessageBuilder();
-            message.AddEmbed(new DiscordEmbedBuilder
+            // Check if ticket exists in the database
+            if (!Database.TryGetOpenTicket(interaction.Channel.Id, out Database.Ticket ticket))
             {
-                Color = DiscordColor.Green,
-                Description = "Ticket " + ticket.id.ToString("00000") + " closed by " +
-                              interaction.User.Mention + ".\n" + closeReason,
-                Footer = new DiscordEmbedBuilder.EmbedFooter
+                currentlyClosingTickets.Remove(interaction.Channel.Id);
+                await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
                 {
-                    Text = "Ticket: " + ticket.id.ToString("00000")
-                }
-            });
-            message.AddFiles(new Dictionary<string, Stream> { { fileName, file } });
+                    Color = DiscordColor.Red,
+                    Description = "This channel is not a ticket."
+                }));
+                return;
+            }
 
-            await logChannel.SendMessageAsync(message);
-        }
-        catch (NotFoundException)
-        {
-            Logger.Error("Could not send message in log channel.");
-        }
-
-        if (Config.closingNotifications)
-        {
+            // Build transcript
             try
             {
-                DiscordUser staffMember = await SupportBoi.client.GetUserAsync(ticket.creatorID);
-                await using FileStream file = new(filePath, FileMode.Open, FileAccess.Read);
-
-                DiscordMessageBuilder message = new();
-
-                if (zipSize >= 26214400)
+                await Transcriber.ExecuteAsync(interaction.Channel.Id, ticket.id);
+            }
+            catch (Exception e)
+            {
+                currentlyClosingTickets.Remove(interaction.Channel.Id);
+                Logger.Error("Exception occured when trying to save transcript while closing ticket: " + e);
+                await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
                 {
-                    message.AddEmbed(new DiscordEmbedBuilder
-                    {
-                        Color = DiscordColor.Orange,
-                        Description = "Ticket " + ticket.id.ToString("00000") + " which you opened has now been closed, check the transcript for more info.\n\n" +
-                                      "The zip file is too large, sending only the HTML file. Ask an administrator for the zip if you need it.\"\n" + closeReason,
-                        Footer = new DiscordEmbedBuilder.EmbedFooter
-                        {
-                            Text = "Ticket: " + ticket.id.ToString("00000")
-                        }
-                    });
-                }
-                else
+                    Color = DiscordColor.Red,
+                    Description = "ERROR: Could not save transcript file. Aborting..."
+                }));
+                return;
+            }
+
+            string closeReason = "";
+            if (closeReasons.TryGetValue(interaction.Channel.Id, out string cachedReason))
+            {
+                closeReason = "\nReason: " + cachedReason + "\n";
+            }
+
+            string fileName = Transcriber.GetZipFilename(ticket.id);
+            string filePath = Transcriber.GetZipPath(ticket.id);
+            long zipSize = 0;
+
+            // If the zip transcript doesn't exist, use the html file.
+            try
+            {
+                FileInfo fi = new FileInfo(filePath);
+                if (!fi.Exists || fi.Length >= 26214400)
                 {
-                    message.AddEmbed(new DiscordEmbedBuilder
-                    {
-                        Color = DiscordColor.Green,
-                        Description = "Ticket " + ticket.id.ToString("00000") + " which you opened has now been closed, " + "check the transcript for more info.\n" + closeReason,
-                        Footer = new DiscordEmbedBuilder.EmbedFooter
-                        {
-                            Text = "Ticket: " + ticket.id.ToString("00000")
-                        }
-                    });
+                    fileName = Transcriber.GetHTMLFilename(ticket.id);
+                    filePath = Transcriber.GetHtmlPath(ticket.id);
                 }
+                zipSize = fi.Length;
+            }
+            catch (Exception e)
+            {
+                currentlyClosingTickets.Remove(interaction.Channel.Id);
+                await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
+                {
+                    Color = DiscordColor.Red,
+                    Description = "ERROR: Could not find transcript file. Aborting..."
+                }));
+                Logger.Error("Failed to access transcript file:", e);
+                return;
+            }
 
+            // Check if the chosen file path works.
+            if (!File.Exists(filePath))
+            {
+                currentlyClosingTickets.Remove(interaction.Channel.Id);
+                await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
+                {
+                    Color = DiscordColor.Red,
+                    Description = "ERROR: Could not find transcript file. Aborting..."
+                }));
+                Logger.Error("Transcript file does not exist: \"" + filePath + "\"");
+                return;
+            }
 
+            try
+            {
+                // Log it if the log channel exists
+                DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
+
+                await using FileStream file = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+                DiscordMessageBuilder message = new DiscordMessageBuilder();
+                message.AddEmbed(new DiscordEmbedBuilder
+                {
+                    Color = DiscordColor.Green,
+                    Description = "Ticket " + ticket.id.ToString("00000") + " closed by " +
+                                  interaction.User.Mention + ".\n" + closeReason,
+                    Footer = new DiscordEmbedBuilder.EmbedFooter
+                    {
+                        Text = "Ticket: " + ticket.id.ToString("00000")
+                    }
+                });
                 message.AddFiles(new Dictionary<string, Stream> { { fileName, file } });
 
-                await staffMember.SendMessageAsync(message);
+                await logChannel.SendMessageAsync(message);
             }
-            catch (NotFoundException) { }
-            catch (UnauthorizedException) { }
+            catch (NotFoundException)
+            {
+                Logger.Error("Could not send message in log channel.");
+            }
+
+            if (Config.closingNotifications)
+            {
+                try
+                {
+                    DiscordUser staffMember = await SupportBoi.client.GetUserAsync(ticket.creatorID);
+                    await using FileStream file = new(filePath, FileMode.Open, FileAccess.Read);
+
+                    DiscordMessageBuilder message = new();
+
+                    if (zipSize >= 26214400)
+                    {
+                        message.AddEmbed(new DiscordEmbedBuilder
+                        {
+                            Color = DiscordColor.Orange,
+                            Description = "Ticket " + ticket.id.ToString("00000") + " which you opened has now been closed, check the transcript for more info.\n\n" +
+                                          "The zip file is too large, sending only the HTML file. Ask an administrator for the zip if you need it.\"\n" + closeReason,
+                            Footer = new DiscordEmbedBuilder.EmbedFooter
+                            {
+                                Text = "Ticket: " + ticket.id.ToString("00000")
+                            }
+                        });
+                    }
+                    else
+                    {
+                        message.AddEmbed(new DiscordEmbedBuilder
+                        {
+                            Color = DiscordColor.Green,
+                            Description = "Ticket " + ticket.id.ToString("00000") + " which you opened has now been closed, " + "check the transcript for more info.\n" + closeReason,
+                            Footer = new DiscordEmbedBuilder.EmbedFooter
+                            {
+                                Text = "Ticket: " + ticket.id.ToString("00000")
+                            }
+                        });
+                    }
+
+
+                    message.AddFiles(new Dictionary<string, Stream> { { fileName, file } });
+
+                    await staffMember.SendMessageAsync(message);
+                }
+                catch (NotFoundException) { }
+                catch (UnauthorizedException) { }
+            }
+
+            Database.ArchiveTicket(ticket);
+            Database.TryDeleteInterview(interaction.Channel.Id);
+
+            await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Green,
+                Description = "Channel will be deleted in 3 seconds..."
+            }));
+
+            await Task.Delay(3000);
+
+            // Delete the channel and database entry
+            await interaction.Channel.DeleteAsync("Ticket closed.");
+
+            Database.DeleteOpenTicket(ticket.id);
+
+            closeReasons.Remove(interaction.Channel.Id);
+            currentlyClosingTickets.Remove(interaction.Channel.Id);
         }
-
-        Database.ArchiveTicket(ticket);
-        Database.TryDeleteInterview(interaction.Channel.Id);
-
-        await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
+        catch (Exception e)
         {
-            Color = DiscordColor.Green,
-            Description = "Channel will be deleted in 3 seconds..."
-        }));
-
-
-        await Task.Delay(3000);
-
-        // Delete the channel and database entry
-        await interaction.Channel.DeleteAsync("Ticket closed.");
-
-        Database.DeleteOpenTicket(ticket.id);
-
-        closeReasons.Remove(interaction.Channel.Id);
+            currentlyClosingTickets.Remove(interaction.Channel.Id);
+            await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Red,
+                Description = "An unexpected error occurred when trying to close ticket. Aborting..."
+            }));
+            Logger.Error("An unexpected error occurred when trying to close ticket:", e);
+        }
     }
 }
