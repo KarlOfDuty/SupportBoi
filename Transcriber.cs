@@ -36,7 +36,7 @@ internal static class Transcriber
 
         string assetDirName = GetAssetDirName(ticketID);
         string htmlFilename = GetHTMLFilename(ticketID);
-        
+
         if (File.Exists(htmlPath))
         {
             File.Delete(htmlPath);
