@@ -12,37 +12,51 @@ namespace SupportBoi.Interviews;
 
 public static class Interviewer
 {
-    public static async void StartInterview(DiscordChannel channel)
+    public static async Task<bool> StartInterview(DiscordChannel channel)
     {
-        if (channel.Parent == null)
-        {
-            return;
-        }
-
         if (!Database.TryGetInterviewTemplate(channel.Parent.Id, out InterviewQuestion template))
         {
-            return;
+            return false;
         }
 
         await CreateQuestion(channel, template);
-        Database.SaveInterview(channel.Id, template);
+        return Database.SaveInterview(channel.Id, template);
     }
 
-    public static async Task RestartInterview(SlashCommandContext command)
+    public static async Task<bool> RestartInterview(DiscordChannel channel)
     {
-        if (Database.TryGetInterview(command.Channel.Id, out InterviewQuestion interviewRoot))
+        if (Database.TryGetInterview(channel.Id, out InterviewQuestion interviewRoot))
         {
             if (Config.deleteMessagesAfterNoSummary)
             {
-                await DeletePreviousMessages(interviewRoot, command.Channel);
+                await DeletePreviousMessages(interviewRoot, channel);
             }
 
-            if (!Database.TryDeleteInterview(command.Channel.Id))
+            if (!Database.TryDeleteInterview(channel.Id))
             {
-                Logger.Error("Could not delete interview from database. Channel ID: " + command.Channel.Id);
+                Logger.Warn("Could not delete interview from database. Channel ID: " + channel.Id);
             }
         }
-        StartInterview(command.Channel);
+
+        return await StartInterview(channel);
+    }
+
+    public static async Task<bool> StopInterview(DiscordChannel channel)
+    {
+        if (Database.TryGetInterview(channel.Id, out InterviewQuestion interviewRoot))
+        {
+            if (Config.deleteMessagesAfterNoSummary)
+            {
+                await DeletePreviousMessages(interviewRoot, channel);
+            }
+
+            if (!Database.TryDeleteInterview(channel.Id))
+            {
+                Logger.Warn("Could not delete interview from database. Channel ID: " + channel.Id);
+            }
+        }
+
+        return true;
     }
 
     public static async Task ProcessButtonOrSelectorResponse(DiscordInteraction interaction)
@@ -180,7 +194,6 @@ public static class Interviewer
             (string questionString, InterviewQuestion nextQuestion) = currentQuestion.paths.ElementAt(pathIndex);
             await HandleAnswer(questionString, nextQuestion, interviewRoot, currentQuestion, interaction.Channel);
         }
-
     }
 
     public static async Task ProcessResponseMessage(DiscordMessage answerMessage)

@@ -17,7 +17,7 @@ using SupportBoi.Interviews;
 namespace SupportBoi.Commands;
 
 [Command("interviewtemplate")]
-[Description("Administrative commands.")]
+[Description("Interview template management.")]
 public class InterviewTemplateCommands
 {
     private static readonly string jsonSchema = Utilities.ReadManifestData("Interviews.interview_template.schema.json");

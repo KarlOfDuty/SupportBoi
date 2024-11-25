@@ -194,7 +194,7 @@ internal static class SupportBoi
                 typeof(RemoveCategoryCommand),
                 typeof(RemoveMessageCommand),
                 typeof(RemoveStaffCommand),
-                typeof(RestartInterviewCommand),
+                typeof(InterviewCommands),
                 typeof(SayCommand),
                 typeof(SetSummaryCommand),
                 typeof(StatusCommand),

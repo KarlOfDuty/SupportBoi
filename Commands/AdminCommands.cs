@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using DSharpPlus.Commands;
@@ -66,6 +67,9 @@ public class AdminCommands
         [Parameter("ticket-id")] [Description("(Optional) Ticket to unset. Uses the channel you are in by default. Use ticket ID, not channel ID!")] long ticketID = 0)
     {
         Database.Ticket ticket;
+        DiscordChannel channel = null;
+
+        await command.DeferResponseAsync(true);
 
         if (ticketID == 0)
         {
@@ -79,6 +83,7 @@ public class AdminCommands
                 }, true);
                 return;
             }
+            channel = command.Channel;
         }
         else
         {
@@ -92,10 +97,22 @@ public class AdminCommands
                 }, true);
                 return;
             }
+
+            // Find the channel if it still exists
+            try
+            {
+                channel = await command.Guild.GetChannelAsync(ticket.channelID);
+            }
+            catch (Exception) { /*ignored*/ }
         }
 
-        Database.TryDeleteInterview(ticket.channelID);
+        // If the channel exists, stop any ongoing interview
+        if (channel != null)
+        {
+            await Interviewer.StopInterview(channel);
+        }
 
+        // Delete the ticket from the database and respond to command
         if (Database.DeleteOpenTicket(ticket.id))
         {
             await command.RespondAsync(new DiscordEmbedBuilder

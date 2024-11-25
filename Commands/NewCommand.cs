@@ -205,7 +205,7 @@ public class NewCommand
 
         if (Config.interviewsEnabled)
         {
-            Interviewer.StartInterview(ticketChannel);
+            await Interviewer.StartInterview(ticketChannel);
         }
 
         if (staffID != 0)
