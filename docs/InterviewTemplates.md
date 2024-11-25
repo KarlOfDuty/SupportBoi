@@ -226,7 +226,7 @@ The value of this property is the name which will be displayed next to the answe
       <td>Yes</td>
       <td>String</td>
       <td>
-The style of this path's button. Requires that the parent path is a `BUTTONS` path.
+The style of this step's button. Requires that the parent step is a `BUTTONS` step.
 Must be one of the following:
 - `PRIMARY`
 - `SECONDARY`
@@ -245,7 +245,7 @@ Default style is `SECONDARY`.
       <td>Yes</td>
       <td>String</td>
       <td>
-Description for this option in the parent path's selection box. Requires that the parent path is a `TEXT_SELECTOR`.
+Description for this option in the parent step's selection box. Requires that the parent step is a `TEXT_SELECTOR`.
       </td>
     </tr>
     <tr>
@@ -255,7 +255,7 @@ Description for this option in the parent path's selection box. Requires that th
       <td>Yes</td>
       <td>String</td>
       <td>
-The placeholder text shown before a value is selected in the selection box. Requires that this path is a `TEXT_SELECTOR`.
+The placeholder text shown before a value is selected in the selection box. Requires that this step is a `TEXT_SELECTOR`.
       </td>
     </tr>
     <tr>
@@ -265,7 +265,7 @@ The placeholder text shown before a value is selected in the selection box. Requ
       <td>Yes</td>
       <td>Number</td>
       <td>
-The maximum length of the user's response message. Requires that this path is a `TEXT_INPUT`.
+The maximum length of the user's response message. Requires that this step is a `TEXT_INPUT`.
       </td>
     </tr>
     <tr>
@@ -275,7 +275,7 @@ The maximum length of the user's response message. Requires that this path is a 
       <td>Yes</td>
       <td>Number</td>
       <td>
-The minimum length of the user's response message. Requires that this path is a `TEXT_INPUT`.
+The minimum length of the user's response message. Requires that this step is a `TEXT_INPUT`.
       </td>
     </tr>
   </tbody>
@@ -288,8 +288,8 @@ The minimum length of the user's response message. Requires that this path is a 
 | `ERROR`                | Sends an error message but does not stop the interview. The interview remains on the same step as before allowing the user to try again. |
 | `END_WITH_SUMMARY`     | End the interview and create a summary of the answers.                                                                                   |
 | `END_WITHOUT_SUMMARY`  | End the interview with a simple message without a summary.                                                                               |
-| `BUTTONS`              | Creates a message with one button per child path where the button text is the name of the child path.                                    |
-| `TEXT_SELECTOR`        | Creates a selection box with one option per child path where the option text is the name of the child path.                              |
+| `BUTTONS`              | Creates a message with one button per child step where the button text is the name of the child step.                                    |
+| `TEXT_SELECTOR`        | Creates a selection box with one option per child step where the option text is the name of the child step.                              |
 | `USER_SELECTOR`        | Creates a selection box where the user can select a user from the Discord server. The value used for the summary is the user's mention.  |
 | `ROLE_SELECTOR`        | Same as above but for a role.                                                                                                            |
 | `MENTIONABLE_SELECTOR` | Same as above but works for both roles and users.                                                                                        |
