@@ -36,8 +36,7 @@ internal static class Transcriber
 
         string assetDirName = GetAssetDirName(ticketID);
         string htmlFilename = GetHTMLFilename(ticketID);
-
-        // TODO: Delete existing files
+        
         if (File.Exists(htmlPath))
         {
             File.Delete(htmlPath);
