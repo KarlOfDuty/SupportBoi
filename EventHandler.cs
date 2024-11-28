@@ -54,6 +54,11 @@ public static class EventHandler
 
     public static async Task OnMessageCreated(DiscordClient client, MessageCreatedEventArgs e)
     {
+        if (e.Author.IsCurrent && e.Message.MessageType == DiscordMessageType.ChannelPinnedMessage)
+        {
+            await e.Message.DeleteAsync();
+        }
+
         if (e.Author.IsBot)
         {
             return;
