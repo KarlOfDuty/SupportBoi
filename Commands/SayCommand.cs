@@ -1,6 +1,7 @@
 ﻿using DSharpPlus.Entities;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Threading.Tasks;
 using DSharpPlus.Commands;
 using DSharpPlus.Commands.ContextChecks;
@@ -22,11 +23,12 @@ public class SayCommand
         // Print list of all messages if no identifier is provided
         if (identifier == null)
         {
-            SendMessageList(command);
+            await SendMessageList(command);
             return;
         }
 
-        if (!Database.TryGetMessage(identifier.ToLower(), out Database.Message message))
+        if (!Database.TryGetMessage(identifier.ToLower(CultureInfo.InvariantCulture),
+                                    out Database.Message message))
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {
@@ -57,7 +59,7 @@ public class SayCommand
         }
     }
 
-    private static async void SendMessageList(SlashCommandContext command)
+    private static async Task SendMessageList(SlashCommandContext command)
     {
         List<Database.Message> messages = Database.GetAllMessages();
         if (messages.Count == 0)

@@ -309,7 +309,7 @@ public static class Interviewer
                 OrderedDictionary summaryFields = new OrderedDictionary();
                 interviewRoot.GetSummary(ref summaryFields);
 
-                DiscordEmbedBuilder embed = new DiscordEmbedBuilder()
+                DiscordEmbedBuilder embed = new DiscordEmbedBuilder
                 {
                     Color = Utilities.StringToColor(nextStep.color),
                     Title = nextStep.heading,
@@ -334,7 +334,7 @@ public static class Interviewer
                 }
                 return;
             case MessageType.END_WITHOUT_SUMMARY:
-                await channel.SendMessageAsync(new DiscordEmbedBuilder()
+                await channel.SendMessageAsync(new DiscordEmbedBuilder
                 {
                     Color = Utilities.StringToColor(nextStep.color),
                     Title = nextStep.heading,
@@ -355,7 +355,7 @@ public static class Interviewer
             default:
                 if (answerMessage == null)
                 {
-                    DiscordMessage errorMessage = await channel.SendMessageAsync(new DiscordEmbedBuilder()
+                    DiscordMessage errorMessage = await channel.SendMessageAsync(new DiscordEmbedBuilder
                     {
                         Color = Utilities.StringToColor(nextStep.color),
                         Title = nextStep.heading,
@@ -366,7 +366,7 @@ public static class Interviewer
                 else
                 {
                     DiscordMessageBuilder errorMessageBuilder = new DiscordMessageBuilder()
-                        .AddEmbed(new DiscordEmbedBuilder()
+                        .AddEmbed(new DiscordEmbedBuilder
                         {
                             Color = Utilities.StringToColor(nextStep.color),
                             Title = nextStep.heading,

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Globalization;
 using DSharpPlus.Entities;
 using System.Threading.Tasks;
 using DSharpPlus.Commands;
@@ -16,7 +17,7 @@ public class RemoveMessageCommand
     public async Task OnExecute(SlashCommandContext command,
         [Parameter("identifier")] [Description("The identifier word used in the /say command.")] string identifier)
     {
-        if (!Database.TryGetMessage(identifier.ToLower(), out Database.Message _))
+        if (!Database.TryGetMessage(identifier.ToLower(CultureInfo.InvariantCulture), out Database.Message _))
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {

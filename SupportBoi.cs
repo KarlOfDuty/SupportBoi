@@ -206,7 +206,7 @@ internal static class SupportBoi
             ]);
             extension.AddProcessor(new SlashCommandProcessor());
             extension.CommandErrored += EventHandler.OnCommandError;
-        }, new CommandsConfiguration()
+        }, new CommandsConfiguration
         {
             RegisterDefaultCommandProcessors = false,
             UseDefaultCommandErrorHandler = false
@@ -236,14 +236,11 @@ internal class ErrorHandler : IClientErrorHandler
     public ValueTask HandleEventHandlerError(string name, Exception exception, Delegate invokedDelegate, object sender, object args)
     {
         Logger.Error("Client exception occured:\n" + exception);
-        switch (exception)
+        if (exception is BadRequestException ex)
         {
-            case BadRequestException ex:
-                Logger.Error("JSON Message: " + ex.JsonMessage);
-                break;
-            default:
-                break;
+            Logger.Error("JSON Message: " + ex.JsonMessage);
         }
+
         return ValueTask.FromException(exception);
     }
 

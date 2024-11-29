@@ -1,11 +1,11 @@
 # Writing Interview Templates
 
-The bot can automatically interview users when they open a ticket. These interviews are defined in interview templates. 
+The bot can automatically interview users when they open a ticket. These interviews are defined in interview templates.
 The templates each apply to a single ticket category so you can have different interviews depending on the type of ticket.
 
 ## Interview Template Commands
 
-Whether you already have a template or not the first step is always to use the `/interviewtemplate get <category>` command on the 
+Whether you already have a template or not the first step is always to use the `/interviewtemplate get <category>` command on the
 ticket category you want to edit. If you haven't yet, use the `/addcategory` command on the category to register it with the bot.
 
 The bot will reply with a JSON template file which you can edit and upload using the `/interviewtemplate set` command.
@@ -34,7 +34,7 @@ The bot will check that your template is correctly formatted and provide feedbac
 
 It is highly recommended to use the interview template JSON schema to get live validation of your template while you write it:
 
-### Guides for Different Editors:
+### Guides for Different Editors
 
 <details>
 
@@ -44,6 +44,7 @@ It is highly recommended to use the interview template JSON schema to get live v
 2. Search for `json schema`.
 3. Click `Edit in settings.json` on the schema setting.
 4. Set the `json.schemas` property to the following to automatically validate template files:
+
 ```json
 {
     "json.schemas":
@@ -58,6 +59,7 @@ It is highly recommended to use the interview template JSON schema to get live v
     ]
 }
 ```
+
 5. Open an interview template, you should now get suggestions for things like message types and color names, and error highlighting for any invalid sections.
 
 </details>
@@ -228,6 +230,7 @@ The value of this property is the name which will be displayed next to the answe
       <td>
 The style of this step's button. Requires that the parent step is a `BUTTONS` step.
 Must be one of the following:
+
 - `PRIMARY`
 - `SECONDARY`
 - `SUCCESS`

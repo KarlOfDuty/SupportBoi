@@ -802,7 +802,7 @@ public static class Database
     {
         try
         {
-            string templateString = JsonConvert.SerializeObject(template, new JsonSerializerSettings()
+            string templateString = JsonConvert.SerializeObject(template, new JsonSerializerSettings
             {
                 NullValueHandling = NullValueHandling.Ignore,
                 MissingMemberHandling = MissingMemberHandling.Error,

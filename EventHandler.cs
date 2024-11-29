@@ -104,8 +104,8 @@ public static class EventHandler
                     Description = "A ticket you are assigned to has been updated: " + e.Channel.Mention
                 });
             }
-            catch (NotFoundException) { }
-            catch (UnauthorizedException) { }
+            catch (NotFoundException) { /* ignored */ }
+            catch (UnauthorizedException) { /* ignored */ }
         }
     }
 
@@ -245,45 +245,41 @@ public static class EventHandler
                     Logger.Warn("Unknown form input received! '" + e.Id + "'");
                     return;
                 case DiscordComponentType.UserSelect:
-                    switch (e.Id)
+                    if (e.Id.StartsWith("supportboi_interviewuserselector"))
                     {
-                        case not null when e.Id.StartsWith("supportboi_interviewuserselector"):
-                            await Interviewer.ProcessButtonOrSelectorResponse(e.Interaction);
-                            return;
-                        default:
-                            Logger.Warn("Unknown selection box option received! '" + e.Id + "'");
-                            return;
+                        await Interviewer.ProcessButtonOrSelectorResponse(e.Interaction);
+                        return;
                     }
+
+                    Logger.Warn("Unknown selection box option received! '" + e.Id + "'");
+                    return;
                 case DiscordComponentType.RoleSelect:
-                    switch (e.Id)
+                    if (e.Id.StartsWith("supportboi_interviewroleselector"))
                     {
-                        case not null when e.Id.StartsWith("supportboi_interviewroleselector"):
-                            await Interviewer.ProcessButtonOrSelectorResponse(e.Interaction);
-                            return;
-                        default:
-                            Logger.Warn("Unknown selection box option received! '" + e.Id + "'");
-                            return;
+                        await Interviewer.ProcessButtonOrSelectorResponse(e.Interaction);
+                        return;
                     }
+
+                    Logger.Warn("Unknown selection box option received! '" + e.Id + "'");
+                    return;
                 case DiscordComponentType.MentionableSelect:
-                    switch (e.Id)
+                    if (e.Id.StartsWith("supportboi_interviewmentionableselector"))
                     {
-                        case not null when e.Id.StartsWith("supportboi_interviewmentionableselector"):
-                            await Interviewer.ProcessButtonOrSelectorResponse(e.Interaction);
-                            return;
-                        default:
-                            Logger.Warn("Unknown selection box option received! '" + e.Id + "'");
-                            return;
+                        await Interviewer.ProcessButtonOrSelectorResponse(e.Interaction);
+                        return;
                     }
+
+                    Logger.Warn("Unknown selection box option received! '" + e.Id + "'");
+                    return;
                 case DiscordComponentType.ChannelSelect:
-                    switch (e.Id)
+                    if (e.Id.StartsWith("supportboi_interviewchannelselector"))
                     {
-                        case not null when e.Id.StartsWith("supportboi_interviewchannelselector"):
-                            await Interviewer.ProcessButtonOrSelectorResponse(e.Interaction);
-                            return;
-                        default:
-                            Logger.Warn("Unknown selection box option received! '" + e.Id + "'");
-                            return;
+                        await Interviewer.ProcessButtonOrSelectorResponse(e.Interaction);
+                        return;
                     }
+
+                    Logger.Warn("Unknown selection box option received! '" + e.Id + "'");
+                    return;
                 default:
                     Logger.Warn("Unknown interaction type received! '" + e.Interaction.Data.ComponentType + "'");
                     break;

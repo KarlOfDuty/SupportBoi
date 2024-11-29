@@ -89,7 +89,7 @@ public class AssignCommand
                     Description = "You have been assigned to a support ticket: " + command.Channel.Mention
                 });
             }
-            catch (UnauthorizedException) {}
+            catch (UnauthorizedException) { /* ignore */ }
         }
 
         try

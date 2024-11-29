@@ -66,7 +66,7 @@ public class RandomAssignCommand
                     Description = "You have been randomly assigned to a support ticket: " + command.Channel.Mention
                 });
             }
-            catch (UnauthorizedException) {}
+            catch (UnauthorizedException) { /* ignore */ }
         }
 
         try
@@ -136,7 +136,7 @@ public class RandomAssignCommand
             {
                 return await command.Guild.GetMemberAsync(staffEntry.userID);
             }
-            catch (NotFoundException) { }
+            catch (NotFoundException) { /* ignore */ }
         }
 
         // Send a more generic error if we get to this point and still haven't found the staff member

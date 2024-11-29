@@ -28,7 +28,7 @@ These are all the commands you can use with the bot. Remember to set up your com
 | `/status`                            | Shows a status message about the bot with info such as number of tickets and which version is running.                                       |
 | `/summary`                           | Shows some information about a ticket and its summary if set.                                                                                |
 | `/toggleactive (user)`               | Toggles whether a staff member counts as active or not.                                                                                      |
-| `/transcript (ticket id) `           | Generates a ticket transcript as an html file.                                                                                               |
+| `/transcript (ticket id)`            | Generates a ticket transcript as an html file.                                                                                               |
 | `/unassign`                          | Unassigns a ticket from the currently assigned staff member.                                                                                 |
 | `/unblacklist <user>`                | Un-blacklists users from opening tickets.                                                                                                    |
 | `/admin reload`                      | Reloads the config.                                                                                                                          |

@@ -7,7 +7,7 @@ namespace SupportBoi;
 
 internal class LogTestFactory : ILoggerProvider
 {
-    public void Dispose() { }
+    public void Dispose() { /* nothing to dispose */ }
 
     public ILogger CreateLogger(string categoryName)
     {
@@ -75,7 +75,9 @@ public class Logger : ILogger
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
     {
         if (!IsEnabled(logLevel))
+        {
             return;
+        }
 
         // Ratelimit messages are usually warnings, but they are unimportant in this case so downgrade them to debug.
         if (formatter(state, exception).StartsWith("Hit Discord ratelimit on route ") && logLevel == LogLevel.Warning)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -96,7 +97,7 @@ public static class Utilities
 
     public static DiscordColor StringToColor(string color)
     {
-        switch (color.ToLower())
+        switch (color.ToLower(CultureInfo.InvariantCulture))
         {
             case "black":
                 return DiscordColor.Black;

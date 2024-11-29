@@ -205,8 +205,8 @@ public class CloseCommand
 
                     await staffMember.SendMessageAsync(message);
                 }
-                catch (NotFoundException) { }
-                catch (UnauthorizedException) { }
+                catch (NotFoundException) { /* ignore */ }
+                catch (UnauthorizedException) { /* ignore */ }
             }
 
             Database.ArchiveTicket(ticket);

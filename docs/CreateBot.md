@@ -10,7 +10,7 @@
 
 ![Image showing a Discord selection box](img/botPublic.png)
 
-5. Turn on all intents in the bot tab: 
+5. Turn on all intents in the bot tab:
 
 ![Image showing a Discord selection box](img/botPage.png)
 

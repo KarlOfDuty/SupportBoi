@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Globalization;
 using DSharpPlus.Entities;
 using System.Threading.Tasks;
 using DSharpPlus.Commands;
@@ -27,7 +28,7 @@ public class AddMessageCommand
             return;
         }
 
-        if (Database.TryGetMessage(identifier.ToLower(), out Database.Message _))
+        if (Database.TryGetMessage(identifier.ToLower(CultureInfo.InvariantCulture), out Database.Message _))
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {
