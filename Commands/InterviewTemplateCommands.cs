@@ -43,7 +43,7 @@ public class InterviewTemplateCommands
         {
             string defaultTemplate =
             "{\n" +
-            "  \"category-id\": \"" + category.Id + "\",\n" +
+            "  \"category-id\": " + category.Id + ",\n" +
             "  \"interview\":\n" +
             "  {\n" +
             "    \"message\": \"\",\n" +

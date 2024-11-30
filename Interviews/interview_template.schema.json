@@ -168,7 +168,7 @@
   {
     "category-id":
     {
-      "type": "string",
+      "type": "number",
       "title": "Category ID",
       "description": "The id of the category this template applies to. You can change this and re-upload the template to apply it to a different category."
     },
