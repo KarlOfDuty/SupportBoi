@@ -16,7 +16,7 @@ public class CreateSelectionBoxPanelCommand
     [Command("createselectionboxpanel")]
     [Description("Creates a selection box which users can use to open new tickets in specific categories.")]
     public async Task OnExecute(SlashCommandContext command,
-        [Parameter("message")] [Description("(Optional) The message to show in the selection box.")] string message = null)
+        [Parameter("placeholder")] [Description("(Optional) The message to show in the selection box.")] string message = null)
     {
         DiscordMessageBuilder builder = new DiscordMessageBuilder()
             .WithContent(" ")

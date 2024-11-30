@@ -25,6 +25,6 @@ A support ticket Discord bot. Uses a MySQL database for storage of ticket inform
 
 ## Documentation
 
-- [Commands](./docs/Commands.md).
-- [Interview templates](./docs/InterviewTemplates.md).
-- [Default config](./default_config.yml).
+- [Commands](./docs/Commands.md)
+- [Interview templates](./docs/InterviewTemplates.md)
+- [Default config](./default_config.yml)

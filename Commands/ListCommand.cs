@@ -16,7 +16,7 @@ public class ListCommand
     [Command("list")]
     [Description("Lists tickets opened by a user.")]
     public async Task OnExecute(SlashCommandContext command,
-        [Parameter("user")] [Description("(Optional) The user to get tickets by, yourself by default.")] DiscordUser user = null)
+        [Parameter("user")] [Description("(Optional) The user whose tickets to get, yourself by default.")] DiscordUser user = null)
     {
         DiscordUser listUser = user == null ? command.User : user;
 

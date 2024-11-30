@@ -25,7 +25,7 @@ public class StatusCommand
             .AddField("Open tickets:", openTickets + "", true)
             .AddField("Closed tickets:", closedTickets + " ", true)
             .AddField("Report bugs:", "[Github Issues](https://github.com/KarlofDuty/SupportBoi/issues)", true)
-            .AddField("Commands:", "[Github Repository](https://github.com/KarlOfDuty/SupportBoi)", true)
+            .AddField("Commands:", "[Github Repository](https://github.com/KarlOfDuty/SupportBoi/blob/main/docs/Commands.md)", true)
             .AddField("Donate:", "[Github Sponsors](https://github.com/sponsors/KarlOfDuty)", true);
         await command.RespondAsync(botInfo);
     }
