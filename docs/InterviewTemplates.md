@@ -203,7 +203,7 @@ except for selection boxes and buttons where each step becomes a button or selec
       <td>
 `heading`
       </td>
-      <td>Yes</td>
+      <td>No</td>
       <td>String</td>
       <td>
 The title of the embed message.
@@ -213,7 +213,7 @@ The title of the embed message.
       <td>
 `summary-field`
       </td>
-      <td>Yes</td>
+      <td>No</td>
       <td>String</td>
       <td>
 When an interview ends all previous answers with this property will be put in a summary.
@@ -225,7 +225,7 @@ The value of this property is the name which will be displayed next to the answe
       <td>
 `button-style`
       </td>
-      <td>Yes</td>
+      <td>No</td>
       <td>String</td>
       <td>
 The style of this step's button. Requires that the parent step is a `BUTTONS` step.
@@ -245,7 +245,7 @@ Default style is `SECONDARY`.
       <td>
 `selector-description`
       </td>
-      <td>Yes</td>
+      <td>No</td>
       <td>String</td>
       <td>
 Description for this option in the parent step's selection box. Requires that the parent step is a `TEXT_SELECTOR`.
@@ -255,7 +255,7 @@ Description for this option in the parent step's selection box. Requires that th
       <td>
 `selector-placeholder`
       </td>
-      <td>Yes</td>
+      <td>No</td>
       <td>String</td>
       <td>
 The placeholder text shown before a value is selected in the selection box. Requires that this step is a `TEXT_SELECTOR`.
@@ -265,7 +265,7 @@ The placeholder text shown before a value is selected in the selection box. Requ
       <td>
 `max-length`
       </td>
-      <td>Yes</td>
+      <td>No</td>
       <td>Number</td>
       <td>
 The maximum length of the user's response message. Requires that this step is a `TEXT_INPUT`.
@@ -275,7 +275,7 @@ The maximum length of the user's response message. Requires that this step is a 
       <td>
 `min-length`
       </td>
-      <td>Yes</td>
+      <td>No</td>
       <td>Number</td>
       <td>
 The minimum length of the user's response message. Requires that this step is a `TEXT_INPUT`.
