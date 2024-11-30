@@ -147,7 +147,7 @@ public class InterviewTemplateCommands
                 await command.RespondAsync(new DiscordEmbedBuilder
                 {
                     Color = DiscordColor.Green,
-                    Description = "Uploaded interview template."
+                    Description = "Uploaded interview template for `" + category.Name + "`."
                 }, true);
             }
             else
