@@ -75,7 +75,7 @@ It is highly recommended to use the interview template JSON schema to get live v
 
 </details>
 
-### Example Usage:
+### Example Usage
 
 ![Auto Completion Example](./img/autoCompletionExample.png) ![Validation Example](./img/validationExample.png)
 
