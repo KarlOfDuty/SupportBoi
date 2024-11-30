@@ -88,10 +88,10 @@ internal static class Transcriber
         {
             using (ZipArchive zip = ZipFile.Open(zipPath, ZipArchiveMode.Create))
             {
-                zip.CreateEntryFromFile(htmlPath, htmlFilename);
+                zip.CreateEntryFromFile(htmlPath, htmlFilename, CompressionLevel.SmallestSize);
                 foreach (string assetFile in assetFiles)
                 {
-                    zip.CreateEntryFromFile(assetFile, assetDirName + "/" + Path.GetFileName(assetFile));
+                    zip.CreateEntryFromFile(assetFile, assetDirName + "/" + Path.GetFileName(assetFile), CompressionLevel.SmallestSize);
                 }
             }
 
