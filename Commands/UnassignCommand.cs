@@ -49,11 +49,11 @@ public class UnassignCommand
             await logChannel.SendMessageAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Green,
-                Description = "Staff member was unassigned from " + command.Channel.Mention + " by " + command.User.Mention + ".",
+                Description = "<@" + ticket.assignedStaffID + "> was unassigned from <#" + ticket.channelID + "> by " + command.User.Mention + ".",
                 Footer = new DiscordEmbedBuilder.EmbedFooter
                 {
-                Text = "Ticket: " + ticket.id.ToString("00000")
-            }
+                    Text = "Ticket: " + ticket.id.ToString("00000")
+                }
             });
         }
         catch (NotFoundException)

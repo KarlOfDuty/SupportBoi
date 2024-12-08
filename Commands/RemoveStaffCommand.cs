@@ -57,7 +57,11 @@ public class RemoveStaffCommand
                     await logChannel.SendMessageAsync(new DiscordEmbedBuilder
                     {
                         Color = DiscordColor.Green,
-                        Description = "Staff member was unassigned from " + command.Channel.Mention + " by " + command.User.Mention + "."
+                        Description = "<@" + assignedTicket.assignedStaffID + "> was unassigned from <#" + assignedTicket.channelID + "> by " + command.User.Mention + ".",
+                        Footer = new DiscordEmbedBuilder.EmbedFooter
+                        {
+                            Text = "Ticket: " + assignedTicket.id.ToString("00000")
+                        }
                     });
                 }
                 catch (Exception e)
