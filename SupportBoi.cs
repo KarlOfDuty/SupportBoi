@@ -224,6 +224,7 @@ internal static class SupportBoi
         client = clientBuilder.Build();
 
         Logger.Log("Connecting to Discord...");
+        EventHandler.hasLoggedGuilds = false;
         await client.ConnectAsync();
         return true;
     }

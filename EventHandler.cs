@@ -18,6 +18,8 @@ namespace SupportBoi;
 
 public static class EventHandler
 {
+    internal static bool hasLoggedGuilds = false;
+
     public static Task OnReady(DiscordClient client, GuildDownloadCompletedEventArgs e)
     {
         Logger.Log("Connected to Discord.");
@@ -35,6 +37,12 @@ public static class EventHandler
 
     public static async Task OnGuildAvailable(DiscordClient discordClient, GuildAvailableEventArgs e)
     {
+        if (hasLoggedGuilds)
+        {
+            return;
+        }
+        hasLoggedGuilds = true;
+
         Logger.Log("Found Discord server: " + e.Guild.Name + " (" + e.Guild.Id + ")");
 
         if (SupportBoi.commandLineArgs.serversToLeave.Contains(e.Guild.Id))
