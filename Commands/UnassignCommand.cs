@@ -39,7 +39,7 @@ public class UnassignCommand
         await command.RespondAsync(new DiscordEmbedBuilder
         {
             Color = DiscordColor.Green,
-            Description = "Unassigned staff member from ticket."
+            Description = "Unassigned <@" + ticket.assignedStaffID + "> from ticket."
         });
 
         try
