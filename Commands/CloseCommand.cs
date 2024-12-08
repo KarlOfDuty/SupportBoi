@@ -141,28 +141,12 @@ public class CloseCommand
 
             try
             {
-                // Log it if the log channel exists
-                DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
-
                 await using FileStream file = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-                DiscordMessageBuilder message = new DiscordMessageBuilder();
-                message.AddEmbed(new DiscordEmbedBuilder
-                {
-                    Color = DiscordColor.Green,
-                    Description = "Ticket " + ticket.id.ToString("00000") + " closed by " +
-                                  interaction.User.Mention + ".\n" + closeReason,
-                    Footer = new DiscordEmbedBuilder.EmbedFooter
-                    {
-                        Text = "Ticket: " + ticket.id.ToString("00000")
-                    }
-                });
-                message.AddFiles(new Dictionary<string, Stream> { { fileName, file } });
-
-                await logChannel.SendMessageAsync(message);
+                await LogChannel.Success("Ticket " + ticket.id.ToString("00000") + " closed by " + interaction.User.Mention + ".\n" + closeReason, ticket.id, new Utilities.File(fileName, file));
             }
-            catch (NotFoundException)
+            catch (Exception e)
             {
-                Logger.Error("Could not send message in log channel.");
+                Logger.Error("Error occurred sending transcript log message. ", e);
             }
 
             if (Config.closingNotifications)
@@ -199,7 +183,6 @@ public class CloseCommand
                             }
                         });
                     }
-
 
                     message.AddFiles(new Dictionary<string, Stream> { { fileName, file } });
 

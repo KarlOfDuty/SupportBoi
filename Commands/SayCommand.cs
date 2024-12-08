@@ -44,19 +44,7 @@ public class SayCommand
             Description = message.message.Replace("\\n", "\n")
         });
 
-        try
-        {
-            DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
-            await logChannel.SendMessageAsync(new DiscordEmbedBuilder
-            {
-                Color = DiscordColor.Green,
-                Description = command.User.Mention + " posted the " + message.identifier + " message in " + command.Channel.Mention + "."
-            });
-        }
-        catch (NotFoundException)
-        {
-            Logger.Error("Could not send message in log channel.");
-        }
+        await LogChannel.Success(command.User.Mention + " posted the " + message.identifier + " message in " + command.Channel.Mention + ".");
     }
 
     private static async Task SendMessageList(SlashCommandContext command)

@@ -45,23 +45,7 @@ public class InterviewCommands
       }, true);
     }
 
-    try
-    {
-      DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
-      await logChannel.SendMessageAsync(new DiscordEmbedBuilder
-      {
-        Color = DiscordColor.Green,
-        Description = command.User.Mention + " restarted interview in " + command.Channel.Mention + ".",
-        Footer = new DiscordEmbedBuilder.EmbedFooter
-        {
-          Text = "Ticket: " + ticket.id.ToString("00000")
-        }
-      });
-    }
-    catch (NotFoundException)
-    {
-      Logger.Error("Could not send message in log channel.");
-    }
+    await LogChannel.Success(command.User.Mention + " restarted interview in " + command.Channel.Mention + ".", ticket.id);
   }
 
   [Command("stop")]
@@ -107,22 +91,6 @@ public class InterviewCommands
       }, true);
     }
 
-    try
-    {
-      DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
-      await logChannel.SendMessageAsync(new DiscordEmbedBuilder
-      {
-        Color = DiscordColor.Green,
-        Description = command.User.Mention + " stopped the interview in " + command.Channel.Mention + ".",
-        Footer = new DiscordEmbedBuilder.EmbedFooter
-        {
-          Text = "Ticket: " + ticket.id.ToString("00000")
-        }
-      });
-    }
-    catch (NotFoundException)
-    {
-      Logger.Error("Could not send message in log channel.");
-    }
+    await LogChannel.Success(command.User.Mention + " stopped the interview in " + command.Channel.Mention + ".", ticket.id);
   }
 }

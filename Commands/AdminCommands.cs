@@ -40,24 +40,7 @@ public class AdminCommands
             Description = "Channel has been designated ticket " + id.ToString("00000") + "."
         });
 
-        try
-        {
-            // Log it if the log channel exists
-            DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
-            await logChannel.SendMessageAsync(new DiscordEmbedBuilder
-            {
-                Color = DiscordColor.Green,
-                Description = command.Channel.Mention + " has been designated ticket " + id.ToString("00000") + " by " + command.Member?.Mention + ".",
-                Footer = new DiscordEmbedBuilder.EmbedFooter
-                {
-                    Text = "Ticket: " + id.ToString("00000")
-                }
-            });
-        }
-        catch (NotFoundException)
-        {
-            Logger.Error("Could not send message in log channel.");
-        }
+        await LogChannel.Success(command.Channel.Mention + " has been designated ticket " + id.ToString("00000") + " by " + command.Member?.Mention + ".", (uint)id);
     }
 
     [RequireGuild]
@@ -121,24 +104,7 @@ public class AdminCommands
                 Description = "Channel has been undesignated as a ticket."
             });
 
-            try
-            {
-                // Log it if the log channel exists
-                DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
-                await logChannel.SendMessageAsync(new DiscordEmbedBuilder
-                {
-                    Color = DiscordColor.Green,
-                    Description = command.Channel.Mention + " has been undesignated as a ticket by " + command.User.Mention + ".",
-                    Footer = new DiscordEmbedBuilder.EmbedFooter
-                    {
-                        Text = "Ticket: " + ticket.id.ToString("00000")
-                    }
-                });
-            }
-            catch (NotFoundException)
-            {
-                Logger.Error("Could not send message in log channel.");
-            }
+            await LogChannel.Success(command.Channel.Mention + " has been undesignated as a ticket by " + command.User.Mention + ".", ticket.id);
         }
         else
         {
@@ -161,19 +127,7 @@ public class AdminCommands
             Description = "Reloading bot application..."
         }, true);
 
-        try
-        {
-            DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
-            await logChannel.SendMessageAsync(new DiscordEmbedBuilder
-            {
-                Color = DiscordColor.Green,
-                Description = command.Channel.Mention + " reloaded the bot.",
-            });
-        }
-        catch (NotFoundException)
-        {
-            Logger.Error("Could not send message in log channel.");
-        }
+        await LogChannel.Success(command.Channel.Mention + " reloaded the bot.");
 
         Logger.Log("Reloading bot...");
         await SupportBoi.Reload();

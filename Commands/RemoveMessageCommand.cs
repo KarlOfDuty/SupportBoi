@@ -44,18 +44,6 @@ public class RemoveMessageCommand
             }, true);
         }
 
-        try
-        {
-            DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
-            await logChannel.SendMessageAsync(new DiscordEmbedBuilder
-            {
-                Color = DiscordColor.Green,
-                Description = "`" + identifier + "` was removed from the /say command by " + command.User.Mention + "."
-            });
-        }
-        catch (NotFoundException)
-        {
-            Logger.Error("Could not send message in log channel.");
-        }
+        await LogChannel.Success("`" + identifier + "` was removed from the /say command by " + command.User.Mention + ".");
     }
 }

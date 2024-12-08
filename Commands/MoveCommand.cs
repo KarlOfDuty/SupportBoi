@@ -105,22 +105,6 @@ public class MoveCommand
             Description = "Ticket was moved to `" + categoryChannel.Name + "`."
         });
 
-        try
-        {
-            DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
-            await logChannel.SendMessageAsync(new DiscordEmbedBuilder
-            {
-                Color = DiscordColor.Green,
-                Description = command.User.Mention + " moved " + command.Channel.Mention + " to `" + categoryChannel.Name + "`.",
-                Footer = new DiscordEmbedBuilder.EmbedFooter
-                {
-                    Text = "Ticket: " + ticket.id.ToString("00000")
-                }
-            });
-        }
-        catch (NotFoundException)
-        {
-            Logger.Error("Could not send message in log channel.");
-        }
+        await LogChannel.Success(command.User.Mention + " moved " + command.Channel.Mention + " to `" + categoryChannel.Name + "`.", ticket.id);
     }
 }

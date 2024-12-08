@@ -6,7 +6,6 @@ using DSharpPlus.Commands;
 using DSharpPlus.Commands.ContextChecks;
 using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
-using DSharpPlus.Exceptions;
 using MySqlConnector;
 
 namespace SupportBoi.Commands;
@@ -50,24 +49,7 @@ public class RemoveStaffCommand
                     Logger.Error("Error when trying to send message about unassigning staff member from ticket-" + assignedTicket.id.ToString("00000"), e);
                 }
 
-                try
-                {
-                    // Log it if the log channel exists
-                    DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
-                    await logChannel.SendMessageAsync(new DiscordEmbedBuilder
-                    {
-                        Color = DiscordColor.Green,
-                        Description = "<@" + assignedTicket.assignedStaffID + "> was unassigned from <#" + assignedTicket.channelID + "> by " + command.User.Mention + ".",
-                        Footer = new DiscordEmbedBuilder.EmbedFooter
-                        {
-                            Text = "Ticket: " + assignedTicket.id.ToString("00000")
-                        }
-                    });
-                }
-                catch (Exception e)
-                {
-                    Logger.Error("Could not send message in log channel.", e);
-                }
+                await LogChannel.Success("<@" + assignedTicket.assignedStaffID + "> was unassigned from <#" + assignedTicket.channelID + "> by " + command.User.Mention + ".", assignedTicket.id);
             }
         }
 
@@ -84,19 +66,6 @@ public class RemoveStaffCommand
             Description = "User was removed from staff."
         }, true);
 
-        try
-        {
-            // Log it if the log channel exists
-            DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
-            await logChannel.SendMessageAsync(new DiscordEmbedBuilder
-            {
-                Color = DiscordColor.Green,
-                Description = user.Mention + " was removed from staff by " + command.User.Mention + "."
-            });
-        }
-        catch (NotFoundException)
-        {
-            Logger.Error("Could not send message in log channel.");
-        }
+        await LogChannel.Success(user.Mention + " was removed from staff by " + command.User.Mention + ".");
     }
 }

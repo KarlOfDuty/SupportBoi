@@ -74,22 +74,6 @@ public class AddCategoryCommand
             }, true);
         }
 
-        try
-        {
-            DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
-            await logChannel.SendMessageAsync(new DiscordEmbedBuilder
-            {
-                Color = DiscordColor.Green,
-                Description = command.User.Mention + " added `" + category.Name + "` to the category list.",
-                Footer = new DiscordEmbedBuilder.EmbedFooter
-                {
-                    Text = "Category: " + title
-                }
-            });
-        }
-        catch (NotFoundException)
-        {
-            Logger.Error("Could not send message in log channel.");
-        }
+        await LogChannel.Success(command.User.Mention + " added `" + category.Name + "` as `" + title + "` to the category list.");
     }
 }

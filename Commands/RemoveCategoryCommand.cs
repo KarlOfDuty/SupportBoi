@@ -43,19 +43,6 @@ public class RemoveCategoryCommand
             }, true);
         }
 
-        try
-        {
-            // Log it if the log channel exists
-            DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
-            await logChannel.SendMessageAsync(new DiscordEmbedBuilder
-            {
-                Color = DiscordColor.Green,
-                Description = "`" + category.Name + "` was removed by " + command.User.Mention + "."
-            });
-        }
-        catch (NotFoundException)
-        {
-            Logger.Error("Could not send message in log channel.");
-        }
+        await LogChannel.Success("`" + category.Name + "` was removed by " + command.User.Mention + ".");
     }
 }

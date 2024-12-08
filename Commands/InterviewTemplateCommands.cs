@@ -168,18 +168,12 @@ public class InterviewTemplateCommands
             try
             {
                 MemoryStream memStream = new(Encoding.UTF8.GetBytes(Database.GetInterviewTemplateJSON(template.categoryID)));
-
-                // Log it if the log channel exists
-                DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
-                await logChannel.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(new DiscordEmbedBuilder
-                {
-                    Color = DiscordColor.Green,
-                    Description = command.User.Mention + " uploaded a new interview template for the `" + category.Name + "` category."
-                }).AddFile("interview-template-" + template.categoryID + ".json", memStream));
+                await LogChannel.Success(command.User.Mention + " uploaded a new interview template for the `" + category.Name + "` category.", 0,
+                    new Utilities.File("interview-template-" + template.categoryID + ".json", memStream));
             }
-            catch (NotFoundException)
+            catch (Exception e)
             {
-                Logger.Error("Could not send message in log channel.");
+                Logger.Error("Unable to log interview template upload.", e);
             }
         }
         catch (Exception e)
@@ -241,19 +235,7 @@ public class InterviewTemplateCommands
             Description = "Deleted interview template."
         }, true);
 
-        try
-        {
-            // Log it if the log channel exists
-            DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
-            await logChannel.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(new DiscordEmbedBuilder
-            {
-                Color = DiscordColor.Green,
-                Description = command.User.Mention + " deleted the interview template for the `" + category.Name +"` category."
-            }).AddFile("interview-template-" + category.Id + ".json", memStream));
-        }
-        catch (NotFoundException)
-        {
-            Logger.Error("Could not send message in log channel.");
-        }
+        await LogChannel.Success(command.User.Mention + " deleted the interview template for the `" + category.Name +"` category.", 0,
+            new Utilities.File("interview-template-" + category.Id + ".json", memStream));
     }
 }

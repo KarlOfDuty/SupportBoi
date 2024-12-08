@@ -35,20 +35,7 @@ public class BlacklistCommand
                 Description = "Blocked " + user.Mention + " from opening new tickets."
             }, true);
 
-            try
-            {
-                // Log it if the log channel exists
-                DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
-                await logChannel.SendMessageAsync(new DiscordEmbedBuilder
-                {
-                    Color = DiscordColor.Green,
-                    Description = user.Mention + " was blocked from opening tickets by " + command.User.Mention + "."
-                });
-            }
-            catch (NotFoundException)
-            {
-                Logger.Error("Could not send message in log channel.");
-            }
+            await LogChannel.Success(user.Mention + " was blocked from opening tickets by " + command.User.Mention + ".");
         }
         catch (Exception)
         {

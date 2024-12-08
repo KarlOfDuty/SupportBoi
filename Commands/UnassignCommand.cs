@@ -42,23 +42,6 @@ public class UnassignCommand
             Description = "Unassigned <@" + ticket.assignedStaffID + "> from ticket."
         });
 
-        try
-        {
-            // Log it if the log channel exists
-            DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
-            await logChannel.SendMessageAsync(new DiscordEmbedBuilder
-            {
-                Color = DiscordColor.Green,
-                Description = "<@" + ticket.assignedStaffID + "> was unassigned from <#" + ticket.channelID + "> by " + command.User.Mention + ".",
-                Footer = new DiscordEmbedBuilder.EmbedFooter
-                {
-                    Text = "Ticket: " + ticket.id.ToString("00000")
-                }
-            });
-        }
-        catch (NotFoundException)
-        {
-            Logger.Error("Could not send message in log channel.");
-        }
+        await LogChannel.Success("<@" + ticket.assignedStaffID + "> was unassigned from <#" + ticket.channelID + "> by " + command.User.Mention + ".", ticket.id);
     }
 }

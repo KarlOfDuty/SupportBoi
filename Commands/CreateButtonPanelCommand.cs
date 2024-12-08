@@ -51,18 +51,6 @@ public class CreateButtonPanelCommand
             Description = "Successfully created message, make sure to run this command again if you add new categories to the bot."
         }, true);
 
-        try
-        {
-            DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
-            await logChannel.SendMessageAsync(new DiscordEmbedBuilder
-            {
-                Color = DiscordColor.Green,
-                Description = command.User.Mention + " created a new button panel in " + command.Channel.Mention + "."
-            });
-        }
-        catch (NotFoundException)
-        {
-            Logger.Error("Could not send message in log channel.");
-        }
+        await LogChannel.Success(command.User.Mention + " created a new button panel in " + command.Channel.Mention + ".");
     }
 }

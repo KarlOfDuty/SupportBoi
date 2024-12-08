@@ -174,27 +174,19 @@ public static class EventHandler
             }
         }
 
-        if (Database.TryGetAssignedTickets(e.Member.Id, out List<Database.Ticket> assignedTickets) && Config.logChannel != 0)
+        if (LogChannel.IsEnabled && Database.TryGetAssignedTickets(e.Member.Id, out List<Database.Ticket> assignedTickets))
         {
-            DiscordChannel logChannel = await client.GetChannelAsync(Config.logChannel);
-            if (logChannel != null)
+            foreach (Database.Ticket ticket in assignedTickets)
             {
-                foreach (Database.Ticket ticket in assignedTickets)
+                try
                 {
-                    try
+                    DiscordChannel channel = await client.GetChannelAsync(ticket.channelID);
+                    if (channel?.GuildId == e.Guild.Id)
                     {
-                        DiscordChannel channel = await client.GetChannelAsync(ticket.channelID);
-                        if (channel?.GuildId == e.Guild.Id)
-                        {
-                            await logChannel.SendMessageAsync(new DiscordEmbedBuilder
-                            {
-                                Color = DiscordColor.Red,
-                                Description = "Assigned staff member '" + e.Member.Username + "#" + e.Member.Discriminator + "' has left the server: <#" + channel.Id + ">"
-                            });
-                        }
+                        await LogChannel.Warn("Assigned staff member '" + e.Member.Username + "#" + e.Member.Discriminator + "' has left the server: <#" + channel.Id + ">");
                     }
-                    catch (Exception) { /* ignored */ }
                 }
+                catch (Exception) { /* ignored */ }
             }
         }
     }

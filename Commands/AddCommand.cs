@@ -62,24 +62,7 @@ public class AddCommand
                 Description = "Added " + member.Mention + " to ticket."
             });
 
-            try
-            {
-                DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
-                await logChannel.SendMessageAsync(new DiscordEmbedBuilder
-                {
-                    Color = DiscordColor.Green,
-                    Description = member.Mention + " was added to " + command.Channel.Mention +
-                                  " by " + command.User.Mention + ".",
-                    Footer = new DiscordEmbedBuilder.EmbedFooter
-                    {
-                        Text = "Ticket: " + ticket.id.ToString("00000")
-                    }
-                });
-            }
-            catch (NotFoundException)
-            {
-                Logger.Error("Could not send message in log channel.");
-            }
+            await LogChannel.Success(member.Mention + " was added to " + command.Channel.Mention + " by " + command.User.Mention + ".", ticket.id);
         }
         catch (Exception)
         {

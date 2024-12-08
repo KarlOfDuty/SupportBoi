@@ -74,24 +74,7 @@ public class RandomAssignCommand
             catch (UnauthorizedException) { /* ignore */ }
         }
 
-        try
-        {
-            // Log it if the log channel exists
-            DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
-            await logChannel.SendMessageAsync(new DiscordEmbedBuilder
-            {
-                Color = DiscordColor.Green,
-                Description = staffMember.Mention + " was randomly assigned to " + command.Channel.Mention + " by " + command.User.Mention + ".",
-                Footer = new DiscordEmbedBuilder.EmbedFooter
-                {
-                    Text = "Ticket: " + ticket.id.ToString("00000")
-                }
-            });
-        }
-        catch (NotFoundException)
-        {
-            Logger.Error("Could not send message in log channel.");
-        }
+        await LogChannel.Success(staffMember.Mention + " was randomly assigned to " + command.Channel.Mention + " by " + command.User.Mention + ".", ticket.id);
     }
 
     internal static async Task<DiscordMember> GetRandomVerifiedStaffMember(DiscordChannel channel, ulong creatorID, ulong currentStaffID, DiscordRole targetRole)

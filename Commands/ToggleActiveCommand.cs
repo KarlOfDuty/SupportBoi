@@ -58,30 +58,13 @@ public class ToggleActiveCommand
             }, true);
         }
 
-        try
+        if (user != null && user.Id != command.User.Id)
         {
-            DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
-
-            if (user != null && user.Id != command.User.Id)
-            {
-                await logChannel.SendMessageAsync(new DiscordEmbedBuilder
-                {
-                    Color = DiscordColor.Green,
-                    Description = staffUser.Mention + " set " + command.Channel.Mention + "'s status to " + (staffMember.active ? "active" : "inactive")
-                });
-            }
-            else
-            {
-                await logChannel.SendMessageAsync(new DiscordEmbedBuilder
-                {
-                    Color = DiscordColor.Green,
-                    Description = staffUser.Mention + " set their own status to " + (staffMember.active ? "active" : "inactive")
-                });
-            }
+            await LogChannel.Success(staffUser.Mention + " set " + command.Channel.Mention + "'s status to " + (staffMember.active ? "active" : "inactive"));
         }
-        catch (NotFoundException)
+        else
         {
-            Logger.Error("Could not send message in log channel.");
+            await LogChannel.Success(staffUser.Mention + " set their own status to " + (staffMember.active ? "active" : "inactive"));
         }
     }
 }

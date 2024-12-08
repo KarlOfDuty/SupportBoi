@@ -235,25 +235,7 @@ public class NewCommand
             }
         }
 
-        try
-        {
-            // Log it if the log channel exists
-            DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
-            await logChannel.SendMessageAsync(new DiscordEmbedBuilder
-            {
-                Color = DiscordColor.Green,
-                Description = "Ticket " + ticketChannel.Mention + " opened by " + member.Mention + ".",
-                Footer = new DiscordEmbedBuilder.EmbedFooter
-                {
-                    Text = "Ticket: " + id.ToString("00000")
-                }
-            });
-        }
-        catch (NotFoundException)
-        {
-            Logger.Error("Could not send message in log channel.");
-        }
-
+        await LogChannel.Success("Ticket " + ticketChannel.Mention + " opened by " + member.Mention + ".", (uint)id);
         return (true, "Ticket opened, " + member.Mention + "!\n" + ticketChannel.Mention);
     }
 }

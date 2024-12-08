@@ -26,6 +26,12 @@ public static class Utilities
 {
     private static readonly Random rng = new Random();
 
+    public class File(string fileName, Stream contents)
+    {
+        public string fileName = fileName;
+        public Stream contents = contents;
+    }
+
     public static void Shuffle<T>(this IList<T> list)
     {
         int n = list.Count;

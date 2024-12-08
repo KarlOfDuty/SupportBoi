@@ -55,22 +55,6 @@ public class AddMessageCommand
             }, true);
         }
 
-        try
-        {
-            DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
-            await logChannel.SendMessageAsync(new DiscordEmbedBuilder
-            {
-                Color = DiscordColor.Green,
-                Description = command.User.Mention + " added or updated `" + identifier + "` in the /say command.\n\nContent:\n\n" + message,
-                Footer = new DiscordEmbedBuilder.EmbedFooter
-                {
-                    Text = "Identifier: " + identifier
-                }
-            });
-        }
-        catch (NotFoundException)
-        {
-            Logger.Error("Could not send message in log channel.");
-        }
+        await LogChannel.Success(command.User.Mention + " added or updated `" + identifier + "` in the /say command.\n\nContent:\n\n" + message);
     }
 }

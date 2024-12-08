@@ -60,19 +60,6 @@ public class AddStaffCommand
             Description = alreadyStaff ? staffMember.Mention + " is already a staff member, refreshed username in database." : staffMember.Mention + " was added to staff."
         }, true);
 
-        try
-        {
-            // Log it if the log channel exists
-            DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
-            await logChannel.SendMessageAsync(new DiscordEmbedBuilder
-            {
-                Color = DiscordColor.Green,
-                Description = staffMember.Mention + " was added to staff by " + command.User.Mention + "."
-            });
-        }
-        catch (NotFoundException)
-        {
-            Logger.Error("Could not send message in log channel.");
-        }
+        await LogChannel.Success(staffMember.Mention + " was added to staff by " + command.User.Mention + ".");
     }
 }
