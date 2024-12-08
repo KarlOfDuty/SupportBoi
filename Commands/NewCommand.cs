@@ -133,6 +133,11 @@ public class NewCommand
             return (false, "Error: Could not find the category to place the ticket in.");
         }
 
+        if (category.Children.Count == 50)
+        {
+            return (false, "This ticket category is full, can not create ticket channel.");
+        }
+
         DiscordMember member = null;
         try
         {
@@ -151,7 +156,10 @@ public class NewCommand
         {
             ticketChannel = await category.Guild.CreateChannelAsync("ticket", DiscordChannelType.Text, category);
         }
-        catch (Exception) { /* ignored */ }
+        catch (Exception e)
+        {
+            Logger.Error("Error occured while creating ticket.", e);
+        }
 
         if (ticketChannel == null)
         {
@@ -173,7 +181,7 @@ public class NewCommand
         catch (DiscordException e)
         {
             Logger.Error("Exception occurred trying to modify channel: " + e);
-            Logger.Error("JsomMessage: " + e.JsonMessage);
+            Logger.Error("JsonMessage: " + e.JsonMessage);
         }
 
         try
@@ -183,7 +191,7 @@ public class NewCommand
         catch (DiscordException e)
         {
             Logger.Error("Exception occurred trying to add channel permissions: " + e);
-            Logger.Error("JsomMessage: " + e.JsonMessage);
+            Logger.Error("JsonMessage: " + e.JsonMessage);
         }
 
         DiscordMessage message = await ticketChannel.SendMessageAsync("Hello, " + member.Mention + "!\n" + Config.welcomeMessage);
@@ -230,7 +238,7 @@ public class NewCommand
                 catch (DiscordException e)
                 {
                     Logger.Error("Exception occurred assign random staff member: " + e);
-                    Logger.Error("JsomMessage: " + e.JsonMessage);
+                    Logger.Error("JsonMessage: " + e.JsonMessage);
                 }
             }
         }

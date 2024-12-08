@@ -54,12 +54,23 @@ public class AddStaffCommand
         cmd.ExecuteNonQuery();
         cmd.Dispose();
 
-        await command.RespondAsync(new DiscordEmbedBuilder
+        if (alreadyStaff)
         {
-            Color = DiscordColor.Green,
-            Description = alreadyStaff ? staffMember.Mention + " is already a staff member, refreshed username in database." : staffMember.Mention + " was added to staff."
-        }, true);
+            await command.RespondAsync(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Green,
+                Description = staffMember.Mention + " is already a staff member, refreshed username in database."
+            }, true);
+        }
+        else
+        {
+            await command.RespondAsync(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Green,
+                Description = staffMember.Mention + " was added to staff."
+            }, true);
 
-        await LogChannel.Success(staffMember.Mention + " was added to staff by " + command.User.Mention + ".");
+            await LogChannel.Success(staffMember.Mention + " was added to staff by " + command.User.Mention + ".");
+        }
     }
 }

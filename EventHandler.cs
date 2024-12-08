@@ -288,7 +288,7 @@ public static class EventHandler
         catch (DiscordException ex)
         {
             Logger.Error("Interaction Exception occurred: " + ex);
-            Logger.Error("JsomMessage: " + ex.JsonMessage);
+            Logger.Error("JsonMessage: " + ex.JsonMessage);
         }
         catch (Exception ex)
         {

@@ -38,25 +38,24 @@ public static class LogChannel
 
     try
     {
-      DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
-
-      DiscordMessageBuilder messageBuilder = new();
       DiscordEmbedBuilder embedBuilder = new()
       {
         Color = color,
         Description = message
       };
-
       if (ticketID != 0)
       {
         embedBuilder.WithFooter("Ticket: " + ticketID.ToString("00000"));
       }
 
+      DiscordMessageBuilder messageBuilder = new();
+      messageBuilder.AddEmbed(embedBuilder);
       if (file != null)
       {
         messageBuilder.AddFile(file.fileName, file.contents);
       }
 
+      DiscordChannel logChannel = await SupportBoi.client.GetChannelAsync(Config.logChannel);
       await logChannel.SendMessageAsync(messageBuilder);
     }
     catch (NotFoundException)
