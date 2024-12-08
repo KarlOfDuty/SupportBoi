@@ -159,7 +159,7 @@ public class AdminCommands
         {
             Color = DiscordColor.Green,
             Description = "Reloading bot application..."
-        });
+        }, true);
 
         try
         {

@@ -56,7 +56,7 @@ public class AddStaffCommand
         {
             Color = DiscordColor.Green,
             Description = staffMember.Mention + " was added to staff."
-        });
+        }, true);
 
         try
         {
