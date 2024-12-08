@@ -35,7 +35,7 @@
     <PackageReference Include="DSharpPlus.Commands" Version="5.0.0-nightly-02405" />
     <PackageReference Include="DSharpPlus.Interactivity" Version="5.0.0-nightly-02405" />
     <PackageReference Include="EmbeddedBuildTime" Version="1.0.3" />
-    <PackageReference Include="GitInfo" Version="3.5.0">
+    <PackageReference Include="GitInfo" Version="3.3.5">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
