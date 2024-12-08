@@ -43,8 +43,10 @@ public class AddStaffCommand
             return;
         }
 
+        bool alreadyStaff = Database.IsStaff(staffMember.Id);
+
         await using MySqlConnection c = Database.GetConnection();
-        MySqlCommand cmd = Database.IsStaff(staffMember.Id) ? new MySqlCommand(@"UPDATE staff SET name = @name WHERE user_id = @user_id", c) : new MySqlCommand(@"INSERT INTO staff (user_id, name) VALUES (@user_id, @name);", c);
+        MySqlCommand cmd = alreadyStaff ? new MySqlCommand(@"UPDATE staff SET name = @name WHERE user_id = @user_id", c) : new MySqlCommand(@"INSERT INTO staff (user_id, name) VALUES (@user_id, @name);", c);
 
         c.Open();
         cmd.Parameters.AddWithValue("@user_id", staffMember.Id);
@@ -55,7 +57,7 @@ public class AddStaffCommand
         await command.RespondAsync(new DiscordEmbedBuilder
         {
             Color = DiscordColor.Green,
-            Description = staffMember.Mention + " was added to staff."
+            Description = alreadyStaff ? staffMember.Mention + " is already a staff member, refreshed username in database." : staffMember.Mention + " was added to staff."
         }, true);
 
         try
