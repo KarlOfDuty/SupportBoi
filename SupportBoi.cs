@@ -27,7 +27,6 @@ internal static class SupportBoi
                 "config",
                 Required = false,
                 HelpText = "Select a config file to use.",
-                Default = "config.yml",
                 MetaValue = "PATH")]
         public string configPath { get; set; }
 
@@ -35,7 +34,6 @@ internal static class SupportBoi
                 "transcripts",
                 Required = false,
                 HelpText = "Select directory to store transcripts in.",
-                Default = "./transcripts",
                 MetaValue = "PATH")]
         public string transcriptDir { get; set; }
 

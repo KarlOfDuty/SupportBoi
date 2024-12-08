@@ -39,6 +39,10 @@ bot:
     # Pins the first message in a ticket to allow for quick navigation to the top in large tickets.
     pin-first-message: true
 
+    # Ticket transcript location, can be overridden using command line arguments.
+    transcript-dir: "./transcripts"
+
+# Direct message notifications
 notifications:
     # Notifies the assigned staff member when a new message is posted in a ticket if the ticket has been silent for a configurable amount of time.
     # Other staff members and bots do not trigger this.

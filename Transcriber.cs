@@ -13,22 +13,10 @@ namespace SupportBoi;
 
 internal static class Transcriber
 {
-    private static string transcriptDir = "./transcripts"; // TODO: Should be local variable (or come from the config class) when added to config to avoid race conditions when reloading
-
     internal static async Task ExecuteAsync(ulong channelID, uint ticketID)
     {
         DiscordClient discordClient = new DiscordClient(Config.token);
         ChannelExporter exporter = new ChannelExporter(discordClient);
-
-        if (!string.IsNullOrEmpty(SupportBoi.commandLineArgs.transcriptDir))
-        {
-            transcriptDir = SupportBoi.commandLineArgs.transcriptDir;
-        }
-
-        if (!Directory.Exists(transcriptDir))
-        {
-            Directory.CreateDirectory(transcriptDir);
-        }
 
         string htmlPath = GetHtmlPath(ticketID);
         string zipPath = GetZipPath(ticketID);
@@ -99,19 +87,39 @@ internal static class Transcriber
         }
     }
 
+    private static string GetTranscriptDir()
+    {
+        string transcriptDir = "./transcripts";
+        if (!string.IsNullOrEmpty(SupportBoi.commandLineArgs.transcriptDir))
+        {
+            transcriptDir = SupportBoi.commandLineArgs.transcriptDir;
+        }
+        else if (!string.IsNullOrEmpty(Config.transcriptDir))
+        {
+            transcriptDir = Config.transcriptDir;
+        }
+
+        if (!Directory.Exists(transcriptDir))
+        {
+            Directory.CreateDirectory(transcriptDir);
+        }
+
+        return transcriptDir;
+    }
+
     internal static string GetHtmlPath(uint ticketNumber)
     {
-        return transcriptDir + "/" + GetHTMLFilename(ticketNumber);
+        return GetTranscriptDir() + "/" + GetHTMLFilename(ticketNumber);
     }
 
     internal static string GetZipPath(uint ticketNumber)
     {
-        return transcriptDir + "/" + GetZipFilename(ticketNumber);
+        return GetTranscriptDir() + "/" + GetZipFilename(ticketNumber);
     }
 
     internal static string GetAssetDirPath(uint ticketNumber)
     {
-        return transcriptDir + "/" + GetAssetDirName(ticketNumber);
+        return GetTranscriptDir() + "/" + GetAssetDirName(ticketNumber);
     }
 
     internal static string GetAssetDirName(uint ticketNumber)
