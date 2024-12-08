@@ -159,13 +159,13 @@ public class NewCommand
                            "!\nIs the channel limit reached in the server or ticket category?");
         }
 
-        ulong staffID = 0;
+        DiscordMember assignedStaff = null;
         if (Config.randomAssignment)
         {
-            staffID = Database.GetRandomActiveStaff(0)?.userID ?? 0;
+            assignedStaff = await RandomAssignCommand.GetRandomVerifiedStaffMember(ticketChannel, userID, 0, null);
         }
 
-        long id = Database.NewTicket(member.Id, staffID, ticketChannel.Id);
+        long id = Database.NewTicket(member.Id, assignedStaff?.Id ?? 0, ticketChannel.Id);
         try
         {
             await ticketChannel.ModifyAsync(modifiedAttributes => modifiedAttributes.Name = "ticket-" + id.ToString("00000"));
@@ -208,20 +208,19 @@ public class NewCommand
             await Interviewer.StartInterview(ticketChannel);
         }
 
-        if (staffID != 0)
+        if (assignedStaff != null)
         {
             await ticketChannel.SendMessageAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Green,
-                Description = "Ticket was randomly assigned to <@" + staffID + ">."
+                Description = "Ticket was randomly assigned to " + assignedStaff.Mention + "."
             });
 
             if (Config.assignmentNotifications)
             {
                 try
                 {
-                    DiscordMember staffMember = await category.Guild.GetMemberAsync(staffID);
-                    await staffMember.SendMessageAsync(new DiscordEmbedBuilder
+                    await assignedStaff.SendMessageAsync(new DiscordEmbedBuilder
                     {
                         Color = DiscordColor.Green,
                         Description = "You have been randomly assigned to a newly opened support ticket: " +

@@ -466,12 +466,6 @@ public static class Database
         }
     }
 
-    public static StaffMember GetRandomActiveStaff(params ulong[] ignoredUserIDs)
-    {
-        List<StaffMember> staffMembers = GetActiveStaff(ignoredUserIDs);
-        return staffMembers.Any() ? staffMembers[RandomNumberGenerator.GetInt32(staffMembers.Count)] : null;
-    }
-
     public static List<StaffMember> GetActiveStaff(params ulong[] ignoredUserIDs)
     {
         using MySqlConnection c = GetConnection();

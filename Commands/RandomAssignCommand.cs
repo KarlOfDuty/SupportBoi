@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -31,9 +31,14 @@ public class RandomAssignCommand
         }
 
         // Get a random staff member who is verified to have the correct role if applicable
-        DiscordMember staffMember = await GetRandomVerifiedStaffMember(command, role, ticket);
+        DiscordMember staffMember = await GetRandomVerifiedStaffMember(command.Channel, ticket.creatorID, ticket.assignedStaffID, role);
         if (staffMember == null)
         {
+            await command.RespondAsync(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Red,
+                Description = "Error: Could not find an applicable staff member with access to this channel."
+            }, true);
             return;
         }
 
@@ -89,62 +94,50 @@ public class RandomAssignCommand
         }
     }
 
-    private static async Task<DiscordMember> GetRandomVerifiedStaffMember(SlashCommandContext command, DiscordRole targetRole, Database.Ticket ticket)
+    internal static async Task<DiscordMember> GetRandomVerifiedStaffMember(DiscordChannel channel, ulong creatorID, ulong currentStaffID, DiscordRole targetRole)
     {
-        if (targetRole != null) // A role was provided
+        List<Database.StaffMember> staffMembers;
+        ulong[] ignoredUserIDs = [creatorID, currentStaffID];
+
+        if (targetRole == null)
+        {
+            // No role was specified, any active staff will be picked
+            staffMembers = Database.GetActiveStaff(ignoredUserIDs);
+        }
+        else
         {
             // Check if role rassign should override staff's active status
-            List<Database.StaffMember> staffMembers = Config.randomAssignRoleOverride
-                ? Database.GetAllStaff(ticket.assignedStaffID, ticket.creatorID)
-                : Database.GetActiveStaff(ticket.assignedStaffID, ticket.creatorID);
+            staffMembers = Config.randomAssignRoleOverride
+                ? Database.GetAllStaff(ignoredUserIDs)
+                : Database.GetActiveStaff(ignoredUserIDs);
+        }
 
-            // Randomize the list before checking for roles in order to reduce number of API calls
-            staffMembers.Shuffle();
+        // Randomize the list before checking for roles in order to reduce number of API calls
+        staffMembers.Shuffle();
 
-            // Get the first staff member that has the role
-            foreach (Database.StaffMember sm in staffMembers)
+        // Get the first staff member that has the role
+        foreach (Database.StaffMember staffMember in staffMembers)
+        {
+            try
             {
-                try
+                DiscordMember verifiedMember = await channel.Guild.GetMemberAsync(staffMember.userID);
+
+                // If a role is set filter to only members with that role
+                if (targetRole == null || verifiedMember.Roles.Any(role => role.Id == targetRole.Id))
                 {
-                    DiscordMember verifiedMember = await command.Guild.GetMemberAsync(sm.userID);
-                    if (verifiedMember?.Roles?.Any(role => role.Id == targetRole.Id) ?? false)
+                    // Only assign staff members with access to this channel
+                    if (verifiedMember.PermissionsIn(channel).HasFlag(DiscordPermissions.AccessChannels))
                     {
                         return verifiedMember;
                     }
                 }
-                catch (Exception e)
-                {
-                    command.Client.Logger.Log(LogLevel.Information, e, "Error occured trying to find a staff member in the rassign command.");
-                }
+            }
+            catch (Exception e)
+            {
+                Logger.Error("Error occured trying to find a staff member for random assignment. User ID: " + staffMember.userID, e);
             }
         }
-        else // No role was specified, any active staff will be picked
-        {
-            Database.StaffMember staffEntry = Database.GetRandomActiveStaff(ticket.assignedStaffID, ticket.creatorID);
-            if (staffEntry == null)
-            {
-                await command.RespondAsync(new DiscordEmbedBuilder
-                {
-                    Color = DiscordColor.Red,
-                    Description = "Error: There are no other staff members to choose from."
-                }, true);
-                return null;
-            }
 
-            // Get the staff member from discord
-            try
-            {
-                return await command.Guild.GetMemberAsync(staffEntry.userID);
-            }
-            catch (NotFoundException) { /* ignore */ }
-        }
-
-        // Send a more generic error if we get to this point and still haven't found the staff member
-        await command.RespondAsync(new DiscordEmbedBuilder
-        {
-            Color = DiscordColor.Red,
-            Description = "Error: Could not find an applicable staff member."
-        }, true);
         return null;
     }
 }
