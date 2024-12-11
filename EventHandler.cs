@@ -32,6 +32,7 @@ public static class EventHandler
         }
 
         client.UpdateStatusAsync(new DiscordActivity(Config.presenceText, activityType), DiscordUserStatus.Online);
+        hasLoggedGuilds = true;
         return Task.CompletedTask;
     }
 
@@ -41,7 +42,6 @@ public static class EventHandler
         {
             return;
         }
-        hasLoggedGuilds = true;
 
         Logger.Log("Found Discord server: " + e.Guild.Name + " (" + e.Guild.Id + ")");
 
