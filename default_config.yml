@@ -1,5 +1,5 @@
 bot:
-    # Bot token.
+    # Bot token. Changing this requires a bot restart, it will not update when reloading.
     token: "<add-token-here>"
 
     # Channel where ticket logs are posted (recommended).

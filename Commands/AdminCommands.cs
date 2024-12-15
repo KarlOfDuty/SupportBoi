@@ -130,6 +130,6 @@ public class AdminCommands
         await LogChannel.Success(command.User.Mention + " reloaded the bot.");
 
         Logger.Log("Reloading bot...");
-        await SupportBoi.Reload();
+        SupportBoi.Reload();
     }
 }

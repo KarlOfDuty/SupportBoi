@@ -4,6 +4,7 @@ using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Linq;
+using System.Threading;
 using DSharpPlus;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Enums;
@@ -85,9 +86,15 @@ internal static class SupportBoi
         Logger.Log("Starting " + Assembly.GetEntryAssembly()?.GetName().Name + " version " + GetVersion() + "...");
         try
         {
-            if (!await Reload())
+            if (!Reload())
             {
-                Logger.Fatal("Aborting startup due to a fatal error...");
+                Logger.Fatal("Aborting startup due to a fatal error.");
+                return;
+            }
+
+            if (!await Connect())
+            {
+                Logger.Fatal("Aborting startup due to a fatal error when trying to connect to Discord.");
                 return;
             }
 
@@ -97,7 +104,6 @@ internal static class SupportBoi
         catch (Exception e)
         {
             Logger.Fatal("Fatal error:\n" + e);
-            Console.ReadLine();
         }
     }
 
@@ -111,38 +117,46 @@ internal static class SupportBoi
              + " (" + ThisAssembly.Git.Commit + ")";
     }
 
-    public static async Task<bool> Reload()
+    public static bool Reload()
     {
-        if (client != null)
+        try
         {
-            await client.DisconnectAsync();
-            client.Dispose();
+            Config.LoadConfig();
         }
-
-        Config.LoadConfig();
+        catch (Exception e)
+        {
+            Logger.Fatal("Unable to read the config file: \"" + commandLineArgs.configPath + "\"", e);
+            return false;
+        }
 
         // Check if token is unset
         if (Config.token is "<add-token-here>" or "")
         {
             Logger.Fatal("You need to set your bot token in the config and start the bot again.");
-            throw new ArgumentException("Invalid Discord bot token");
+            return false;
         }
 
         // Database connection and setup
         try
         {
-            Logger.Log("Connecting to database... (" + Config.hostName + ":" + Config.port + ")");
+            Logger.Log("Connecting to database. (" + Config.hostName + ":" + Config.port + ")");
             Database.SetConnectionString(Config.hostName, Config.port, Config.database, Config.username, Config.password);
             Database.SetupTables();
         }
         catch (Exception e)
         {
-            Logger.Fatal("Could not set up database tables, please confirm connection settings, status of the server and permissions of MySQL user. Error: ", e);
+            Logger.Fatal("Could not set up database tables, please confirm connection settings, status of the server and permissions of MySQL user.", e);
             return false;
         }
 
-        Logger.Log("Setting up Discord client...");
-        DiscordClientBuilder clientBuilder = DiscordClientBuilder.CreateDefault(Config.token, DiscordIntents.All).SetReconnectOnFatalGatewayErrors();
+        return true;
+    }
+
+    private static async Task<bool> Connect()
+    {
+        Logger.Log("Setting up Discord client.");
+        DiscordClientBuilder clientBuilder = DiscordClientBuilder.CreateDefault(Config.token, DiscordIntents.All)
+                                                                 .SetReconnectOnFatalGatewayErrors();
 
         clientBuilder.ConfigureServices(configure =>
         {
@@ -223,16 +237,30 @@ internal static class SupportBoi
 
         client = clientBuilder.Build();
 
-        Logger.Log("Connecting to Discord...");
+        Logger.Log("Connecting to Discord.");
         EventHandler.hasLoggedGuilds = false;
-        await client.ConnectAsync();
+
+        try
+        {
+            await client.ConnectAsync();
+        }
+        catch (Exception e)
+        {
+            Logger.Fatal("Error occured while connecting to Discord.", e);
+            return false;
+        }
+
         return true;
     }
 }
 
 internal class ErrorHandler : IClientErrorHandler
 {
-    public ValueTask HandleEventHandlerError(string name, Exception exception, Delegate invokedDelegate, object sender, object args)
+    public ValueTask HandleEventHandlerError(string name,
+                                             Exception exception,
+                                             Delegate invokedDelegate,
+                                             object sender,
+                                             object args)
     {
         Logger.Error("Client exception occured:\n" + exception);
         if (exception is BadRequestException ex)
