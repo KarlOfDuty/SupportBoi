@@ -24,14 +24,7 @@ public static class EventHandler
     {
         Logger.Log("Connected to Discord.");
 
-        // Checking activity type
-        if (!Enum.TryParse(Config.presenceType, true, out DiscordActivityType activityType))
-        {
-            Logger.Log("Presence type '" + Config.presenceType + "' invalid, using 'Playing' instead.");
-            activityType = DiscordActivityType.Playing;
-        }
-
-        client.UpdateStatusAsync(new DiscordActivity(Config.presenceText, activityType), DiscordUserStatus.Online);
+        SupportBoi.RefreshBotActivity();
         hasLoggedGuilds = true;
         return Task.CompletedTask;
     }

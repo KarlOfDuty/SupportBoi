@@ -131,5 +131,6 @@ public class AdminCommands
 
         Logger.Log("Reloading bot...");
         SupportBoi.Reload();
+        SupportBoi.RefreshBotActivity();
     }
 }

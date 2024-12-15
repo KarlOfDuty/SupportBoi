@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using SupportBoi.Commands;
 using CommandLine;
 using DSharpPlus.Commands.Processors.SlashCommands;
+using DSharpPlus.Entities;
 using DSharpPlus.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -22,6 +23,9 @@ namespace SupportBoi;
 internal static class SupportBoi
 {
     internal static DiscordClient client = null;
+
+    private static Timer statusUpdateTimer;
+
     public class CommandLineArguments
     {
         [Option('c',
@@ -91,6 +95,9 @@ internal static class SupportBoi
                 Logger.Fatal("Aborting startup due to a fatal error.");
                 return;
             }
+
+            // Create but don't start the timer, it will be started when the bot is connected.
+            statusUpdateTimer = new Timer(RefreshBotActivity, null, Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
 
             if (!await Connect())
             {
@@ -251,6 +258,24 @@ internal static class SupportBoi
         }
 
         return true;
+    }
+
+    internal static void RefreshBotActivity(object state = null)
+    {
+        try
+        {
+            if (!Enum.TryParse(Config.presenceType, true, out DiscordActivityType activityType))
+            {
+                Logger.Log("Presence type '" + Config.presenceType + "' invalid, using 'Playing' instead.");
+                activityType = DiscordActivityType.Playing;
+            }
+
+            client.UpdateStatusAsync(new DiscordActivity(Config.presenceText, activityType), DiscordUserStatus.Online);
+        }
+        finally
+        {
+            statusUpdateTimer.Change(TimeSpan.FromMinutes(30), Timeout.InfiniteTimeSpan);
+        }
     }
 }
 
