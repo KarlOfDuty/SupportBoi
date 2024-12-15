@@ -127,7 +127,7 @@ public class AdminCommands
             Description = "Reloading bot application..."
         }, true);
 
-        await LogChannel.Success(command.Channel.Mention + " reloaded the bot.");
+        await LogChannel.Success(command.User.Mention + " reloaded the bot.");
 
         Logger.Log("Reloading bot...");
         await SupportBoi.Reload();
