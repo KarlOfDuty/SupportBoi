@@ -5,6 +5,44 @@
   "description": "An interview dialog tree template for SupportBoi",
   "definitions":
   {
+    "reference":
+    {
+      "type": "object",
+      "title": "Interview Step",
+      "description": "Contains a reference to a step defined in the 'definitions' property. You can also specify a button-style and selector-description here to override the one from the referenced step.",
+      "properties":
+      {
+        "id":
+        {
+          "type": "string",
+          "title": "Definition ID",
+          "description": "The name of the step in 'definitions' to reference.",
+          "minLength": 1
+        },
+        "button-style":
+        {
+          "type": "string",
+          "title": "Button Style",
+          "description": "The style of the button that leads to this step. Requires that the parent step is a 'BUTTONS' step.",
+          "enum":
+          [
+            "PRIMARY",
+            "SECONDARY",
+            "SUCCESS",
+            "DANGER"
+          ]
+        },
+        "selector-description":
+        {
+          "type": "string",
+          "title": "Selector Description",
+          "description": "Description for this option in the parent step's selection box. Requires that the parent step is a 'TEXT_SELECTOR'.",
+          "minLength": 1
+        }
+      },
+      "required": [ "id" ],
+      "unevaluatedProperties": false
+    },
     "step":
     {
       "type": "object",
@@ -97,6 +135,19 @@
           ],
           "minLength": 1
         },
+        "step-references":
+        {
+          "type": "object",
+          "title": "Step References",
+          "description": "Similar to the 'steps' property, but references steps from the 'definitions' property instead of defining new ones. The name of the reference is used as a regex match against the user's answer, except for selection boxes and buttons where each step becomes a button or selection option.",
+          "patternProperties":
+          {
+            ".*":
+            {
+              "$ref": "#/definitions/reference"
+            }
+          }
+        },
         "steps":
         {
           "type": "object",
@@ -175,6 +226,19 @@
     "interview":
     {
       "$ref": "#/definitions/step"
+    },
+    "definitions":
+    {
+      "type": "object",
+      "title": "References",
+      "description": "A list of steps that can be referenced from other interview steps. The name of the step is the name to use when referring to this step in the interview.",
+      "patternProperties":
+      {
+        ".*":
+        {
+          "$ref": "#/definitions/step"
+        }
+      }
     }
   },
   "required": [ "category-id", "interview" ],
