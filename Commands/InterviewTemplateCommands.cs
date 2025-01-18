@@ -102,16 +102,33 @@ public class InterviewTemplateCommands
             JsonSerializer serializer = new();
             Template template = serializer.Deserialize<Template>(validatingReader);
 
-            DiscordChannel category = await SupportBoi.client.GetChannelAsync(template.categoryID);
+            DiscordChannel category;
+            try
+            {
+                category = await SupportBoi.client.GetChannelAsync(template.categoryID);
+            }
+            catch (Exception e)
+            {
+                await command.RespondAsync(new DiscordEmbedBuilder
+                {
+                    Color = DiscordColor.Red,
+                    Description = "Could not get the category from the ID in the uploaded JSON structure."
+                }, true);
+                Logger.Warn("Failed to get template category from ID: " + template.categoryID, e);
+                return;
+            }
+
             if (!category.IsCategory)
             {
                 await command.RespondAsync(new DiscordEmbedBuilder
                 {
                     Color = DiscordColor.Red,
-                    Description = "The category ID in the uploaded JSON structure is not a valid category."
+                    Description = "The channel ID in the uploaded JSON structure is not a category."
                 }, true);
                 return;
             }
+
+            //TODO: Validate that any references with reference end steps have an after reference step
 
             List<string> errors = [];
             List<string> warnings = [];
@@ -208,7 +225,7 @@ public class InterviewTemplateCommands
             return;
         }
 
-        if (!Database.TryGetInterviewTemplate(category.Id, out InterviewStep _))
+        if (!Database.TryGetInterviewFromTemplate(category.Id, 0, out Interview _))
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {

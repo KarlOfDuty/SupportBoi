@@ -8,7 +8,7 @@
     "reference":
     {
       "type": "object",
-      "title": "Interview Step",
+      "title": "Interview Step Reference",
       "description": "Contains a reference to a step defined in the 'definitions' property. You can also specify a button-style and selector-description here to override the one from the referenced step.",
       "properties":
       {
@@ -38,6 +38,13 @@
           "title": "Selector Description",
           "description": "Description for this option in the parent step's selection box. Requires that the parent step is a 'TEXT_SELECTOR'.",
           "minLength": 1
+        },
+        "after-reference-step":
+        {
+          "type": "object",
+          "title": "Steps",
+          "description": "Any REFERENCE_END steps in the reference will continue to this step.",
+          "$ref": "#/definitions/step"
         }
       },
       "required": [ "id" ],
@@ -80,7 +87,8 @@
             "ROLE_SELECTOR",
             "MENTIONABLE_SELECTOR",
             "CHANNEL_SELECTOR",
-            "TEXT_INPUT"
+            "TEXT_INPUT",
+            "REFERENCE_END"
           ]
         },
         "color":
@@ -210,7 +218,7 @@
           "minimum": 0
         }
       },
-      "required": [ "message", "message-type", "color" ],
+      "required": [ "message", "message-type" ],
       "unevaluatedProperties": false
     }
   },

@@ -113,7 +113,8 @@ public static class Database
         using MySqlCommand createInterviews = new MySqlCommand(
             "CREATE TABLE IF NOT EXISTS interviews(" +
             "channel_id BIGINT UNSIGNED NOT NULL PRIMARY KEY," +
-            "interview JSON NOT NULL)",
+            "interview JSON NOT NULL," +
+            "definitions JSON NOT NULL)",
             c);
         using MySqlCommand createInterviewTemplates = new MySqlCommand(
             "CREATE TABLE IF NOT EXISTS interview_templates(" +
@@ -753,7 +754,7 @@ public static class Database
         return templates;
     }
 
-    public static bool TryGetInterviewTemplate(ulong categoryID, out Interviews.InterviewStep template)
+    public static bool TryGetInterviewFromTemplate(ulong categoryID, ulong channelID, out Interviews.Interview interview)
     {
         using MySqlConnection c = GetConnection();
         c.Open();
@@ -765,7 +766,7 @@ public static class Database
         // Check if messages exist in the database
         if (!results.Read())
         {
-            template = null;
+            interview = null;
             return false;
         }
 
@@ -774,7 +775,7 @@ public static class Database
 
         try
         {
-            template = JsonConvert.DeserializeObject<Interviews.Template>(templateString, new JsonSerializerSettings
+            Template template = JsonConvert.DeserializeObject<Template>(templateString, new JsonSerializerSettings
             {
                 Error = delegate (object sender, ErrorEventArgs args)
                 {
@@ -782,17 +783,18 @@ public static class Database
                     Logger.Debug("Detailed exception:", args.ErrorContext.Error);
                     args.ErrorContext.Handled = false;
                 }
-            }).interview;
+            });
+            interview = new Interview(channelID, template.interview, template.definitions);
             return true;
         }
         catch (Exception)
         {
-            template = null;
+            interview = null;
             return false;
         }
     }
 
-    public static bool SetInterviewTemplate(Interviews.Template template)
+    public static bool SetInterviewTemplate(Template template)
     {
         try
         {
@@ -805,7 +807,7 @@ public static class Database
             });
 
             string query;
-            if (TryGetInterviewTemplate(template.categoryID, out _))
+            if (TryGetInterviewFromTemplate(template.categoryID, 0, out _))
             {
                 query = "UPDATE interview_templates SET template = @template WHERE category_id=@category_id";
             }
@@ -845,25 +847,26 @@ public static class Database
         }
     }
 
-    public static bool SaveInterview(ulong channelID, Interviews.InterviewStep interview)
+    public static bool SaveInterview(Interview interview)
     {
         try
         {
             string query;
-            if (TryGetInterview(channelID, out _))
+            if (TryGetInterview(interview.channelID, out _))
             {
-                query = "UPDATE interviews SET interview = @interview WHERE channel_id = @channel_id";
+                query = "UPDATE interviews SET interview = @interview, definitions = @definitions WHERE channel_id = @channel_id";
             }
             else
             {
-                query = "INSERT INTO interviews (channel_id,interview) VALUES (@channel_id, @interview)";
+                query = "INSERT INTO interviews (channel_id,interview, definitions) VALUES (@channel_id, @interview, @definitions)";
             }
 
             using MySqlConnection c = GetConnection();
             c.Open();
             using MySqlCommand cmd = new MySqlCommand(query, c);
-            cmd.Parameters.AddWithValue("@channel_id", channelID);
-            cmd.Parameters.AddWithValue("@interview", JsonConvert.SerializeObject(interview, Formatting.Indented));
+            cmd.Parameters.AddWithValue("@channel_id", interview.channelID);
+            cmd.Parameters.AddWithValue("@interview", JsonConvert.SerializeObject(interview.interviewRoot, Formatting.Indented));
+            cmd.Parameters.AddWithValue("@definitions", JsonConvert.SerializeObject(interview.definitions, Formatting.Indented));
             cmd.Prepare();
             return cmd.ExecuteNonQuery() > 0;
         }
@@ -873,7 +876,7 @@ public static class Database
         }
     }
 
-    public static bool TryGetInterview(ulong channelID, out Interviews.InterviewStep interview)
+    public static bool TryGetInterview(ulong channelID, out Interview interview)
     {
         using MySqlConnection c = GetConnection();
         c.Open();
@@ -888,7 +891,9 @@ public static class Database
             interview = null;
             return false;
         }
-        interview = JsonConvert.DeserializeObject<Interviews.InterviewStep>(results.GetString("interview"));
+        interview = new Interview(channelID,
+                                  JsonConvert.DeserializeObject<InterviewStep>(results.GetString("interview")),
+                                  JsonConvert.DeserializeObject<Dictionary<string, InterviewStep>>(results.GetString("definitions")));
         results.Close();
         return true;
     }
