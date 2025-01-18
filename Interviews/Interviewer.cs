@@ -14,22 +14,22 @@ public static class Interviewer
 {
     public static async Task<bool> StartInterview(DiscordChannel channel)
     {
-        if (!Database.TryGetInterviewTemplate(channel.Parent.Id, out InterviewStep template))
+        if (!Database.TryGetInterviewFromTemplate(channel.Parent.Id, channel.Id, out Interview interview))
         {
             return false;
         }
 
-        await SendNextMessage(channel, template);
-        return Database.SaveInterview(channel.Id, template);
+        await SendNextMessage(channel, interview.interviewRoot);
+        return Database.SaveInterview(interview);
     }
 
     public static async Task<bool> RestartInterview(DiscordChannel channel)
     {
-        if (Database.TryGetInterview(channel.Id, out InterviewStep interviewRoot))
+        if (Database.TryGetInterview(channel.Id, out Interview interview))
         {
             if (Config.deleteMessagesAfterNoSummary)
             {
-                await DeletePreviousMessages(interviewRoot, channel);
+                await DeletePreviousMessages(interview, channel);
             }
 
             if (!Database.TryDeleteInterview(channel.Id))
@@ -43,11 +43,11 @@ public static class Interviewer
 
     public static async Task<bool> StopInterview(DiscordChannel channel)
     {
-        if (Database.TryGetInterview(channel.Id, out InterviewStep interviewRoot))
+        if (Database.TryGetInterview(channel.Id, out Interview interview))
         {
             if (Config.deleteMessagesAfterNoSummary)
             {
-                await DeletePreviousMessages(interviewRoot, channel);
+                await DeletePreviousMessages(interview, channel);
             }
 
             if (!Database.TryDeleteInterview(channel.Id))
@@ -61,7 +61,7 @@ public static class Interviewer
 
     public static async Task ProcessButtonOrSelectorResponse(DiscordInteraction interaction)
     {
-        if (interaction?.Channel == null || interaction?.Message == null)
+        if (interaction?.Channel == null || interaction.Message == null)
         {
             return;
         }
@@ -74,7 +74,7 @@ public static class Interviewer
         }
 
         // Return if there is no active interview in this channel
-        if (!Database.TryGetInterview(interaction.Channel.Id, out InterviewStep interviewRoot))
+        if (!Database.TryGetInterview(interaction.Channel.Id, out Interview interview))
         {
             await interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
                 .AddEmbed(new DiscordEmbedBuilder()
@@ -85,7 +85,7 @@ public static class Interviewer
         }
 
         // Return if the current question cannot be found in the interview.
-        if (!interviewRoot.TryGetCurrentStep(out InterviewStep currentStep))
+        if (!interview.interviewRoot.TryGetCurrentStep(out InterviewStep currentStep))
         {
             await interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
                 .AddEmbed(new DiscordEmbedBuilder()
@@ -126,19 +126,19 @@ public static class Interviewer
             case DiscordComponentType.RoleSelect:
             case DiscordComponentType.ChannelSelect:
             case DiscordComponentType.MentionableSelect:
-                if (interaction.Data.Resolved?.Roles?.Any() ?? false)
+                if (interaction.Data.Resolved.Roles.Any())
                 {
                     answer = interaction.Data.Resolved.Roles.First().Value.Mention;
                 }
-                else if (interaction.Data.Resolved?.Users?.Any() ?? false)
+                else if (interaction.Data.Resolved.Users.Any())
                 {
                     answer = interaction.Data.Resolved.Users.First().Value.Mention;
                 }
-                else if (interaction.Data.Resolved?.Channels?.Any() ?? false)
+                else if (interaction.Data.Resolved.Channels.Any())
                 {
                     answer = interaction.Data.Resolved.Channels.First().Value.Mention;
                 }
-                else if (interaction.Data.Resolved?.Messages?.Any() ?? false)
+                else if (interaction.Data.Resolved.Messages.Any())
                 {
                     answer = interaction.Data.Resolved.Messages.First().Value.Id.ToString();
                 }
@@ -158,12 +158,27 @@ public static class Interviewer
         // The different mentionable selectors provide the actual answer, while the others just return the ID.
         if (componentID == "")
         {
+            foreach (KeyValuePair<string, ReferencedInterviewStep> reference in currentStep.references)
+            {
+                // Skip to the first matching step.
+                if (Regex.IsMatch(answer, reference.Key))
+                {
+                    if (TryGetStepFromReference(interview, reference.Value, out InterviewStep referencedStep))
+                    {
+                        currentStep.steps.Add(reference.Key, referencedStep);
+                        await HandleAnswer(answer, referencedStep, interview, currentStep, interaction.Channel);
+                    }
+                    currentStep.references.Remove(reference.Key);
+                    return;
+                }
+            }
+
             foreach (KeyValuePair<string, InterviewStep> step in currentStep.steps)
             {
                 // Skip to the first matching step.
                 if (Regex.IsMatch(answer, step.Key))
                 {
-                    await HandleAnswer(answer, step.Value, interviewRoot, currentStep, interaction.Channel);
+                    await HandleAnswer(answer, step.Value, interview, currentStep, interaction.Channel);
                     return;
                 }
             }
@@ -175,7 +190,7 @@ public static class Interviewer
                 Description = "Error: Could not determine the next question based on your answer. Check your response and ask an admin to check the bot logs if this seems incorrect."
             }).AsEphemeral());
             currentStep.AddRelatedMessageIDs(followupMessage.Id);
-            Database.SaveInterview(interaction.Channel.Id, interviewRoot);
+            Database.SaveInterview(interview);
         }
         else
         {
@@ -192,8 +207,29 @@ public static class Interviewer
             }
 
             (string stepString, InterviewStep nextStep) = currentStep.steps.ElementAt(stepIndex);
-            await HandleAnswer(stepString, nextStep, interviewRoot, currentStep, interaction.Channel);
+            await HandleAnswer(stepString, nextStep, interview, currentStep, interaction.Channel);
         }
+    }
+
+    public static bool TryGetStepFromReference(Interview interview, ReferencedInterviewStep reference, out InterviewStep step)
+    {
+        foreach (KeyValuePair<string, InterviewStep> definition in interview.definitions)
+        {
+            if (reference.id == definition.Key)
+            {
+                step = definition.Value;
+                step.buttonStyle = reference.buttonStyle;
+                step.selectorDescription = reference.selectorDescription;
+                if (step.messageType != MessageType.ERROR)
+                {
+                    step.afterReferenceStep = reference.afterReferenceStep;
+                }
+                return true;
+            }
+        }
+
+        step = null;
+        return false;
     }
 
     public static async Task ProcessResponseMessage(DiscordMessage answerMessage)
@@ -205,12 +241,13 @@ public static class Interviewer
         }
 
         // The channel does not have an active interview.
-        if (!Database.TryGetInterview(answerMessage.ReferencedMessage.Channel.Id, out InterviewStep interviewRoot))
+        if (!Database.TryGetInterview(answerMessage.ReferencedMessage.Channel.Id,
+                                      out Interview interview))
         {
             return;
         }
 
-        if (!interviewRoot.TryGetCurrentStep(out InterviewStep currentStep))
+        if (!interview.interviewRoot.TryGetCurrentStep(out InterviewStep currentStep))
         {
             return;
         }
@@ -238,7 +275,7 @@ public static class Interviewer
                 Color = DiscordColor.Red
             });
             currentStep.AddRelatedMessageIDs(answerMessage.Id, lengthMessage.Id);
-            Database.SaveInterview(answerMessage.Channel.Id, interviewRoot);
+            Database.SaveInterview(interview);
             return;
         }
 
@@ -250,7 +287,7 @@ public static class Interviewer
                 Color = DiscordColor.Red
             });
             currentStep.AddRelatedMessageIDs(answerMessage.Id, lengthMessage.Id);
-            Database.SaveInterview(answerMessage.Channel.Id, interviewRoot);
+            Database.SaveInterview(interview);
             return;
         }
 
@@ -262,7 +299,7 @@ public static class Interviewer
                 continue;
             }
 
-            await HandleAnswer(answerMessage.Content, nextStep, interviewRoot, currentStep, answerMessage.Channel, answerMessage);
+            await HandleAnswer(answerMessage.Content, nextStep, interview, currentStep, answerMessage.Channel, answerMessage);
             return;
         }
 
@@ -273,12 +310,12 @@ public static class Interviewer
             Color = DiscordColor.Red
         });
         currentStep.AddRelatedMessageIDs(answerMessage.Id, errorMessage.Id);
-        Database.SaveInterview(answerMessage.Channel.Id, interviewRoot);
+        Database.SaveInterview(interview);
     }
 
     private static async Task HandleAnswer(string answer,
                                            InterviewStep nextStep,
-                                           InterviewStep interviewRoot,
+                                           Interview interview,
                                            InterviewStep previousStep,
                                            DiscordChannel channel,
                                            DiscordMessage answerMessage = null)
@@ -302,12 +339,35 @@ public static class Interviewer
             case MessageType.USER_SELECTOR:
             case MessageType.CHANNEL_SELECTOR:
             case MessageType.MENTIONABLE_SELECTOR:
+                foreach ((string stepPattern, ReferencedInterviewStep reference) in nextStep.references)
+                {
+                    if (!reference.TryGetReferencedStep(interview, out InterviewStep step))
+                    {
+                        if (answerMessage != null)
+                        {
+                            DiscordMessage lengthMessage = await answerMessage.RespondAsync(new DiscordEmbedBuilder
+                            {
+                                Description = "Error: The referenced step id '" + reference.id + "' does not exist in the step definitions.",
+                                Color = DiscordColor.Red
+                            });
+                            nextStep.AddRelatedMessageIDs(answerMessage.Id, lengthMessage.Id);
+                            previousStep.answer = null;
+                            previousStep.answerID = 0;
+                            Database.SaveInterview(interview);
+                        }
+                        return;
+                    }
+
+                    nextStep.steps.Add(stepPattern, step);
+                }
+                nextStep.references.Clear();
+
                 await SendNextMessage(channel, nextStep);
-                Database.SaveInterview(channel.Id, interviewRoot);
+                Database.SaveInterview(interview);
                 break;
             case MessageType.END_WITH_SUMMARY:
                 OrderedDictionary summaryFields = new OrderedDictionary();
-                interviewRoot.GetSummary(ref summaryFields);
+                interview.interviewRoot.GetSummary(ref summaryFields);
 
                 DiscordEmbedBuilder embed = new DiscordEmbedBuilder
                 {
@@ -318,14 +378,14 @@ public static class Interviewer
 
                 foreach (DictionaryEntry entry in summaryFields)
                 {
-                    embed.AddField((string)entry.Key, (string)entry.Value);
+                    embed.AddField((string)entry.Key, (string)entry.Value ?? string.Empty);
                 }
 
                 await channel.SendMessageAsync(embed);
 
                 if (Config.deleteMessagesAfterSummary)
                 {
-                    await DeletePreviousMessages(interviewRoot, channel);
+                    await DeletePreviousMessages(interview, channel);
                 }
 
                 if (!Database.TryDeleteInterview(channel.Id))
@@ -343,7 +403,7 @@ public static class Interviewer
 
                 if (Config.deleteMessagesAfterNoSummary)
                 {
-                    await DeletePreviousMessages(interviewRoot, channel);
+                    await DeletePreviousMessages(interview, channel);
                 }
 
                 if (!Database.TryDeleteInterview(channel.Id))
@@ -351,40 +411,88 @@ public static class Interviewer
                     Logger.Error("Could not delete interview from database. Channel ID: " + channel.Id);
                 }
                 break;
-            case MessageType.ERROR:
-            default:
+            case MessageType.REFERENCE_END:
+                // TODO: What is happening with the summaries?
+                if (interview.interviewRoot.TryGetTakenSteps(out List<InterviewStep> previousSteps))
+                {
+                    foreach (InterviewStep step in previousSteps)
+                    {
+                        if (step.afterReferenceStep != null)
+                        {
+                            // If the referenced step is also a reference end, skip it and try to find another.
+                            if (step.afterReferenceStep.messageType == MessageType.REFERENCE_END)
+                            {
+                                step.afterReferenceStep = null;
+                            }
+                            else
+                            {
+                                nextStep = step.afterReferenceStep;
+                                step.afterReferenceStep = null;
+
+                                previousStep.steps.Clear();
+                                previousStep.steps.Add(answer, nextStep);
+                                await HandleAnswer(answer,
+                                    nextStep,
+                                    interview,
+                                    previousStep,
+                                    channel,
+                                    answerMessage);
+                                return;
+                            }
+                        }
+                    }
+                }
+
+                DiscordEmbedBuilder error = new DiscordEmbedBuilder
+                {
+                    Color = DiscordColor.Red,
+                    Description = "An error occured while trying to find the next interview step."
+                };
+
                 if (answerMessage == null)
                 {
-                    DiscordMessage errorMessage = await channel.SendMessageAsync(new DiscordEmbedBuilder
-                    {
-                        Color = Utilities.StringToColor(nextStep.color),
-                        Title = nextStep.heading,
-                        Description = nextStep.message
-                    });
+                    DiscordMessage errorMessage = await channel.SendMessageAsync(error);
                     previousStep.AddRelatedMessageIDs(errorMessage.Id);
                 }
                 else
                 {
-                    DiscordMessageBuilder errorMessageBuilder = new DiscordMessageBuilder()
-                        .AddEmbed(new DiscordEmbedBuilder
-                        {
-                            Color = Utilities.StringToColor(nextStep.color),
-                            Title = nextStep.heading,
-                            Description = nextStep.message
-                        }).WithReply(answerMessage.Id);
-                    DiscordMessage errorMessage = await answerMessage.RespondAsync(errorMessageBuilder);
+                    DiscordMessage errorMessage = await answerMessage.RespondAsync(error);
                     previousStep.AddRelatedMessageIDs(errorMessage.Id, answerMessage.Id);
                 }
 
-                Database.SaveInterview(channel.Id, interviewRoot);
+                Database.SaveInterview(interview);
+
+                Logger.Error("Could not find a step to return to after a reference step in channel " + channel.Id);
+                return;
+            case MessageType.ERROR:
+            default:
+                DiscordEmbedBuilder err = new DiscordEmbedBuilder
+                {
+                    Color = Utilities.StringToColor(nextStep.color),
+                    Title = nextStep.heading,
+                    Description = nextStep.message
+                };
+
+                if (answerMessage == null)
+                {
+                    DiscordMessage errorMessage = await channel.SendMessageAsync(err);
+                    previousStep.AddRelatedMessageIDs(errorMessage.Id);
+                }
+                else
+                {
+                    DiscordMessage errorMessage = await answerMessage.RespondAsync(err);
+                    previousStep.AddRelatedMessageIDs(errorMessage.Id, answerMessage.Id);
+                }
+
+                Database.SaveInterview(interview);
                 break;
         }
     }
 
-    private static async Task DeletePreviousMessages(InterviewStep interviewRoot, DiscordChannel channel)
+    private static async Task DeletePreviousMessages(Interview interview, DiscordChannel channel)
     {
         List<ulong> previousMessages = [];
-        interviewRoot.GetMessageIDs(ref previousMessages);
+        interview.interviewRoot.GetMessageIDs(ref previousMessages);
 
         foreach (ulong previousMessageID in previousMessages)
         {

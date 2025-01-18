@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using DSharpPlus.Entities;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -22,7 +23,8 @@ public enum MessageType
     ROLE_SELECTOR,
     MENTIONABLE_SELECTOR, // User or role
     CHANNEL_SELECTOR,
-    TEXT_INPUT
+    TEXT_INPUT,
+    REFERENCE_END
 }
 
 public enum ButtonType
@@ -31,6 +33,45 @@ public enum ButtonType
     SECONDARY,
     SUCCESS,
     DANGER
+}
+
+public class ReferencedInterviewStep
+{
+    [JsonProperty("id")]
+    public string id;
+
+    // If this step is on a button, give it this style.
+    [JsonConverter(typeof(StringEnumConverter))]
+    [JsonProperty("button-style")]
+    public ButtonType? buttonStyle;
+
+    // If this step is in a selector, give it this description.
+    [JsonProperty("selector-description")]
+    public string selectorDescription;
+
+    // Runs at the end of the reference
+    [JsonProperty("after-reference-step")]
+    public InterviewStep afterReferenceStep;
+
+    public DiscordButtonStyle GetButtonStyle()
+    {
+        return InterviewStep.GetButtonStyle(buttonStyle);
+    }
+
+    public bool TryGetReferencedStep(Interview interview, out InterviewStep step)
+    {
+        if (!interview.definitions.TryGetValue(id, out step))
+        {
+            Logger.Error("Could not find referenced step '" + id + "' in interview for channel '" + interview.channelID + "'");
+            return false;
+        }
+
+        step.buttonStyle = buttonStyle;
+        step.selectorDescription = selectorDescription;
+        step.afterReferenceStep = afterReferenceStep;
+
+        return true;
+    }
 }
 
 // A tree of steps representing an interview.
@@ -54,7 +95,7 @@ public class InterviewStep
 
     // Colour of the message embed.
     [JsonProperty("color")]
-    public string color;
+    public string color = "CYAN";
 
     // Used as label for this answer in the post-interview summary.
     [JsonProperty("summary-field")]
@@ -65,11 +106,11 @@ public class InterviewStep
     [JsonProperty("button-style")]
     public ButtonType? buttonStyle;
 
-    // If this step is on a selector, give it this placeholder.
+    // If this step is a selector, give it this placeholder.
     [JsonProperty("selector-placeholder")]
     public string selectorPlaceholder;
 
-    // If this step is on a selector, give it this description.
+    // If this step is in a selector, give it this description.
     [JsonProperty("selector-description")]
     public string selectorDescription;
 
@@ -80,6 +121,10 @@ public class InterviewStep
     // The minimum length of a text input.
     [JsonProperty("min-length")]
     public int? minLength;
+
+    // References to steps defined elsewhere in the template
+    [JsonProperty("step-references")]
+    public Dictionary<string, ReferencedInterviewStep> references = new();
 
     // Possible questions to ask next, an error message, or the end of the interview.
     [JsonProperty("steps")]
@@ -105,12 +150,23 @@ public class InterviewStep
     [JsonProperty("related-message-ids")]
     public List<ulong> relatedMessageIDs;
 
-    public bool TryGetCurrentStep(out InterviewStep step)
+    // This is only set when the user gets to a referenced step
+    [JsonProperty("after-reference-step")]
+    public InterviewStep afterReferenceStep = null;
+
+    public bool TryGetCurrentStep(out InterviewStep currentStep)
+    {
+        bool result = TryGetTakenSteps(out List<InterviewStep> previousSteps);
+        currentStep = previousSteps.FirstOrDefault();
+        return result;
+    }
+
+    public bool TryGetTakenSteps(out List<InterviewStep> previousSteps)
     {
         // This object has not been initialized, we have checked too deep.
         if (messageID == 0)
         {
-            step = null;
+            previousSteps = null;
             return false;
         }
 
@@ -118,14 +174,15 @@ public class InterviewStep
         foreach (KeyValuePair<string,InterviewStep> childStep in steps)
         {
             // This child either is the one we are looking for or contains the one we are looking for.
-            if (childStep.Value.TryGetCurrentStep(out step))
+            if (childStep.Value.TryGetTakenSteps(out previousSteps))
             {
+                previousSteps.Add(this);
                 return true;
             }
         }
 
         // This object is the deepest object with a message ID set, meaning it is the latest asked question.
-        step = this;
+        previousSteps = new List<InterviewStep> { this };
         return true;
     }
 
@@ -138,7 +195,8 @@ public class InterviewStep
 
         if (!string.IsNullOrWhiteSpace(summaryField))
         {
-            summary.Add(summaryField, answer);
+            // TODO: Add option to merge answers
+            summary[summaryField] = answer;
         }
 
         // This will always contain exactly one or zero children.
@@ -184,18 +242,6 @@ public class InterviewStep
         }
     }
 
-    public DiscordButtonStyle GetButtonStyle()
-    {
-        return buttonStyle switch
-        {
-            ButtonType.PRIMARY   => DiscordButtonStyle.Primary,
-            ButtonType.SECONDARY => DiscordButtonStyle.Secondary,
-            ButtonType.SUCCESS   => DiscordButtonStyle.Success,
-            ButtonType.DANGER    => DiscordButtonStyle.Danger,
-            _                    => DiscordButtonStyle.Secondary
-        };
-    }
-
     public void Validate(ref List<string> errors,
                          ref List<string> warnings,
                          string stepID,
@@ -237,7 +283,7 @@ public class InterviewStep
 
         if (messageType is MessageType.ERROR or MessageType.END_WITH_SUMMARY or MessageType.END_WITHOUT_SUMMARY)
         {
-            if (steps.Count > 0)
+            if (steps.Count > 0 || references.Count > 0)
             {
                 warnings.Add("Steps of the type '" + messageType + "' cannot have child steps.\n\n" + stepID + ".message-type");
             }
@@ -247,7 +293,7 @@ public class InterviewStep
                 warnings.Add("Steps of the type '" + messageType + "' cannot have summary field names.\n\n" + stepID + ".summary-field");
             }
         }
-        else if (steps.Count == 0)
+        else if (steps.Count == 0 && references.Count == 0)
         {
             errors.Add("Steps of the type '" + messageType + "' must have at least one child step.\n\n" + stepID + ".message-type");
         }
@@ -304,6 +350,23 @@ public class InterviewStep
         }
     }
 
+    public DiscordButtonStyle GetButtonStyle()
+    {
+        return GetButtonStyle(buttonStyle);
+    }
+
+    public static DiscordButtonStyle GetButtonStyle(ButtonType? buttonStyle)
+    {
+        return buttonStyle switch
+        {
+            ButtonType.PRIMARY   => DiscordButtonStyle.Primary,
+            ButtonType.SECONDARY => DiscordButtonStyle.Secondary,
+            ButtonType.SUCCESS   => DiscordButtonStyle.Success,
+            ButtonType.DANGER    => DiscordButtonStyle.Danger,
+            _                    => DiscordButtonStyle.Secondary
+        };
+    }
+
     public class StripInternalPropertiesResolver : DefaultContractResolver
     {
         private static readonly HashSet<string> ignoreProps =
@@ -326,11 +389,21 @@ public class InterviewStep
     }
 }
 
-public class Template(ulong categoryID, InterviewStep interview)
+public class Interview(ulong channelID, InterviewStep interviewRoot, Dictionary<string, InterviewStep> definitions)
+{
+    public ulong channelID = channelID;
+    public InterviewStep interviewRoot = interviewRoot;
+    public Dictionary<string, InterviewStep> definitions = definitions;
+}
+
+public class Template(ulong categoryID, InterviewStep interview, Dictionary<string, InterviewStep> definitions)
 {
     [JsonProperty("category-id", Required = Required.Always)]
     public ulong categoryID = categoryID;
 
     [JsonProperty("interview", Required = Required.Always)]
     public InterviewStep interview = interview;
+
+    [JsonProperty("definitions", Required = Required.Default)]
+    public Dictionary<string, InterviewStep> definitions = definitions;
 }
