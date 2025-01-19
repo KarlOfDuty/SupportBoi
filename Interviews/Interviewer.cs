@@ -341,7 +341,7 @@ public static class Interviewer
             case MessageType.MENTIONABLE_SELECTOR:
                 foreach ((string stepPattern, ReferencedInterviewStep reference) in nextStep.references)
                 {
-                    if (!reference.TryGetReferencedStep(interview, out InterviewStep step))
+                    if (!reference.TryGetReferencedStep(interview.definitions, out InterviewStep step))
                     {
                         if (answerMessage != null)
                         {
