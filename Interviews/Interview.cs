@@ -54,11 +54,6 @@ public class ReferencedInterviewStep
     [JsonProperty("after-reference-step")]
     public InterviewStep afterReferenceStep;
 
-    public DiscordButtonStyle GetButtonStyle()
-    {
-        return InterviewStep.GetButtonStyle(buttonStyle);
-    }
-
     public bool TryGetReferencedStep(Dictionary<string, InterviewStep> definitions, out InterviewStep step, bool ignoreReferenceParameters = false)
     {
         if (!definitions.TryGetValue(id, out step))
