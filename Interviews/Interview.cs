@@ -134,6 +134,10 @@ public class InterviewStep
     [JsonProperty("step-references")]
     public Dictionary<string, ReferencedInterviewStep> references = new();
 
+    // If set will merge answers with the delimiter, otherwise will overwrite
+    [JsonProperty("answer-delimiter")]
+    public string answerDelimiter;
+
     // Possible questions to ask next, an error message, or the end of the interview.
     [JsonProperty("steps")]
     public Dictionary<string, InterviewStep> steps = new();
@@ -203,8 +207,14 @@ public class InterviewStep
 
         if (!string.IsNullOrWhiteSpace(summaryField) && !string.IsNullOrWhiteSpace(answer))
         {
-            // TODO: Add option to merge answers
-            summary[summaryField] = answer;
+            if (answerDelimiter != null && summary.Contains(summaryField))
+            {
+                summary[summaryField] += answerDelimiter + answer;
+            }
+            else
+            {
+                summary[summaryField] = answer;
+            }
         }
 
         // This will always contain exactly one or zero children.
@@ -305,6 +315,7 @@ public class InterviewStep
             }
         }
 
+        // TODO: Warning for answer-delimiter if there is no summary-field
         // TODO: Add url button here when implemented
         if (messageType is MessageType.REFERENCE_END)
         {
