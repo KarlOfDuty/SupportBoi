@@ -28,8 +28,7 @@ internal static class Config
     internal static bool closingNotifications = false;
 
     internal static bool interviewsEnabled = false;
-    internal static bool deleteMessagesAfterSummary = false;
-    internal static bool deleteMessagesAfterNoSummary = false;
+    internal static bool deleteMessagesAfterInterviewEnd = false;
 
     internal static string hostName = "127.0.0.1";
     internal static int port = 3306;
@@ -100,8 +99,7 @@ internal static class Config
         closingNotifications = json.SelectToken("notifications.closing")?.Value<bool>() ?? false;
 
         interviewsEnabled = json.SelectToken("interviews.enabled")?.Value<bool>() ?? false;
-        deleteMessagesAfterSummary = json.SelectToken("interviews.delete-messages-after-summary")?.Value<bool>() ?? false;
-        deleteMessagesAfterNoSummary = json.SelectToken("interviews.delete-messages-after-no-summary")?.Value<bool>() ?? false;
+        deleteMessagesAfterInterviewEnd = json.SelectToken("interviews.delete-messages-after-interview-end")?.Value<bool>() ?? false;
 
         // Reads database info
         hostName = json.SelectToken("database.address")?.Value<string>() ?? "";

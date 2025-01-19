@@ -19,7 +19,7 @@ public static class Interviewer
             return false;
         }
 
-        await SendNextMessage(channel, interview.interviewRoot);
+        await SendNextMessage(interview, channel, interview.interviewRoot);
         return Database.SaveInterview(interview);
     }
 
@@ -27,7 +27,7 @@ public static class Interviewer
     {
         if (Database.TryGetInterview(channel.Id, out Interview interview))
         {
-            if (Config.deleteMessagesAfterNoSummary)
+            if (Config.deleteMessagesAfterInterviewEnd)
             {
                 await DeletePreviousMessages(interview, channel);
             }
@@ -45,7 +45,7 @@ public static class Interviewer
     {
         if (Database.TryGetInterview(channel.Id, out Interview interview))
         {
-            if (Config.deleteMessagesAfterNoSummary)
+            if (Config.deleteMessagesAfterInterviewEnd)
             {
                 await DeletePreviousMessages(interview, channel);
             }
@@ -362,28 +362,25 @@ public static class Interviewer
                 }
                 nextStep.references.Clear();
 
-                await SendNextMessage(channel, nextStep);
+                await SendNextMessage(interview, channel, nextStep);
                 Database.SaveInterview(interview);
                 break;
-            case MessageType.END_WITH_SUMMARY:
-                OrderedDictionary summaryFields = new OrderedDictionary();
-                interview.interviewRoot.GetSummary(ref summaryFields);
-
-                DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+            case MessageType.INTERVIEW_END:
+                DiscordEmbedBuilder endEmbed = new()
                 {
                     Color = Utilities.StringToColor(nextStep.color),
                     Title = nextStep.heading,
                     Description = nextStep.message,
                 };
 
-                foreach (DictionaryEntry entry in summaryFields)
+                if (nextStep.addSummary ?? false)
                 {
-                    embed.AddField((string)entry.Key, (string)entry.Value ?? string.Empty);
+                    AddSummary(interview, ref endEmbed);
                 }
 
-                await channel.SendMessageAsync(embed);
+                await channel.SendMessageAsync(endEmbed);
 
-                if (Config.deleteMessagesAfterSummary)
+                if (Config.deleteMessagesAfterInterviewEnd)
                 {
                     await DeletePreviousMessages(interview, channel);
                 }
@@ -393,26 +390,7 @@ public static class Interviewer
                     Logger.Error("Could not delete interview from database. Channel ID: " + channel.Id);
                 }
                 return;
-            case MessageType.END_WITHOUT_SUMMARY:
-                await channel.SendMessageAsync(new DiscordEmbedBuilder
-                {
-                    Color = Utilities.StringToColor(nextStep.color),
-                    Title = nextStep.heading,
-                    Description = nextStep.message
-                });
-
-                if (Config.deleteMessagesAfterNoSummary)
-                {
-                    await DeletePreviousMessages(interview, channel);
-                }
-
-                if (!Database.TryDeleteInterview(channel.Id))
-                {
-                    Logger.Error("Could not delete interview from database. Channel ID: " + channel.Id);
-                }
-                break;
             case MessageType.REFERENCE_END:
-                // TODO: What is happening with the summaries?
                 if (interview.interviewRoot.TryGetTakenSteps(out List<InterviewStep> previousSteps))
                 {
                     foreach (InterviewStep step in previousSteps)
@@ -431,19 +409,14 @@ public static class Interviewer
 
                                 previousStep.steps.Clear();
                                 previousStep.steps.Add(answer, nextStep);
-                                await HandleAnswer(answer,
-                                    nextStep,
-                                    interview,
-                                    previousStep,
-                                    channel,
-                                    answerMessage);
+                                await HandleAnswer(answer, nextStep, interview, previousStep, channel, answerMessage);
                                 return;
                             }
                         }
                     }
                 }
 
-                DiscordEmbedBuilder error = new DiscordEmbedBuilder
+                DiscordEmbedBuilder error = new()
                 {
                     Color = DiscordColor.Red,
                     Description = "An error occured while trying to find the next interview step."
@@ -466,26 +439,41 @@ public static class Interviewer
                 return;
             case MessageType.ERROR:
             default:
-                DiscordEmbedBuilder err = new DiscordEmbedBuilder
+                DiscordEmbedBuilder errorEmbed = new()
                 {
                     Color = Utilities.StringToColor(nextStep.color),
                     Title = nextStep.heading,
                     Description = nextStep.message
                 };
 
+                if (nextStep.addSummary ?? false)
+                {
+                    AddSummary(interview, ref errorEmbed);
+                }
+
                 if (answerMessage == null)
                 {
-                    DiscordMessage errorMessage = await channel.SendMessageAsync(err);
+                    DiscordMessage errorMessage = await channel.SendMessageAsync(errorEmbed);
                     previousStep.AddRelatedMessageIDs(errorMessage.Id);
                 }
                 else
                 {
-                    DiscordMessage errorMessage = await answerMessage.RespondAsync(err);
+                    DiscordMessage errorMessage = await answerMessage.RespondAsync(errorEmbed);
                     previousStep.AddRelatedMessageIDs(errorMessage.Id, answerMessage.Id);
                 }
 
                 Database.SaveInterview(interview);
-                break;
+                return;
+        }
+    }
+
+    private static void AddSummary(Interview interview, ref DiscordEmbedBuilder embed)
+    {
+        OrderedDictionary summaryFields = new();
+        interview.interviewRoot.GetSummary(ref summaryFields);
+        foreach (DictionaryEntry entry in summaryFields)
+        {
+            embed.AddField((string)entry.Key, (string)entry.Value ?? "-");
         }
     }
 
@@ -508,7 +496,7 @@ public static class Interviewer
         }
     }
 
-    private static async Task SendNextMessage(DiscordChannel channel, InterviewStep step)
+    private static async Task SendNextMessage(Interview interview, DiscordChannel channel, InterviewStep step)
     {
         DiscordMessageBuilder msgBuilder = new();
         DiscordEmbedBuilder embed = new()
@@ -517,6 +505,11 @@ public static class Interviewer
             Title = step.heading,
             Description = step.message
         };
+
+        if (step.addSummary ?? false)
+        {
+            AddSummary(interview, ref embed);
+        }
 
         switch (step.messageType)
         {
@@ -546,33 +539,32 @@ public static class Interviewer
                         categoryOptions.Add(new DiscordSelectComponentOption(stepPattern, selectionOptions.ToString(), nextStep.selectorDescription));
                     }
 
-                    selectionComponents.Add(new DiscordSelectComponent("supportboi_interviewselector " + selectionBoxes, string.IsNullOrWhiteSpace(step.selectorPlaceholder)
-                                                                                                                           ? "Select an option..." : step.selectorPlaceholder, categoryOptions));
+                    selectionComponents.Add(new DiscordSelectComponent("supportboi_interviewselector " + selectionBoxes,
+                                              string.IsNullOrWhiteSpace(step.selectorPlaceholder) ? "Select an option..." : step.selectorPlaceholder, categoryOptions));
                 }
 
                 msgBuilder.AddComponents(selectionComponents);
                 break;
             case MessageType.ROLE_SELECTOR:
-                msgBuilder.AddComponents(new DiscordRoleSelectComponent("supportboi_interviewroleselector", string.IsNullOrWhiteSpace(step.selectorPlaceholder)
-                                                                                                              ? "Select a role..." : step.selectorPlaceholder));
+                msgBuilder.AddComponents(new DiscordRoleSelectComponent("supportboi_interviewroleselector",
+                                           string.IsNullOrWhiteSpace(step.selectorPlaceholder) ? "Select a role..." : step.selectorPlaceholder));
                 break;
             case MessageType.USER_SELECTOR:
-                msgBuilder.AddComponents(new DiscordUserSelectComponent("supportboi_interviewuserselector", string.IsNullOrWhiteSpace(step.selectorPlaceholder)
-                                                                                                              ? "Select a user..." : step.selectorPlaceholder));
+                msgBuilder.AddComponents(new DiscordUserSelectComponent("supportboi_interviewuserselector",
+                                           string.IsNullOrWhiteSpace(step.selectorPlaceholder) ? "Select a user..." : step.selectorPlaceholder));
                 break;
             case MessageType.CHANNEL_SELECTOR:
-                msgBuilder.AddComponents(new DiscordChannelSelectComponent("supportboi_interviewchannelselector", string.IsNullOrWhiteSpace(step.selectorPlaceholder)
-                                                                                                                    ? "Select a channel..." : step.selectorPlaceholder));
+                msgBuilder.AddComponents(new DiscordChannelSelectComponent("supportboi_interviewchannelselector",
+                                           string.IsNullOrWhiteSpace(step.selectorPlaceholder) ? "Select a channel..." : step.selectorPlaceholder));
                 break;
             case MessageType.MENTIONABLE_SELECTOR:
-                msgBuilder.AddComponents(new DiscordMentionableSelectComponent("supportboi_interviewmentionableselector", string.IsNullOrWhiteSpace(step.selectorPlaceholder)
-                                                                                                                            ? "Select a user or role..." : step.selectorPlaceholder));
+                msgBuilder.AddComponents(new DiscordMentionableSelectComponent("supportboi_interviewmentionableselector",
+                                           string.IsNullOrWhiteSpace(step.selectorPlaceholder) ? "Select a user or role..." : step.selectorPlaceholder));
                 break;
             case MessageType.TEXT_INPUT:
                 embed.WithFooter("Reply to this message with your answer. You cannot include images or files.");
                 break;
-            case MessageType.END_WITH_SUMMARY:
-            case MessageType.END_WITHOUT_SUMMARY:
+            case MessageType.INTERVIEW_END:
             case MessageType.ERROR:
             default:
                 break;

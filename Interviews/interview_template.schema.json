@@ -68,7 +68,7 @@
         {
           "type": "string",
           "title": "Message",
-          "description": "The text in the embed message that will be sent to the user when they reach this step.",
+          "description": "The text in the embed message that will be sent to the user when they reach this step. Required for all message types except 'REFERENCE_END'.",
           "minLength": 1
         },
         "message-type":
@@ -79,8 +79,7 @@
           "enum":
           [
             "ERROR",
-            "END_WITH_SUMMARY",
-            "END_WITHOUT_SUMMARY",
+            "INTERVIEW_END",
             "BUTTONS",
             "TEXT_SELECTOR",
             "USER_SELECTOR",
@@ -216,6 +215,12 @@
           "title": "Min Length",
           "description": "The minimum length of the user's response message. Requires that this step is a 'TEXT_INPUT'.",
           "minimum": 0
+        },
+        "add-summary":
+        {
+          "type": "boolean",
+          "title": "Add Summary",
+          "description": "This adds a summary field to the end of the message."
         }
       },
       "required": [ "message-type" ],

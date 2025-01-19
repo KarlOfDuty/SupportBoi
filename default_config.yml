@@ -62,11 +62,8 @@ interviews:
     # Any existing interviews can still be completed while interviews are disabled, but new ones will not be created.
     enabled: true
 
-    # Whether to delete the interview question and answer messages after an interview summary is posted.
-    delete-messages-after-summary: true
-
-    # Whether to delete the interview question and answer messages after an interview ends without a summary.
-    delete-messages-after-no-summary: true
+    # Whether to delete the interview question and answer messages after an interview ends.
+    delete-messages-after-interview-end: true
 
 database:
     # Address and port of the mysql server.

@@ -15,8 +15,9 @@ public enum MessageType
 {
     // TODO: Support multiselector as separate type
     ERROR,
-    END_WITH_SUMMARY,
-    END_WITHOUT_SUMMARY,
+    INTERVIEW_END = 1,
+    [Obsolete("Use INTERVIEW_END instead")] END_WITH_SUMMARY = 1,
+    [Obsolete("Use INTERVIEW_END instead")] END_WITHOUT_SUMMARY = 1,
     BUTTONS,
     TEXT_SELECTOR,
     USER_SELECTOR,
@@ -125,6 +126,10 @@ public class InterviewStep
     [JsonProperty("min-length")]
     public int? minLength;
 
+    // Adds a summary to the message.
+    [JsonProperty("add-summary")]
+    public bool? addSummary;
+
     // References to steps defined elsewhere in the template
     [JsonProperty("step-references")]
     public Dictionary<string, ReferencedInterviewStep> references = new();
@@ -185,7 +190,7 @@ public class InterviewStep
         }
 
         // This object is the deepest object with a message ID set, meaning it is the latest asked question.
-        previousSteps = new List<InterviewStep> { this };
+        previousSteps = [this];
         return true;
     }
 
@@ -196,7 +201,7 @@ public class InterviewStep
             return;
         }
 
-        if (!string.IsNullOrWhiteSpace(summaryField))
+        if (!string.IsNullOrWhiteSpace(summaryField) && !string.IsNullOrWhiteSpace(answer))
         {
             // TODO: Add option to merge answers
             summary[summaryField] = answer;
@@ -292,8 +297,7 @@ public class InterviewStep
                 case MessageType.TEXT_INPUT:
                     summaryMaxLength += Math.Min(maxLength ?? 1024, 1024);
                     break;
-                case MessageType.END_WITH_SUMMARY:
-                case MessageType.END_WITHOUT_SUMMARY:
+                case MessageType.INTERVIEW_END:
                 case MessageType.ERROR:
                 case MessageType.REFERENCE_END:
                 default:
@@ -317,7 +321,7 @@ public class InterviewStep
             }
         }
 
-        if (messageType is MessageType.ERROR or MessageType.END_WITH_SUMMARY or MessageType.END_WITHOUT_SUMMARY or MessageType.REFERENCE_END)
+        if (messageType is MessageType.ERROR or MessageType.INTERVIEW_END or MessageType.REFERENCE_END)
         {
             if (steps.Count > 0 || references.Count > 0)
             {
@@ -334,7 +338,6 @@ public class InterviewStep
             errors.Add("Steps of the type '" + messageType + "' must have at least one child step.\n\n> " + stepID + ".message-type");
         }
 
-        // TODO: Test this
         foreach (KeyValuePair<string, ReferencedInterviewStep> reference in references)
         {
             if (!reference.Value.TryGetReferencedStep(definitions, out InterviewStep referencedStep, true))
@@ -343,7 +346,7 @@ public class InterviewStep
             }
             else if (reference.Value.afterReferenceStep == null)
             {
-                List<InterviewStep> allChildSteps = new List<InterviewStep>();
+                List<InterviewStep> allChildSteps = [];
                 referencedStep.GetAllSteps(ref allChildSteps);
                 if (allChildSteps.Any(s => s.messageType == MessageType.REFERENCE_END))
                 {
@@ -352,7 +355,7 @@ public class InterviewStep
             }
         }
 
-        if (messageType is MessageType.END_WITH_SUMMARY)
+        if (addSummary ?? false)
         {
             summaryMaxLength += message?.Length ?? 0;
             summaryMaxLength += heading?.Length ?? 0;
