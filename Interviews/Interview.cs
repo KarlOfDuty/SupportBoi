@@ -322,7 +322,11 @@ public class InterviewStep
             }
         }
 
-        // TODO: Warning for answer-delimiter if there is no summary-field
+        if (answerDelimiter != null && string.IsNullOrWhiteSpace(summaryField))
+        {
+            warnings.Add("An answer-delimiter has no effect without a summary-field.\n\n> " + stepID + ".answer-delimiter");
+        }
+
         // TODO: Add url button here when implemented
         if (messageType is MessageType.REFERENCE_END)
         {
