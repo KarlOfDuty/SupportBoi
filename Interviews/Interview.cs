@@ -209,7 +209,14 @@ public class InterviewStep
         {
             if (answerDelimiter != null && summary.Contains(summaryField))
             {
-                summary[summaryField] += answerDelimiter + answer;
+                if ((summary[summaryField] + answerDelimiter + answer).Length < 1024)
+                {
+                    summary[summaryField] += answerDelimiter + answer;
+                }
+                else
+                {
+                   Logger.Error("Tried to add answer '" + answer + "' to summary field '" + summaryField + "' but it was too long.");
+                }
             }
             else
             {
