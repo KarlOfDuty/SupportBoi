@@ -218,7 +218,7 @@
           "minimum": 0
         }
       },
-      "required": [ "message", "message-type" ],
+      "required": [ "message-type" ],
       "unevaluatedProperties": false
     }
   },

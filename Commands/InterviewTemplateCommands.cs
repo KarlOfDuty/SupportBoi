@@ -132,7 +132,12 @@ public class InterviewTemplateCommands
 
             List<string> errors = [];
             List<string> warnings = [];
-            template.interview.Validate(ref errors, ref warnings, "interview", 0, 0);
+            template.interview.Validate(ref errors, ref warnings, "interview", template.definitions, 0, 0);
+            foreach (KeyValuePair<string,InterviewStep> definition in template.definitions)
+            {
+                definition.Value.Validate(ref errors, ref warnings, "definitions." + definition.Key, template.definitions, 0, 0);
+            }
+
             if (errors.Count != 0)
             {
                 string errorString = string.Join("```\n```", errors);

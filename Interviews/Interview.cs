@@ -58,17 +58,20 @@ public class ReferencedInterviewStep
         return InterviewStep.GetButtonStyle(buttonStyle);
     }
 
-    public bool TryGetReferencedStep(Interview interview, out InterviewStep step)
+    public bool TryGetReferencedStep(Dictionary<string, InterviewStep> definitions, out InterviewStep step, bool ignoreReferenceParameters = false)
     {
-        if (!interview.definitions.TryGetValue(id, out step))
+        if (!definitions.TryGetValue(id, out step))
         {
-            Logger.Error("Could not find referenced step '" + id + "' in interview for channel '" + interview.channelID + "'");
+            Logger.Error("Could not find referenced step '" + id + "' in interview.");
             return false;
         }
 
-        step.buttonStyle = buttonStyle;
-        step.selectorDescription = selectorDescription;
-        step.afterReferenceStep = afterReferenceStep;
+        if (!ignoreReferenceParameters)
+        {
+            step.buttonStyle = buttonStyle;
+            step.selectorDescription = selectorDescription;
+            step.afterReferenceStep = afterReferenceStep;
+        }
 
         return true;
     }
@@ -242,9 +245,25 @@ public class InterviewStep
         }
     }
 
+    // Gets all steps in the interview tree, including after-reference-steps but not referenced steps
+    private void GetAllSteps(ref List<InterviewStep> allSteps)
+    {
+        allSteps.Add(this);
+        foreach (KeyValuePair<string, InterviewStep> step in steps)
+        {
+            step.Value.GetAllSteps(ref allSteps);
+        }
+
+        foreach (KeyValuePair<string,ReferencedInterviewStep> reference in references)
+        {
+            reference.Value.afterReferenceStep?.GetAllSteps(ref allSteps);
+        }
+    }
+
     public void Validate(ref List<string> errors,
                          ref List<string> warnings,
                          string stepID,
+                         Dictionary<string, InterviewStep> definitions,
                          int summaryFieldCount = 0,
                          int summaryMaxLength = 0,
                          InterviewStep parent = null)
@@ -276,26 +295,61 @@ public class InterviewStep
                 case MessageType.END_WITH_SUMMARY:
                 case MessageType.END_WITHOUT_SUMMARY:
                 case MessageType.ERROR:
+                case MessageType.REFERENCE_END:
                 default:
                     break;
             }
         }
 
-        if (messageType is MessageType.ERROR or MessageType.END_WITH_SUMMARY or MessageType.END_WITHOUT_SUMMARY)
+        // TODO: Add url button here when implemented
+        if (messageType is MessageType.REFERENCE_END)
+        {
+            if (!string.IsNullOrWhiteSpace(message))
+            {
+                warnings.Add("The message parameter on '" + messageType + "' steps have no effect.\n\n> " + stepID + ".message");
+            }
+        }
+        else
+        {
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                errors.Add("'" + messageType + "' steps must have a message parameter.\n\n> " + stepID + ".message");
+            }
+        }
+
+        if (messageType is MessageType.ERROR or MessageType.END_WITH_SUMMARY or MessageType.END_WITHOUT_SUMMARY or MessageType.REFERENCE_END)
         {
             if (steps.Count > 0 || references.Count > 0)
             {
-                warnings.Add("Steps of the type '" + messageType + "' cannot have child steps.\n\n" + stepID + ".message-type");
+                warnings.Add("Steps of the type '" + messageType + "' cannot have child steps.\n\n> " + stepID + ".message-type");
             }
 
             if (!string.IsNullOrWhiteSpace(summaryField))
             {
-                warnings.Add("Steps of the type '" + messageType + "' cannot have summary field names.\n\n" + stepID + ".summary-field");
+                warnings.Add("Steps of the type '" + messageType + "' cannot have summary field names.\n\n> " + stepID + ".summary-field");
             }
         }
         else if (steps.Count == 0 && references.Count == 0)
         {
-            errors.Add("Steps of the type '" + messageType + "' must have at least one child step.\n\n" + stepID + ".message-type");
+            errors.Add("Steps of the type '" + messageType + "' must have at least one child step.\n\n> " + stepID + ".message-type");
+        }
+
+        // TODO: Test this
+        foreach (KeyValuePair<string, ReferencedInterviewStep> reference in references)
+        {
+            if (!reference.Value.TryGetReferencedStep(definitions, out InterviewStep referencedStep, true))
+            {
+                errors.Add("'" + reference.Value.id + "' does not exist in the step definitions.\n\n> " + FormatJSONKey(stepID + ".step-references", reference.Key));
+            }
+            else if (reference.Value.afterReferenceStep == null)
+            {
+                List<InterviewStep> allChildSteps = new List<InterviewStep>();
+                referencedStep.GetAllSteps(ref allChildSteps);
+                if (allChildSteps.Any(s => s.messageType == MessageType.REFERENCE_END))
+                {
+                    errors.Add("The '" + FormatJSONKey(stepID + ".step-references", reference.Key) + "' reference needs an after-reference-step as the '" + reference.Value.id + "' definition contains a REFERENCE_END step.");
+                }
+            }
         }
 
         if (messageType is MessageType.END_WITH_SUMMARY)
@@ -304,50 +358,52 @@ public class InterviewStep
             summaryMaxLength += heading?.Length ?? 0;
             if (summaryFieldCount > 25)
             {
-                errors.Add("A summary cannot contain more than 25 fields, but you have " + summaryFieldCount + " fields in this branch.\n\n" + stepID);
+                errors.Add("A summary cannot contain more than 25 fields, but you have " + summaryFieldCount + " fields in this branch.\n\n> " + stepID);
             }
             else if (summaryMaxLength >= 6000)
             {
                 warnings.Add("A summary cannot contain more than 6000 characters, but this branch may reach " + summaryMaxLength + " characters.\n" +
-                             "Use the \"max-length\" parameter to limit text input field lengths, or shorten other parts of the summary message.\n\n" + stepID);
+                             "Use the \"max-length\" parameter to limit text input field lengths, or shorten other parts of the summary message.\n\n> " + stepID);
             }
         }
 
         if (parent?.messageType is not MessageType.BUTTONS && buttonStyle != null)
         {
-            warnings.Add("Button styles have no effect on child steps of a '" + parent?.messageType + "' step.\n\n" + stepID + ".button-style");
+            warnings.Add("Button styles have no effect on child steps of a '" + parent?.messageType + "' step.\n\n> " + stepID + ".button-style");
         }
 
         if (parent?.messageType is not MessageType.TEXT_SELECTOR && selectorDescription != null)
         {
-            warnings.Add("Selector descriptions have no effect on child steps of a '" + parent?.messageType + "' step.\n\n" + stepID + ".selector-description");
+            warnings.Add("Selector descriptions have no effect on child steps of a '" + parent?.messageType + "' step.\n\n> " + stepID + ".selector-description");
         }
 
         if (messageType is not MessageType.TEXT_SELECTOR && selectorPlaceholder != null)
         {
-            warnings.Add("Selector placeholders have no effect on steps of the type '" + messageType + "'.\n\n" + stepID + ".selector-placeholder");
+            warnings.Add("Selector placeholders have no effect on steps of the type '" + messageType + "'.\n\n> " + stepID + ".selector-placeholder");
         }
 
         if (messageType is not MessageType.TEXT_INPUT && maxLength != null)
         {
-            warnings.Add("Max length has no effect on steps of the type '" + messageType + "'.\n\n" + stepID + ".max-length");
+            warnings.Add("Max length has no effect on steps of the type '" + messageType + "'.\n\n> " + stepID + ".max-length");
         }
 
         if (messageType is not MessageType.TEXT_INPUT && minLength != null)
         {
-            warnings.Add("Min length has no effect on steps of the type '" + messageType + "'.\n\n" + stepID + ".min-length");
+            warnings.Add("Min length has no effect on steps of the type '" + messageType + "'.\n\n> " + stepID + ".min-length");
         }
 
         foreach (KeyValuePair<string,InterviewStep> step in steps)
         {
-            // The JSON schema error messages use this format for the JSON path, so we use it here too.
-            string nextStepID = stepID;
-            nextStepID += step.Key.ContainsAny('.', ' ', '[', ']', '(', ')', '/', '\\')
-                ? ".steps['" + step.Key + "']"
-                : ".steps." + step.Key;
-
-            step.Value.Validate(ref errors, ref warnings, nextStepID, summaryFieldCount, summaryMaxLength, this);
+            step.Value.Validate(ref errors, ref warnings, FormatJSONKey(stepID + ".steps", step.Key), definitions, summaryFieldCount, summaryMaxLength, this);
         }
+    }
+
+    private string FormatJSONKey(string parentPath, string key)
+    {
+        // The JSON schema error messages use this format for the JSON path, so we use it in the validation too.
+        return parentPath + (key.ContainsAny('.', ' ', '[', ']', '(', ')', '/', '\\')
+            ? "['" + key + "']"
+            : "." + key);
     }
 
     public DiscordButtonStyle GetButtonStyle()
