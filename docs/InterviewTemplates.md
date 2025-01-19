@@ -84,7 +84,7 @@ It is highly recommended to use the interview template JSON schema to get live v
 This section lists all the properties that can be used in an interview template.
 If you have set up your editor as suggested above it will handle a lot of this for you automatically.
 
-Here is a simple example of an interview asking a user for their favourite colour out of the different button colours:
+Here is a simple example of an interview asking a user for their favourite colour out of the different button colours. Two of the options are added as step references and two are normal steps. References are meant to be used when you want to re-use the same step in several places while normal steps are just used in one location.
 ```json
 {
   "category-id": "1006863882301755503",
@@ -94,12 +94,26 @@ Here is a simple example of an interview asking a user for their favourite colou
     "message-type": "BUTTONS",
     "color": "BLUE",
     "summary-field": "Favourite colour",
+    "step-references":
+    {
+      "Green":
+      {
+        "id": "green",
+        "button-style": "SUCCESS"
+      },
+      "Red":
+      {
+        "id": "red",
+        "button-style": "DANGER"
+      }
+    },
     "steps":
     {
       "Blue":
       {
         "message": "Summary",
-        "message-type": "END_WITH_SUMMARY",
+        "message-type": "INTERVIEW_END",
+        "add-summary": true,
         "color": "BLUE",
         "button-style": "PRIMARY",
         "steps": {}
@@ -107,38 +121,43 @@ Here is a simple example of an interview asking a user for their favourite colou
       "Gray":
       {
         "message": "Summary",
-        "message-type": "END_WITH_SUMMARY",
+        "message-type": "INTERVIEW_END",
+        "add-summary": true,
         "color": "GRAY",
         "button-style": "SECONDARY",
         "steps": {}
-      },
-      "Green":
-      {
-        "message": "Summary",
-        "message-type": "END_WITH_SUMMARY",
-        "color": "GREEN",
-        "button-style": "SUCCESS",
-        "steps": {}
-      },
-      "Red":
-      {
-        "message": "Summary",
-        "message-type": "END_WITH_SUMMARY",
-        "color": "RED",
-        "button-style": "DANGER",
-        "steps": {}
       }
     }
-  }
+  },
+  "definitions":
+  {
+    "green":
+    {
+      "message": "Summary",
+      "message-type": "INTERVIEW_END",
+      "add-summary": true,
+      "color": "GREEN",
+      "steps": {}
+    },
+    "red":
+    {
+      "message": "Summary",
+      "message-type": "INTERVIEW_END",
+      "add-summary": true,
+      "color": "RED",
+      "steps": {}
+    }    
+  }  
 }
 ```
 
 ### Template Root
 
-| Property&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Required | Description                                                                                                                          |
-|----------------------------------------------------------------------------|----------|--------------------------------------------------------------------------------------------------------------------------------------|
-| `category-id`                                                              | Yes      | The id of the category this template applies to. You can change this and re-upload the template to apply it to a different category. |
-| `interview`                                                                | Yes      | Contains the interview conversation tree, starting with one interview step which branches into many.                                 |
+| Property&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Required | Description                                                                                                                                                                      |
+|----------------------------------------------------------------------------|----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `category-id`                                                              | Yes      | The id of the category this template applies to. You can change this and re-upload the template to apply it to a different category.                                             |
+| `interview`                                                                | Yes      | Contains the interview conversation tree, starting with one interview step which branches into many.                                                                             |
+| `definitions`                                                              | Yes      | Contains a list of steps which can be referenced in the interview, see example above. These steps can also reference each other or themselves for more advanced interview trees. |
 
 ### Interview Steps
 
@@ -160,7 +179,7 @@ Here is a simple example of an interview asking a user for their favourite colou
       <td>Yes</td>
       <td>String</td>
       <td>
-The text in the embed message that will be sent to the user when they reach this step.
+The text in the embed message that will be sent to the user when they reach this step. Required for all message types except `REFERENCE_END`.
       </td>
     </tr>
     <tr>
@@ -181,7 +200,7 @@ The type of message, decides what the bot will do when the user gets to this ste
 
 `color`
       </td>
-      <td>Yes</td>
+      <td>No</td>
       <td>String</td>
       <td>
 
@@ -196,6 +215,17 @@ Colour of the message embed. You can either enter a colour name or a hexadecimal
       <td>Steps</td>
       <td>
 One or more interview steps. The name of the step is used as a regex match against the user's answer,
+except for selection boxes and buttons where each step becomes a button or selection option.
+      </td>
+    </tr>
+    <tr>
+      <td>
+`step-references`
+      </td>
+      <td>No</td>
+      <td>Step References</td>
+      <td>
+One or more references to steps in the `definitions` property. The name of the step is used as a regex match against the user's answer,
 except for selection boxes and buttons where each step becomes a button or selection option.
       </td>
     </tr>
@@ -281,20 +311,49 @@ The maximum length of the user's response message. Requires that this step is a 
 The minimum length of the user's response message. Requires that this step is a `TEXT_INPUT`.
       </td>
     </tr>
+    <tr>
+      <td>
+`add-summary`
+      </td>
+      <td>No</td>
+      <td>Boolean</td>
+      <td>
+Whether to add a summary of all of the user's answers to this message.
+      </td>
+    </tr>
+    <tr>
+      <td>
+`answer-delimiter`
+      </td>
+      <td>No</td>
+      <td>String</td>
+      <td>
+If the user answers several questions with the same `summary-field` the last answer will be used in the summary by default. If you set this parameter all of the answers will be combined using this delimiter instead.
+      </td>
+    </tr>
   </tbody>
 </table>
 
+### Step References
+
+| Property&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Required | Description                                                                                                                              |
+|----------------------------------------------------------------------------|----------|------------------------------------------------------------------------------------------------------------------------------------------|
+| `id`                                                                       | Yes      | The ID of the definition to refer to.                                                                                                    |
+| `button-style`                                                             | No       | Same as the `button-style` property in a normal step.                                                                                    |
+| `selector-description`                                                     | No       | Same as the `selector-description` property in a normal step.                                                                            |
+| `after-reference-step`                                                     | No       | If the step tree you referenced using the `id` ends in a `REFERENCE_END` the interview will continue from here when the user reaches it. |
+
 ### Message Types
 
-| Message Type           | Description                                                                                                                              |
-|------------------------|------------------------------------------------------------------------------------------------------------------------------------------|
-| `ERROR`                | Sends an error message but does not stop the interview. The interview remains on the same step as before allowing the user to try again. |
-| `END_WITH_SUMMARY`     | End the interview and create a summary of the answers.                                                                                   |
-| `END_WITHOUT_SUMMARY`  | End the interview with a simple message without a summary.                                                                               |
-| `BUTTONS`              | Creates a message with one button per child step where the button text is the name of the child step.                                    |
-| `TEXT_SELECTOR`        | Creates a selection box with one option per child step where the option text is the name of the child step.                              |
-| `USER_SELECTOR`        | Creates a selection box where the user can select a user from the Discord server. The value used for the summary is the user's mention.  |
-| `ROLE_SELECTOR`        | Same as above but for a role.                                                                                                            |
-| `MENTIONABLE_SELECTOR` | Same as above but works for both roles and users.                                                                                        |
-| `CHANNEL_SELECTOR`     | Same as above but for channels and categories.                                                                                           |
-| `TEXT_INPUT`           | Lets the user reply to the bot message with their own text.                                                                              |
+| Message Type           | Description                                                                                                                                                                    |
+|------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `ERROR`                | Sends an error message but does not stop the interview. The interview remains on the same step as before allowing the user to try again.                                       |
+| `INTERVIEW_END`        | End the interview and deletes the previous messages if enabled in the config.                                                                                                  |
+| `BUTTONS`              | Creates a message with one button per child step where the button text is the name of the child step.                                                                          |
+| `TEXT_SELECTOR`        | Creates a selection box with one option per child step where the option text is the name of the child step.                                                                    |
+| `USER_SELECTOR`        | Creates a selection box where the user can select a user from the Discord server. The value used for the summary is the user's mention.                                        |
+| `ROLE_SELECTOR`        | Same as above but for a role.                                                                                                                                                  |
+| `MENTIONABLE_SELECTOR` | Same as above but works for both roles and users.                                                                                                                              |
+| `CHANNEL_SELECTOR`     | Same as above but for channels and categories.                                                                                                                                 |
+| `TEXT_INPUT`           | Lets the user reply to the bot message with their own text.                                                                                                                    |
+| `REFERENCE_END`        | Use this in a reference to go back to the step which used the reference. When the user reaches this step the `after-reference-step` where this reference was used will be run. |
