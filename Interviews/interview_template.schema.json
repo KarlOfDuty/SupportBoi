@@ -221,6 +221,12 @@
           "type": "boolean",
           "title": "Add Summary",
           "description": "This adds a summary field to the end of the message."
+        },
+        "answer-delimiter":
+        {
+          "type": "string",
+          "title": "Answer Delimiter",
+          "description": "If the user has already answered a question with the same summary-field as this step the answer will be merged with the existing answer using this delimiter. If this is not set the old answer will be replaced by the new one."
         }
       },
       "required": [ "message-type" ],
