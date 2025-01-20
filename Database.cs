@@ -37,9 +37,9 @@ public static class Database
             c.Open();
             return (long)countTickets.ExecuteScalar();
         }
-        catch (Exception e)
+        catch (MySqlException e)
         {
-            Logger.Error("Error occured when attempting to count number of open tickets: " + e);
+            Logger.Error("Error occured when attempting to count number of open tickets.", e);
         }
 
         return -1;
@@ -54,9 +54,9 @@ public static class Database
             c.Open();
             return (long)countTickets.ExecuteScalar();
         }
-        catch (Exception e)
+        catch (MySqlException e)
         {
-            Logger.Error("Error occured when attempting to count number of open tickets: " + e);
+            Logger.Error("Error occured when attempting to count number of open tickets.", e);
         }
 
         return -1;
@@ -365,8 +365,9 @@ public static class Database
             deletion.Prepare();
             return deletion.ExecuteNonQuery() > 0;
         }
-        catch (MySqlException)
+        catch (MySqlException e)
         {
+            Logger.Warn("Could not delete open ticket in database.", e);
             return false;
         }
     }
@@ -403,8 +404,9 @@ public static class Database
             cmd.Prepare();
             return cmd.ExecuteNonQuery() > 0;
         }
-        catch (MySqlException)
+        catch (MySqlException e)
         {
+            Logger.Warn("Could not blacklist user in database.", e);
             return false;
         }
     }
@@ -420,8 +422,9 @@ public static class Database
             cmd.Prepare();
             return cmd.ExecuteNonQuery() > 0;
         }
-        catch (MySqlException)
+        catch (MySqlException e)
         {
+            Logger.Warn("Could not unblacklist user in database.", e);
             return false;
         }
     }
@@ -438,8 +441,9 @@ public static class Database
             update.Prepare();
             return update.ExecuteNonQuery() > 0;
         }
-        catch (MySqlException)
+        catch (MySqlException e)
         {
+            Logger.Warn("Could not add staff to ticket in database.", e);
             return false;
         }
     }
@@ -461,8 +465,9 @@ public static class Database
             update.Prepare();
             return update.ExecuteNonQuery() > 0;
         }
-        catch (MySqlException)
+        catch (MySqlException e)
         {
+            Logger.Warn("Could not set staff member as active in database.", e);
             return false;
         }
     }
@@ -476,7 +481,6 @@ public static class Database
         selection.Prepare();
         MySqlDataReader results = selection.ExecuteReader();
 
-        // Check if staff exists in the database
         if (!results.Read())
         {
             return new List<StaffMember>();
@@ -501,7 +505,6 @@ public static class Database
         selection.Prepare();
         MySqlDataReader results = selection.ExecuteReader();
 
-        // Check if staff exist in the database
         if (!results.Read())
         {
             return new List<StaffMember>();
@@ -526,7 +529,6 @@ public static class Database
         selection.Prepare();
         MySqlDataReader results = selection.ExecuteReader();
 
-        // Check if ticket exists in the database
         if (!results.Read())
         {
             return false;
@@ -544,7 +546,6 @@ public static class Database
         selection.Prepare();
         MySqlDataReader results = selection.ExecuteReader();
 
-        // Check if ticket exists in the database
         if (!results.Read())
         {
             staffMember = null;
@@ -563,7 +564,6 @@ public static class Database
         selection.Prepare();
         MySqlDataReader results = selection.ExecuteReader();
 
-        // Check if messages exist in the database
         if (!results.Read())
         {
             return new List<Message>();
@@ -612,8 +612,9 @@ public static class Database
             cmd.Prepare();
             return cmd.ExecuteNonQuery() > 0;
         }
-        catch (MySqlException)
+        catch (MySqlException e)
         {
+            Logger.Error("Could not add message to database.", e);
             return false;
         }
     }
@@ -629,8 +630,9 @@ public static class Database
             cmd.Prepare();
             return cmd.ExecuteNonQuery() > 0;
         }
-        catch (MySqlException)
+        catch (MySqlException e)
         {
+            Logger.Error("Could not remove message from database.", e);
             return false;
         }
     }
@@ -643,7 +645,6 @@ public static class Database
         selection.Prepare();
         MySqlDataReader results = selection.ExecuteReader();
 
-        // Check if messages exist in the database
         if (!results.Read())
         {
             return new List<Category>();
@@ -668,7 +669,6 @@ public static class Database
         selection.Prepare();
         MySqlDataReader results = selection.ExecuteReader();
 
-        // Check if ticket exists in the database
         if (!results.Read())
         {
             message = null;
@@ -688,7 +688,6 @@ public static class Database
         selection.Prepare();
         MySqlDataReader results = selection.ExecuteReader();
 
-        // Check if ticket exists in the database
         if (!results.Read())
         {
             message = null;
@@ -711,8 +710,9 @@ public static class Database
             cmd.Prepare();
             return cmd.ExecuteNonQuery() > 0;
         }
-        catch (MySqlException)
+        catch (MySqlException e)
         {
+            Logger.Error("Could not add category to database.", e);
             return false;
         }
     }
@@ -728,8 +728,9 @@ public static class Database
             cmd.Prepare();
             return cmd.ExecuteNonQuery() > 0;
         }
-        catch (MySqlException)
+        catch (MySqlException e)
         {
+            Logger.Error("Could not remove category from database.", e);
             return false;
         }
     }
@@ -743,7 +744,6 @@ public static class Database
         selection.Prepare();
         MySqlDataReader results = selection.ExecuteReader();
 
-        // Return a default template if it doesn't exist.
         if (!results.Read())
         {
             return null;
@@ -824,8 +824,9 @@ public static class Database
             cmd.Prepare();
             return cmd.ExecuteNonQuery() > 0;
         }
-        catch (MySqlException)
+        catch (MySqlException e)
         {
+            Logger.Error("Could not set interview template in database.", e);
             return false;
         }
     }
@@ -870,8 +871,9 @@ public static class Database
             cmd.Prepare();
             return cmd.ExecuteNonQuery() > 0;
         }
-        catch (MySqlException)
+        catch (MySqlException e)
         {
+            Logger.Error("Could not save interview to database.", e);
             return false;
         }
     }
