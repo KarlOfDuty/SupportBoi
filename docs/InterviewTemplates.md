@@ -87,7 +87,7 @@ If you have set up your editor as suggested above it will handle a lot of this f
 Here is a simple example of an interview asking a user for their favourite colour out of the different button colours. Two of the options are added as step references and two are normal steps. References are meant to be used when you want to re-use the same step in several places while normal steps are just used in one location.
 ```json
 {
-  "category-id": "1006863882301755503",
+  "category-id": 1006863882301755503,
   "interview":
   {
     "message": "What is your favourite colour?",
@@ -150,6 +150,10 @@ Here is a simple example of an interview asking a user for their favourite colou
   }  
 }
 ```
+
+Here is an example of running the above interview a few times. The config option to delete the questions and answers when the interview ends is on.
+
+![An example of running the above interview a few times](img/inteviewExample.png)
 
 ### Template Root
 
