@@ -52,14 +52,30 @@ public class ReferencedInterviewStep
     [JsonProperty("after-reference-step")]
     public InterviewStep afterReferenceStep;
 
+    public ReferencedInterviewStep() { }
+
+    public ReferencedInterviewStep(ReferencedInterviewStep other)
+    {
+        id = other.id;
+        buttonStyle = other.buttonStyle;
+        selectorDescription = other.selectorDescription;
+
+        if (other.afterReferenceStep != null)
+        {
+            afterReferenceStep = new InterviewStep(other.afterReferenceStep);
+        }
+    }
+
     public bool TryGetReferencedStep(Dictionary<string, InterviewStep> definitions, out InterviewStep step, bool ignoreReferenceParameters = false)
     {
-        if (!definitions.TryGetValue(id, out step))
+        if (!definitions.TryGetValue(id, out InterviewStep tempStep))
         {
             Logger.Error("Could not find referenced step '" + id + "' in interview.");
+            step = null;
             return false;
         }
 
+        step = new InterviewStep(tempStep);
         if (!ignoreReferenceParameters)
         {
             step.buttonStyle = buttonStyle;
@@ -158,6 +174,39 @@ public class InterviewStep
     // This is only set when the user gets to a referenced step
     [JsonProperty("after-reference-step")]
     public InterviewStep afterReferenceStep = null;
+
+    public InterviewStep() { }
+
+    public InterviewStep(InterviewStep other)
+    {
+        heading = other.heading;
+        message = other.message;
+        stepType = other.stepType;
+        color = other.color;
+        summaryField = other.summaryField;
+        buttonStyle = other.buttonStyle;
+        selectorPlaceholder = other.selectorPlaceholder;
+        selectorDescription = other.selectorDescription;
+        maxLength = other.maxLength;
+        minLength = other.minLength;
+        addSummary = other.addSummary;
+        answerDelimiter = other.answerDelimiter;
+        messageID = other.messageID;
+        answer = other.answer;
+        answerID = other.answerID;
+        relatedMessageIDs = other.relatedMessageIDs;
+        afterReferenceStep = other.afterReferenceStep;
+
+        foreach (KeyValuePair<string,InterviewStep> childStep in other.steps ?? [])
+        {
+            steps.Add(childStep.Key, new InterviewStep(childStep.Value));
+        }
+
+        foreach (KeyValuePair<string,ReferencedInterviewStep> reference in other.references ?? [])
+        {
+            references.Add(reference.Key, new ReferencedInterviewStep(reference.Value));
+        }
+    }
 
     public bool TryGetCurrentStep(out InterviewStep currentStep)
     {
