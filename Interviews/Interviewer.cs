@@ -70,6 +70,26 @@ public static class Interviewer
             return;
         }
 
+        if (!Database.TryGetOpenTicket(interaction.Channel.Id, out Database.Ticket ticket))
+        {
+            await interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
+                .AddEmbed(new DiscordEmbedBuilder()
+                    .WithColor(DiscordColor.Red)
+                    .WithDescription("Error: This doesn't seem to be in a ticket channel."))
+                .AsEphemeral());
+            return;
+        }
+
+        if (interaction.User.Id != ticket.creatorID)
+        {
+            await interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
+                .AddEmbed(new DiscordEmbedBuilder()
+                    .WithColor(DiscordColor.Red)
+                    .WithDescription("Only the user who opened this ticket can answer interview questions."))
+                .AsEphemeral());
+            return;
+        }
+
         // Ignore if option was deselected.
         if (interaction.Data.ComponentType is not DiscordComponentType.Button && interaction.Data.Values.Length == 0)
         {
