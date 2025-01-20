@@ -42,7 +42,15 @@ public class InterviewTemplateCommands
         if (Database.TryGetInterviewTemplateJSON(category.Id, out string templateJSON))
         {
             MemoryStream stream = new(Encoding.UTF8.GetBytes(templateJSON));
-            await command.RespondAsync(new DiscordInteractionResponseBuilder().AddFile("interview-template-" + category.Id + ".json", stream).AsEphemeral());
+            await command.RespondAsync(new DiscordInteractionResponseBuilder()
+                .AddEmbed(new DiscordEmbedBuilder
+                {
+                    Color = DiscordColor.Green,
+                    Description = "Upload the json file using the `/interviewtemplate set` command when you are done editing it.\n\n" +
+                                  "Click [here](https://github.com/KarlOfDuty/SupportBoi/blob/main/docs/InterviewTemplates.md) to learn how to edit interview templates."
+                })
+                .AddFile("interview-template-" + category.Id + ".json", stream)
+                .AsEphemeral());
             return;
         }
 
@@ -69,7 +77,9 @@ public class InterviewTemplateCommands
         DiscordInteractionResponseBuilder response = new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder
         {
             Color = DiscordColor.Green,
-            Description = "No interview template found for this category. A default template has been generated."
+            Description = "No interview template found for this category. A default template has been generated.\n\n" +
+                          "Upload the json file using the `/interviewtemplate set` command when you are done editing it.\n\n" +
+                          "Click [here](https://github.com/KarlOfDuty/SupportBoi/blob/main/docs/InterviewTemplates.md) to learn how to edit interview templates."
         }).AddFile("interview-template-" + category.Id + ".json", defStream).AsEphemeral();
         await command.RespondAsync(response);
     }
