@@ -289,7 +289,7 @@ public static class Interviewer
         }
 
         // The length requirement is less than 1024 characters, and must be less than the configurable limit if it is set.
-        int maxLength = Math.Min(currentStep.maxLength ?? 1024, 1024);
+        int maxLength = Math.Min(currentStep.maxLength ?? InterviewStep.DEFAULT_MAX_FIELD_LENGTH, InterviewStep.DEFAULT_MAX_FIELD_LENGTH);
 
         if (answerMessage.Content.Length > maxLength)
         {
@@ -303,7 +303,7 @@ public static class Interviewer
             return;
         }
 
-        if (answerMessage.Content.Length < (currentStep.minLength ?? 0))
+        if (answerMessage.Content.Length < (currentStep.minLength ?? InterviewStep.DEFAULT_MIN_FIELD_LENGTH))
         {
             DiscordMessage lengthMessage = await answerMessage.RespondAsync(new DiscordEmbedBuilder
             {
@@ -597,7 +597,16 @@ public static class Interviewer
                                            string.IsNullOrWhiteSpace(step.selectorPlaceholder) ? "Select a user or role..." : step.selectorPlaceholder));
                 break;
             case StepType.TEXT_INPUT:
-                embed.WithFooter("Reply to this message with your answer. You cannot include images or files.");
+                string lengthInfo;
+                if (step.minLength != null)
+                {
+                    lengthInfo = " (" + step.minLength + "-" + (step.maxLength ?? InterviewStep.DEFAULT_MAX_FIELD_LENGTH) + " characters)";
+                }
+                else
+                {
+                    lengthInfo = " (Maximum " + (step?.maxLength ?? InterviewStep.DEFAULT_MAX_FIELD_LENGTH) + " characters)";
+                }
+                embed.WithFooter("Reply to this message with your answer" + lengthInfo + ". You cannot include images or files.");
                 break;
             case StepType.INTERVIEW_END:
             case StepType.ERROR:
