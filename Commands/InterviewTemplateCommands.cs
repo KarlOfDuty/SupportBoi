@@ -136,7 +136,7 @@ public class InterviewTemplateCommands
             List<string> errors = [];
             List<string> warnings = [];
             template.interview.Validate(ref errors, ref warnings, "interview", template.definitions);
-            foreach (KeyValuePair<string,InterviewStep> definition in template.definitions)
+            foreach (KeyValuePair<string,InterviewStep> definition in template.definitions ?? [])
             {
                 definition.Value.Validate(ref errors, ref warnings, "definitions." + definition.Key, template.definitions);
             }

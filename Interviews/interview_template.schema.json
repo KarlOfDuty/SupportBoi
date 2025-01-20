@@ -260,6 +260,6 @@
       }
     }
   },
-  "required": [ "category-id", "interview" ],
+  "required": [ "category-id", "interview", "definitions" ],
   "unevaluatedProperties": false
 }
