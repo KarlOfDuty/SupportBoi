@@ -60,7 +60,7 @@ It is highly recommended to use the interview template JSON schema to get live v
 }
 ```
 
-5. Open an interview template, you should now get suggestions for things like message types and color names, and error highlighting for any invalid sections.
+5. Open an interview template, you should now get suggestions for things like step types and color names, and error highlighting for any invalid sections.
 
 </details>
 
@@ -91,7 +91,7 @@ Here is a simple example of an interview asking a user for their favourite colou
   "interview":
   {
     "message": "What is your favourite colour?",
-    "message-type": "BUTTONS",
+    "step-type": "BUTTONS",
     "color": "BLUE",
     "summary-field": "Favourite colour",
     "step-references":
@@ -112,7 +112,7 @@ Here is a simple example of an interview asking a user for their favourite colou
       "Blue":
       {
         "message": "Summary",
-        "message-type": "INTERVIEW_END",
+        "step-type": "INTERVIEW_END",
         "add-summary": true,
         "color": "BLUE",
         "button-style": "PRIMARY",
@@ -121,7 +121,7 @@ Here is a simple example of an interview asking a user for their favourite colou
       "Gray":
       {
         "message": "Summary",
-        "message-type": "INTERVIEW_END",
+        "step-type": "INTERVIEW_END",
         "add-summary": true,
         "color": "GRAY",
         "button-style": "SECONDARY",
@@ -134,7 +134,7 @@ Here is a simple example of an interview asking a user for their favourite colou
     "green":
     {
       "message": "Summary",
-      "message-type": "INTERVIEW_END",
+      "step-type": "INTERVIEW_END",
       "add-summary": true,
       "color": "GREEN",
       "steps": {}
@@ -142,7 +142,7 @@ Here is a simple example of an interview asking a user for their favourite colou
     "red":
     {
       "message": "Summary",
-      "message-type": "INTERVIEW_END",
+      "step-type": "INTERVIEW_END",
       "add-summary": true,
       "color": "RED",
       "steps": {}
@@ -183,17 +183,17 @@ Here is an example of running the above interview a few times. The config option
       <td>Yes</td>
       <td>String</td>
       <td>
-The text in the embed message that will be sent to the user when they reach this step. Required for all message types except `REFERENCE_END`.
+The text in the embed message that will be sent to the user when they reach this step. Required for all step types except `REFERENCE_END`.
       </td>
     </tr>
     <tr>
       <td>
-`message-type`
+`step-type`
       </td>
       <td>Yes</td>
       <td>String</td>
       <td>
-The type of message, decides what the bot will do when the user gets to this step. See the list of message types below for more info.
+Decides what the bot will do when the user gets to this step. See the list of step types below for more info.
 
 <!-- For whatever reason this tag cannot be indented -->
 </td>
@@ -347,9 +347,9 @@ If the user answers several questions with the same `summary-field` the last ans
 | `selector-description`                                                     | No       | Same as the `selector-description` property in a normal step.                                                                            |
 | `after-reference-step`                                                     | No       | If the step tree you referenced using the `id` ends in a `REFERENCE_END` the interview will continue from here when the user reaches it. |
 
-### Message Types
+### Step Types
 
-| Message Type           | Description                                                                                                                                                                    |
+| Step Type              | Description                                                                                                                                                                    |
 |------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `ERROR`                | Sends an error message but does not stop the interview. The interview remains on the same step as before allowing the user to try again.                                       |
 | `INTERVIEW_END`        | End the interview and deletes the previous messages if enabled in the config.                                                                                                  |

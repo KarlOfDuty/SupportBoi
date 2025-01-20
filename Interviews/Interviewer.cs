@@ -188,7 +188,7 @@ public static class Interviewer
                 }
             }
 
-            Logger.Error("The interview for channel " + interaction.Channel.Id + " reached a step of type " + currentStep.messageType + " which has no valid next step. Their selection was:\n" + answer);
+            Logger.Error("The interview for channel " + interaction.Channel.Id + " reached a step of type " + currentStep.stepType + " which has no valid next step. Their selection was:\n" + answer);
             DiscordMessage followupMessage = await interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().AddEmbed(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Red,
@@ -225,7 +225,7 @@ public static class Interviewer
                 step = definition.Value;
                 step.buttonStyle = reference.buttonStyle;
                 step.selectorDescription = reference.selectorDescription;
-                if (step.messageType != MessageType.ERROR)
+                if (step.stepType != StepType.ERROR)
                 {
                     step.afterReferenceStep = reference.afterReferenceStep;
                 }
@@ -264,7 +264,7 @@ public static class Interviewer
         }
 
         // The user responded to a question which does not take a text response.
-        if (currentStep.messageType != MessageType.TEXT_INPUT)
+        if (currentStep.stepType != StepType.TEXT_INPUT)
         {
             return;
         }
@@ -308,7 +308,7 @@ public static class Interviewer
             return;
         }
 
-        Logger.Error("The interview for channel " + answerMessage.Channel.Id + " reached a step of type " + currentStep.messageType + " which has no valid next step. Their message was:\n" + answerMessage.Content);
+        Logger.Error("The interview for channel " + answerMessage.Channel.Id + " reached a step of type " + currentStep.stepType + " which has no valid next step. Their message was:\n" + answerMessage.Content);
         DiscordMessage errorMessage =await answerMessage.RespondAsync(new DiscordEmbedBuilder
         {
             Description = "Error: Could not determine the next question based on your answer. Check your response and ask an admin to check the bot logs if this seems incorrect.",
@@ -326,7 +326,7 @@ public static class Interviewer
                                            DiscordMessage answerMessage = null)
     {
         // The error message type should not alter anything about the interview.
-        if (nextStep.messageType != MessageType.ERROR)
+        if (nextStep.stepType != StepType.ERROR)
         {
             previousStep.answer = answer;
 
@@ -335,15 +335,15 @@ public static class Interviewer
         }
 
         // Create next step, or finish the interview.
-        switch (nextStep.messageType)
+        switch (nextStep.stepType)
         {
-            case MessageType.TEXT_INPUT:
-            case MessageType.BUTTONS:
-            case MessageType.TEXT_SELECTOR:
-            case MessageType.ROLE_SELECTOR:
-            case MessageType.USER_SELECTOR:
-            case MessageType.CHANNEL_SELECTOR:
-            case MessageType.MENTIONABLE_SELECTOR:
+            case StepType.TEXT_INPUT:
+            case StepType.BUTTONS:
+            case StepType.TEXT_SELECTOR:
+            case StepType.ROLE_SELECTOR:
+            case StepType.USER_SELECTOR:
+            case StepType.CHANNEL_SELECTOR:
+            case StepType.MENTIONABLE_SELECTOR:
                 if (!ConvertReferences(interview, nextStep, out string errID))
                 {
                     if (answerMessage != null)
@@ -364,7 +364,7 @@ public static class Interviewer
                 await SendNextMessage(interview, channel, nextStep);
                 Database.SaveInterview(interview);
                 break;
-            case MessageType.INTERVIEW_END:
+            case StepType.INTERVIEW_END:
                 DiscordEmbedBuilder endEmbed = new()
                 {
                     Color = Utilities.StringToColor(nextStep.color),
@@ -389,7 +389,7 @@ public static class Interviewer
                     Logger.Error("Could not delete interview from database. Channel ID: " + channel.Id);
                 }
                 return;
-            case MessageType.REFERENCE_END:
+            case StepType.REFERENCE_END:
                 if (interview.interviewRoot.TryGetTakenSteps(out List<InterviewStep> previousSteps))
                 {
                     foreach (InterviewStep step in previousSteps)
@@ -397,7 +397,7 @@ public static class Interviewer
                         if (step.afterReferenceStep != null)
                         {
                             // If the referenced step is also a reference end, skip it and try to find another.
-                            if (step.afterReferenceStep.messageType == MessageType.REFERENCE_END)
+                            if (step.afterReferenceStep.stepType == StepType.REFERENCE_END)
                             {
                                 step.afterReferenceStep = null;
                             }
@@ -436,7 +436,7 @@ public static class Interviewer
 
                 Logger.Error("Could not find a step to return to after a reference step in channel " + channel.Id);
                 return;
-            case MessageType.ERROR:
+            case StepType.ERROR:
             default:
                 DiscordEmbedBuilder errorEmbed = new()
                 {
@@ -527,9 +527,9 @@ public static class Interviewer
             AddSummary(interview, ref embed);
         }
 
-        switch (step.messageType)
+        switch (step.stepType)
         {
-            case MessageType.BUTTONS:
+            case StepType.BUTTONS:
                 int nrOfButtons = 0;
                 for (int nrOfButtonRows = 0; nrOfButtonRows < 5 && nrOfButtons < step.steps.Count; nrOfButtonRows++)
                 {
@@ -542,7 +542,7 @@ public static class Interviewer
                     msgBuilder.AddComponents(buttonRow);
                 }
                 break;
-            case MessageType.TEXT_SELECTOR:
+            case StepType.TEXT_SELECTOR:
                 List<DiscordSelectComponent> selectionComponents = [];
 
                 int selectionOptions = 0;
@@ -561,27 +561,27 @@ public static class Interviewer
 
                 msgBuilder.AddComponents(selectionComponents);
                 break;
-            case MessageType.ROLE_SELECTOR:
+            case StepType.ROLE_SELECTOR:
                 msgBuilder.AddComponents(new DiscordRoleSelectComponent("supportboi_interviewroleselector",
                                            string.IsNullOrWhiteSpace(step.selectorPlaceholder) ? "Select a role..." : step.selectorPlaceholder));
                 break;
-            case MessageType.USER_SELECTOR:
+            case StepType.USER_SELECTOR:
                 msgBuilder.AddComponents(new DiscordUserSelectComponent("supportboi_interviewuserselector",
                                            string.IsNullOrWhiteSpace(step.selectorPlaceholder) ? "Select a user..." : step.selectorPlaceholder));
                 break;
-            case MessageType.CHANNEL_SELECTOR:
+            case StepType.CHANNEL_SELECTOR:
                 msgBuilder.AddComponents(new DiscordChannelSelectComponent("supportboi_interviewchannelselector",
                                            string.IsNullOrWhiteSpace(step.selectorPlaceholder) ? "Select a channel..." : step.selectorPlaceholder));
                 break;
-            case MessageType.MENTIONABLE_SELECTOR:
+            case StepType.MENTIONABLE_SELECTOR:
                 msgBuilder.AddComponents(new DiscordMentionableSelectComponent("supportboi_interviewmentionableselector",
                                            string.IsNullOrWhiteSpace(step.selectorPlaceholder) ? "Select a user or role..." : step.selectorPlaceholder));
                 break;
-            case MessageType.TEXT_INPUT:
+            case StepType.TEXT_INPUT:
                 embed.WithFooter("Reply to this message with your answer. You cannot include images or files.");
                 break;
-            case MessageType.INTERVIEW_END:
-            case MessageType.ERROR:
+            case StepType.INTERVIEW_END:
+            case StepType.ERROR:
             default:
                 break;
         }

@@ -11,7 +11,7 @@ using Newtonsoft.Json.Serialization;
 
 namespace SupportBoi.Interviews;
 
-public enum MessageType
+public enum StepType
 {
     // TODO: Support multiselector as separate type
     ERROR,
@@ -89,8 +89,8 @@ public class InterviewStep
 
     // The type of message.
     [JsonConverter(typeof(StringEnumConverter))]
-    [JsonProperty("message-type")]
-    public MessageType messageType;
+    [JsonProperty("step-type")]
+    public StepType stepType;
 
     // Colour of the message embed.
     [JsonProperty("color")]
@@ -289,29 +289,29 @@ public class InterviewStep
         {
             ++summaryFieldCount;
             summaryMaxLength += summaryField.Length;
-            switch (messageType)
+            switch (stepType)
             {
-                case MessageType.BUTTONS:
-                case MessageType.TEXT_SELECTOR:
+                case StepType.BUTTONS:
+                case StepType.TEXT_SELECTOR:
                     // Get the longest button/selector text
                     if (steps.Count > 0)
                     {
                         summaryMaxLength += steps.Max(kv => kv.Key.Length);
                     }
                     break;
-                case MessageType.USER_SELECTOR:
-                case MessageType.ROLE_SELECTOR:
-                case MessageType.MENTIONABLE_SELECTOR:
-                case MessageType.CHANNEL_SELECTOR:
+                case StepType.USER_SELECTOR:
+                case StepType.ROLE_SELECTOR:
+                case StepType.MENTIONABLE_SELECTOR:
+                case StepType.CHANNEL_SELECTOR:
                     // Approximate length of a mention
                     summaryMaxLength += 23;
                     break;
-                case MessageType.TEXT_INPUT:
+                case StepType.TEXT_INPUT:
                     summaryMaxLength += Math.Min(maxLength ?? 1024, 1024);
                     break;
-                case MessageType.INTERVIEW_END:
-                case MessageType.ERROR:
-                case MessageType.REFERENCE_END:
+                case StepType.INTERVIEW_END:
+                case StepType.ERROR:
+                case StepType.REFERENCE_END:
                 default:
                     break;
             }
@@ -323,36 +323,36 @@ public class InterviewStep
         }
 
         // TODO: Add url button here when implemented
-        if (messageType is MessageType.REFERENCE_END)
+        if (stepType is StepType.REFERENCE_END)
         {
             if (!string.IsNullOrWhiteSpace(message))
             {
-                warnings.Add("The message parameter on '" + messageType + "' steps have no effect.\n\n> " + stepID + ".message");
+                warnings.Add("The message parameter on '" + stepType + "' steps have no effect.\n\n> " + stepID + ".message");
             }
         }
         else
         {
             if (string.IsNullOrWhiteSpace(message))
             {
-                errors.Add("'" + messageType + "' steps must have a message parameter.\n\n> " + stepID + ".message");
+                errors.Add("'" + stepType + "' steps must have a message parameter.\n\n> " + stepID + ".message");
             }
         }
 
-        if (messageType is MessageType.ERROR or MessageType.INTERVIEW_END or MessageType.REFERENCE_END)
+        if (stepType is StepType.ERROR or StepType.INTERVIEW_END or StepType.REFERENCE_END)
         {
             if (steps.Count > 0 || references.Count > 0)
             {
-                warnings.Add("Steps of the type '" + messageType + "' cannot have child steps.\n\n> " + stepID + ".message-type");
+                warnings.Add("Steps of the type '" + stepType + "' cannot have child steps.\n\n> " + stepID + ".step-type");
             }
 
             if (!string.IsNullOrWhiteSpace(summaryField))
             {
-                warnings.Add("Steps of the type '" + messageType + "' cannot have summary field names.\n\n> " + stepID + ".summary-field");
+                warnings.Add("Steps of the type '" + stepType + "' cannot have summary field names.\n\n> " + stepID + ".summary-field");
             }
         }
         else if (steps.Count == 0 && references.Count == 0)
         {
-            errors.Add("Steps of the type '" + messageType + "' must have at least one child step.\n\n> " + stepID + ".message-type");
+            errors.Add("Steps of the type '" + stepType + "' must have at least one child step.\n\n> " + stepID + ".step-type");
         }
 
         foreach (KeyValuePair<string, ReferencedInterviewStep> reference in references)
@@ -365,7 +365,7 @@ public class InterviewStep
             {
                 List<InterviewStep> allChildSteps = [];
                 referencedStep.GetAllSteps(ref allChildSteps);
-                if (allChildSteps.Any(s => s.messageType == MessageType.REFERENCE_END))
+                if (allChildSteps.Any(s => s.stepType == StepType.REFERENCE_END))
                 {
                     errors.Add("The '" + FormatJSONKey(stepID + ".step-references", reference.Key) + "' reference needs an after-reference-step as the '" + reference.Value.id + "' definition contains a REFERENCE_END step.");
                 }
@@ -387,29 +387,29 @@ public class InterviewStep
             }
         }
 
-        if (parent?.messageType is not MessageType.BUTTONS && buttonStyle != null)
+        if (parent?.stepType is not StepType.BUTTONS && buttonStyle != null)
         {
-            warnings.Add("Button styles have no effect on child steps of a '" + parent?.messageType + "' step.\n\n> " + stepID + ".button-style");
+            warnings.Add("Button styles have no effect on child steps of a '" + parent?.stepType + "' step.\n\n> " + stepID + ".button-style");
         }
 
-        if (parent?.messageType is not MessageType.TEXT_SELECTOR && selectorDescription != null)
+        if (parent?.stepType is not StepType.TEXT_SELECTOR && selectorDescription != null)
         {
-            warnings.Add("Selector descriptions have no effect on child steps of a '" + parent?.messageType + "' step.\n\n> " + stepID + ".selector-description");
+            warnings.Add("Selector descriptions have no effect on child steps of a '" + parent?.stepType + "' step.\n\n> " + stepID + ".selector-description");
         }
 
-        if (messageType is not MessageType.TEXT_SELECTOR && selectorPlaceholder != null)
+        if (stepType is not StepType.TEXT_SELECTOR && selectorPlaceholder != null)
         {
-            warnings.Add("Selector placeholders have no effect on steps of the type '" + messageType + "'.\n\n> " + stepID + ".selector-placeholder");
+            warnings.Add("Selector placeholders have no effect on steps of the type '" + stepType + "'.\n\n> " + stepID + ".selector-placeholder");
         }
 
-        if (messageType is not MessageType.TEXT_INPUT && maxLength != null)
+        if (stepType is not StepType.TEXT_INPUT && maxLength != null)
         {
-            warnings.Add("Max length has no effect on steps of the type '" + messageType + "'.\n\n> " + stepID + ".max-length");
+            warnings.Add("Max length has no effect on steps of the type '" + stepType + "'.\n\n> " + stepID + ".max-length");
         }
 
-        if (messageType is not MessageType.TEXT_INPUT && minLength != null)
+        if (stepType is not StepType.TEXT_INPUT && minLength != null)
         {
-            warnings.Add("Min length has no effect on steps of the type '" + messageType + "'.\n\n> " + stepID + ".min-length");
+            warnings.Add("Min length has no effect on steps of the type '" + stepType + "'.\n\n> " + stepID + ".min-length");
         }
 
         foreach (KeyValuePair<string,InterviewStep> step in steps)

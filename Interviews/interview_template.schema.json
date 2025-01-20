@@ -68,14 +68,14 @@
         {
           "type": "string",
           "title": "Message",
-          "description": "The text in the embed message that will be sent to the user when they reach this step. Required for all message types except 'REFERENCE_END'.",
+          "description": "The text in the embed message that will be sent to the user when they reach this step. Required for all step types except 'REFERENCE_END'.",
           "minLength": 1
         },
-        "message-type":
+        "step-type":
         {
           "type": "string",
-          "title": "Message Type",
-          "description": "The type of message, decides what the bot will do when the user gets to this step.",
+          "title": "Step Type",
+          "description": "Decides what the bot will do when the user gets to this step.",
           "enum":
           [
             "ERROR",
@@ -229,7 +229,7 @@
           "description": "If the user has already answered a question with the same summary-field as this step the answer will be merged with the existing answer using this delimiter. If this is not set the old answer will be replaced by the new one."
         }
       },
-      "required": [ "message-type" ],
+      "required": [ "step-type" ],
       "unevaluatedProperties": false
     }
   },

@@ -47,12 +47,16 @@ public class InterviewTemplateCommands
             "  \"interview\":\n" +
             "  {\n" +
             "    \"message\": \"\",\n" +
-            "    \"message-type\": \"\",\n" +
+            "    \"step-type\": \"\",\n" +
             "    \"color\": \"\",\n" +
             "    \"steps\":\n" +
             "    {\n" +
             "      \n" +
             "    }\n" +
+            "  },\n" +
+            "  \"definitions\":\n" +
+            "  {\n" +
+            "    \n" +
             "  }\n" +
             "}";
             MemoryStream stream = new(Encoding.UTF8.GetBytes(defaultTemplate));
