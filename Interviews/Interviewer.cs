@@ -19,23 +19,28 @@ public static class Interviewer
             return false;
         }
 
+        if (!ConvertReferences(interview, interview.interviewRoot, out string errID))
+        {
+            DiscordMessage errorMessage = await channel.SendMessageAsync(new DiscordEmbedBuilder
+            {
+                Description = "Error: Could not start interview, the referenced step id '" + errID + "' does not exist in the interview template step definitions.",
+                Color = DiscordColor.Red
+            });
+            interview.interviewRoot.AddRelatedMessageIDs(errorMessage.Id);
+            Database.SaveInterview(interview);
+            return false;
+        }
+
         await SendNextMessage(interview, channel, interview.interviewRoot);
         return Database.SaveInterview(interview);
     }
 
     public static async Task<bool> RestartInterview(DiscordChannel channel)
     {
-        if (Database.TryGetInterview(channel.Id, out Interview interview))
+        if (!await StopInterview(channel))
         {
-            if (Config.deleteMessagesAfterInterviewEnd)
-            {
-                await DeletePreviousMessages(interview, channel);
-            }
-
-            if (!Database.TryDeleteInterview(channel.Id))
-            {
-                Logger.Warn("Could not delete interview from database. Channel ID: " + channel.Id);
-            }
+            Logger.Error("Failed to stop interview in channel '" + channel.Id + "'.");
+            return false;
         }
 
         return await StartInterview(channel);
@@ -211,7 +216,7 @@ public static class Interviewer
         }
     }
 
-    public static bool TryGetStepFromReference(Interview interview, ReferencedInterviewStep reference, out InterviewStep step)
+    private static bool TryGetStepFromReference(Interview interview, ReferencedInterviewStep reference, out InterviewStep step)
     {
         foreach (KeyValuePair<string, InterviewStep> definition in interview.definitions)
         {
@@ -339,28 +344,22 @@ public static class Interviewer
             case MessageType.USER_SELECTOR:
             case MessageType.CHANNEL_SELECTOR:
             case MessageType.MENTIONABLE_SELECTOR:
-                foreach ((string stepPattern, ReferencedInterviewStep reference) in nextStep.references)
+                if (!ConvertReferences(interview, nextStep, out string errID))
                 {
-                    if (!reference.TryGetReferencedStep(interview.definitions, out InterviewStep step))
+                    if (answerMessage != null)
                     {
-                        if (answerMessage != null)
+                        DiscordMessage errorMessage = await answerMessage.RespondAsync(new DiscordEmbedBuilder
                         {
-                            DiscordMessage lengthMessage = await answerMessage.RespondAsync(new DiscordEmbedBuilder
-                            {
-                                Description = "Error: The referenced step id '" + reference.id + "' does not exist in the step definitions.",
-                                Color = DiscordColor.Red
-                            });
-                            nextStep.AddRelatedMessageIDs(answerMessage.Id, lengthMessage.Id);
-                            previousStep.answer = null;
-                            previousStep.answerID = 0;
-                            Database.SaveInterview(interview);
-                        }
-                        return;
+                            Description = "Error: The referenced step id '" + errID + "' does not exist in the step definitions.",
+                            Color = DiscordColor.Red
+                        });
+                        nextStep.AddRelatedMessageIDs(answerMessage.Id, errorMessage.Id);
+                        previousStep.answer = null;
+                        previousStep.answerID = 0;
+                        Database.SaveInterview(interview);
                     }
-
-                    nextStep.steps.Add(stepPattern, step);
+                    return;
                 }
-                nextStep.references.Clear();
 
                 await SendNextMessage(interview, channel, nextStep);
                 Database.SaveInterview(interview);
@@ -475,6 +474,23 @@ public static class Interviewer
         {
             embed.AddField((string)entry.Key, (string)entry.Value ?? "-");
         }
+    }
+
+    private static bool ConvertReferences(Interview interview, InterviewStep step, out string errorID)
+    {
+        foreach ((string stepPattern, ReferencedInterviewStep reference) in step.references)
+        {
+            if (!reference.TryGetReferencedStep(interview.definitions, out InterviewStep referencedStep))
+            {
+                errorID = reference.id;
+                return false;
+            }
+
+            step.steps.Add(stepPattern, referencedStep);
+        }
+        step.references.Clear();
+        errorID = "";
+        return true;
     }
 
     private static async Task DeletePreviousMessages(Interview interview, DiscordChannel channel)
