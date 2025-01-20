@@ -274,7 +274,7 @@ internal static class SupportBoi
         }
         finally
         {
-            statusUpdateTimer.Change(TimeSpan.FromMinutes(30), Timeout.InfiniteTimeSpan);
+            statusUpdateTimer.Change(TimeSpan.FromMinutes(1), Timeout.InfiniteTimeSpan);
         }
     }
 }
