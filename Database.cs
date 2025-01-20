@@ -735,7 +735,7 @@ public static class Database
         }
     }
 
-    public static string GetInterviewTemplateJSON(ulong categoryID)
+    public static bool TryGetInterviewTemplateJSON(ulong categoryID, out string templateJSON)
     {
         using MySqlConnection c = GetConnection();
         c.Open();
@@ -746,15 +746,16 @@ public static class Database
 
         if (!results.Read())
         {
-            return null;
+            templateJSON = null;
+            return false;
         }
 
-        string templates = results.GetString("template");
+        templateJSON = results.GetString("template");
         results.Close();
-        return templates;
+        return true;
     }
 
-    public static bool TryGetInterviewFromTemplate(ulong categoryID, ulong channelID, out Interviews.Interview interview)
+    public static bool TryGetInterviewFromTemplate(ulong categoryID, ulong channelID, out Interview interview)
     {
         using MySqlConnection c = GetConnection();
         c.Open();
@@ -787,8 +788,9 @@ public static class Database
             interview = new Interview(channelID, template.interview, template.definitions);
             return true;
         }
-        catch (Exception)
+        catch (Exception e)
         {
+            Logger.Warn("Unable to create interview object from the current template for category '" + categoryID + "' in the database.", e);
             interview = null;
             return false;
         }
@@ -807,7 +809,7 @@ public static class Database
             });
 
             string query;
-            if (TryGetInterviewFromTemplate(template.categoryID, 0, out _))
+            if (TryGetInterviewTemplateJSON(template.categoryID, out _))
             {
                 query = "UPDATE interview_templates SET template = @template WHERE category_id=@category_id";
             }

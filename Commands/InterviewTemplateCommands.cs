@@ -39,10 +39,14 @@ public class InterviewTemplateCommands
             return;
         }
 
-        string interviewTemplateJSON = Database.GetInterviewTemplateJSON(category.Id);
-        if (interviewTemplateJSON == null)
+        if (Database.TryGetInterviewTemplateJSON(category.Id, out string templateJSON))
         {
-            string defaultTemplate =
+            MemoryStream stream = new(Encoding.UTF8.GetBytes(templateJSON));
+            await command.RespondAsync(new DiscordInteractionResponseBuilder().AddFile("interview-template-" + category.Id + ".json", stream).AsEphemeral());
+            return;
+        }
+
+        string defaultTemplate =
             "{\n" +
             "  \"category-id\": " + category.Id + ",\n" +
             "  \"interview\":\n" +
@@ -60,20 +64,14 @@ public class InterviewTemplateCommands
             "    \n" +
             "  }\n" +
             "}";
-            MemoryStream stream = new(Encoding.UTF8.GetBytes(defaultTemplate));
+        MemoryStream defStream = new(Encoding.UTF8.GetBytes(defaultTemplate));
 
-            DiscordInteractionResponseBuilder response = new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder
-            {
-                Color = DiscordColor.Green,
-                Description = "No interview template found for this category. A default template has been generated."
-            }).AddFile("interview-template-" + category.Id + ".json", stream).AsEphemeral();
-            await command.RespondAsync(response);
-        }
-        else
+        DiscordInteractionResponseBuilder response = new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder
         {
-            MemoryStream stream = new(Encoding.UTF8.GetBytes(interviewTemplateJSON));
-            await command.RespondAsync(new DiscordInteractionResponseBuilder().AddFile("interview-template-" + category.Id + ".json", stream).AsEphemeral());
-        }
+            Color = DiscordColor.Green,
+            Description = "No interview template found for this category. A default template has been generated."
+        }).AddFile("interview-template-" + category.Id + ".json", defStream).AsEphemeral();
+        await command.RespondAsync(response);
     }
 
     [RequireGuild]
@@ -199,9 +197,17 @@ public class InterviewTemplateCommands
 
             try
             {
-                MemoryStream memStream = new(Encoding.UTF8.GetBytes(Database.GetInterviewTemplateJSON(template.categoryID)));
-                await LogChannel.Success(command.User.Mention + " uploaded a new interview template for the `" + category.Name + "` category.", 0,
-                    new Utilities.File("interview-template-" + template.categoryID + ".json", memStream));
+                if (Database.TryGetInterviewTemplateJSON(template.categoryID, out string templateJSON))
+                {
+                    MemoryStream memStream = new(Encoding.UTF8.GetBytes(templateJSON));
+                    await LogChannel.Success(command.User.Mention + " uploaded a new interview template for the `" + category.Name + "` category.", 0,
+                        new Utilities.File("interview-template-" + template.categoryID + ".json", memStream));
+                }
+                else
+                {
+                    Logger.Error("Unable to get interview template from database after upload.");
+                }
+
             }
             catch (Exception e)
             {
@@ -250,7 +256,17 @@ public class InterviewTemplateCommands
             return;
         }
 
-        MemoryStream memStream = new(Encoding.UTF8.GetBytes(Database.GetInterviewTemplateJSON(category.Id)));
+        if (!Database.TryGetInterviewTemplateJSON(category.Id, out string templateJSON))
+        {
+            await command.RespondAsync(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Red,
+                Description = "Something went wrong reading the interview template from the database."
+            }, true);
+            return;
+        }
+
+        MemoryStream memStream = new(Encoding.UTF8.GetBytes(templateJSON));
         if (!Database.TryDeleteInterviewTemplate(category.Id))
         {
             await command.RespondAsync(new DiscordEmbedBuilder
