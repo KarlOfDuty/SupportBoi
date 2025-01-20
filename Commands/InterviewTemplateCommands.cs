@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -132,14 +133,19 @@ public class InterviewTemplateCommands
                 return;
             }
 
-            //TODO: Validate that any references with reference end steps have an after reference step
-
             List<string> errors = [];
             List<string> warnings = [];
-            template.interview.Validate(ref errors, ref warnings, "interview", template.definitions, 0, 0);
+            template.interview.Validate(ref errors, ref warnings, "interview", template.definitions);
             foreach (KeyValuePair<string,InterviewStep> definition in template.definitions)
             {
-                definition.Value.Validate(ref errors, ref warnings, "definitions." + definition.Key, template.definitions, 0, 0);
+                definition.Value.Validate(ref errors, ref warnings, "definitions." + definition.Key, template.definitions);
+            }
+
+            List<InterviewStep> allSteps = new();
+            template.interview.GetAllSteps(ref allSteps);
+            if (allSteps.Any(s => s.stepType is StepType.REFERENCE_END))
+            {
+                errors.Add("The normal interview tree cannot contain any steps of the 'REFERENCE_END' type, these are only allowed in the 'definitions'.");
             }
 
             if (errors.Count != 0)

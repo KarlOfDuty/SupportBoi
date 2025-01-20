@@ -263,7 +263,7 @@ public class InterviewStep
     }
 
     // Gets all steps in the interview tree, including after-reference-steps but not referenced steps
-    private void GetAllSteps(ref List<InterviewStep> allSteps)
+    public void GetAllSteps(ref List<InterviewStep> allSteps)
     {
         allSteps.Add(this);
         foreach (KeyValuePair<string, InterviewStep> step in steps)
@@ -281,42 +281,8 @@ public class InterviewStep
                          ref List<string> warnings,
                          string stepID,
                          Dictionary<string, InterviewStep> definitions,
-                         int summaryFieldCount = 0,
-                         int summaryMaxLength = 0,
                          InterviewStep parent = null)
     {
-        if (!string.IsNullOrWhiteSpace(summaryField))
-        {
-            ++summaryFieldCount;
-            summaryMaxLength += summaryField.Length;
-            switch (stepType)
-            {
-                case StepType.BUTTONS:
-                case StepType.TEXT_SELECTOR:
-                    // Get the longest button/selector text
-                    if (steps.Count > 0)
-                    {
-                        summaryMaxLength += steps.Max(kv => kv.Key.Length);
-                    }
-                    break;
-                case StepType.USER_SELECTOR:
-                case StepType.ROLE_SELECTOR:
-                case StepType.MENTIONABLE_SELECTOR:
-                case StepType.CHANNEL_SELECTOR:
-                    // Approximate length of a mention
-                    summaryMaxLength += 23;
-                    break;
-                case StepType.TEXT_INPUT:
-                    summaryMaxLength += Math.Min(maxLength ?? 1024, 1024);
-                    break;
-                case StepType.INTERVIEW_END:
-                case StepType.ERROR:
-                case StepType.REFERENCE_END:
-                default:
-                    break;
-            }
-        }
-
         if (answerDelimiter != null && string.IsNullOrWhiteSpace(summaryField))
         {
             warnings.Add("An answer-delimiter has no effect without a summary-field.\n\n> " + stepID + ".answer-delimiter");
@@ -372,21 +338,6 @@ public class InterviewStep
             }
         }
 
-        if (addSummary ?? false)
-        {
-            summaryMaxLength += message?.Length ?? 0;
-            summaryMaxLength += heading?.Length ?? 0;
-            if (summaryFieldCount > 25)
-            {
-                errors.Add("A summary cannot contain more than 25 fields, but you have " + summaryFieldCount + " fields in this branch.\n\n> " + stepID);
-            }
-            else if (summaryMaxLength >= 6000)
-            {
-                warnings.Add("A summary cannot contain more than 6000 characters, but this branch may reach " + summaryMaxLength + " characters.\n" +
-                             "Use the \"max-length\" parameter to limit text input field lengths, or shorten other parts of the summary message.\n\n> " + stepID);
-            }
-        }
-
         if (parent?.stepType is not StepType.BUTTONS && buttonStyle != null)
         {
             warnings.Add("Button styles have no effect on child steps of a '" + parent?.stepType + "' step.\n\n> " + stepID + ".button-style");
@@ -414,7 +365,7 @@ public class InterviewStep
 
         foreach (KeyValuePair<string,InterviewStep> step in steps)
         {
-            step.Value.Validate(ref errors, ref warnings, FormatJSONKey(stepID + ".steps", step.Key), definitions, summaryFieldCount, summaryMaxLength, this);
+            step.Value.Validate(ref errors, ref warnings, FormatJSONKey(stepID + ".steps", step.Key), definitions, this);
         }
     }
 
