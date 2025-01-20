@@ -16,8 +16,6 @@ public enum StepType
     // TODO: Support multiselector as separate type
     ERROR,
     INTERVIEW_END = 1,
-    [Obsolete("Use INTERVIEW_END instead")] END_WITH_SUMMARY = 1,
-    [Obsolete("Use INTERVIEW_END instead")] END_WITHOUT_SUMMARY = 1,
     BUTTONS,
     TEXT_SELECTOR,
     USER_SELECTOR,
