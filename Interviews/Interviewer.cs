@@ -5,7 +5,6 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
 
 namespace SupportBoi.Interviews;
@@ -131,19 +130,19 @@ public static class Interviewer
             case DiscordComponentType.RoleSelect:
             case DiscordComponentType.ChannelSelect:
             case DiscordComponentType.MentionableSelect:
-                if (interaction.Data.Resolved.Roles.Any())
+                if (interaction?.Data?.Resolved?.Roles?.Any() ?? false)
                 {
                     answer = interaction.Data.Resolved.Roles.First().Value.Mention;
                 }
-                else if (interaction.Data.Resolved.Users.Any())
+                else if (interaction.Data?.Resolved?.Users?.Any() ?? false)
                 {
                     answer = interaction.Data.Resolved.Users.First().Value.Mention;
                 }
-                else if (interaction.Data.Resolved.Channels.Any())
+                else if (interaction.Data?.Resolved?.Channels?.Any() ?? false)
                 {
                     answer = interaction.Data.Resolved.Channels.First().Value.Mention;
                 }
-                else if (interaction.Data.Resolved.Messages.Any())
+                else if (interaction.Data?.Resolved?.Messages?.Any() ?? false)
                 {
                     answer = interaction.Data.Resolved.Messages.First().Value.Id.ToString();
                 }
