@@ -55,7 +55,7 @@ public class AddCommand
 
         try
         {
-            await command.Channel.AddOverwriteAsync(member, DiscordPermissions.AccessChannels);
+            await command.Channel.AddOverwriteAsync(member, DiscordPermission.ViewChannel);
             await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Green,

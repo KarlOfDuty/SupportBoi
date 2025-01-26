@@ -186,7 +186,7 @@ public class NewCommand
 
         try
         {
-            await ticketChannel.AddOverwriteAsync(member, DiscordPermissions.AccessChannels);
+            await ticketChannel.AddOverwriteAsync(member, DiscordPermission.ViewChannel);
         }
         catch (DiscordException e)
         {

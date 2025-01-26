@@ -109,7 +109,7 @@ public class RandomAssignCommand
                 if (targetRole == null || verifiedMember.Roles.Any(role => role.Id == targetRole.Id))
                 {
                     // Only assign staff members with access to this channel
-                    if (verifiedMember.PermissionsIn(channel).HasFlag(DiscordPermissions.AccessChannels))
+                    if (verifiedMember.PermissionsIn(channel).HasFlag(DiscordPermission.ViewChannel))
                     {
                         return verifiedMember;
                     }

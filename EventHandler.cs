@@ -126,7 +126,7 @@ public static class EventHandler
                 {
                     try
                     {
-                        await channel.AddOverwriteAsync(e.Member, DiscordPermissions.AccessChannels);
+                        await channel.AddOverwriteAsync(e.Member, DiscordPermission.ViewChannel);
                         await channel.SendMessageAsync(new DiscordEmbedBuilder
                         {
                             Color = DiscordColor.Green,

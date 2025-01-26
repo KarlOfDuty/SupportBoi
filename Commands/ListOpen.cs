@@ -49,7 +49,7 @@ public class ListOpen
                 DiscordChannel channel = allChannels.FirstOrDefault(c => c.Id == ticket.channelID);
                 if (channel != null)
                 {
-                    if (command.Member!.PermissionsIn(channel).HasPermission(DiscordPermissions.AccessChannels))
+                    if (command.Member!.PermissionsIn(channel).HasPermission(DiscordPermission.ViewChannel))
                     {
                         listItems.Add("**" + ticket.DiscordRelativeTime() + ":** <#" + ticket.channelID + "> by <@" + ticket.creatorID + ">\n");
                     }
