@@ -17,6 +17,8 @@ public class CloseCommand
     private static Dictionary<ulong, string> closeReasons = new Dictionary<ulong, string>();
     private static List<ulong> currentlyClosingTickets = new List<ulong>();
 
+    private const int MAX_UPLOAD_SIZE = 10 * 1024 * 1024;
+
     [RequireGuild]
     [Command("close")]
     [Description("Closes this ticket.")]
@@ -115,12 +117,14 @@ public class CloseCommand
             try
             {
                 FileInfo fileInfo = new FileInfo(filePath);
-                if (!fileInfo.Exists || fileInfo.Length >= 26214400)
+                if (!fileInfo.Exists || fileInfo.Length >= MAX_UPLOAD_SIZE)
                 {
                     fileName = Transcriber.GetHTMLFilename(ticket.id);
                     filePath = Transcriber.GetHtmlPath(ticket.id);
+                    Logger.Debug("Transcript archive too large, sending only html instead.");
                 }
                 zipSize = fileInfo.Length;
+                Logger.Debug("Transcript zip size: " + zipSize + " bytes.");
             }
             catch (Exception e)
             {
@@ -166,7 +170,7 @@ public class CloseCommand
 
                     DiscordMessageBuilder message = new();
 
-                    if (zipSize >= 26214400)
+                    if (zipSize >= MAX_UPLOAD_SIZE)
                     {
                         message.AddEmbed(new DiscordEmbedBuilder
                         {
