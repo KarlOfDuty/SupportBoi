@@ -43,7 +43,15 @@ public class CloseCommand
             .AddComponents(new DiscordButtonComponent(DiscordButtonStyle.Danger, "supportboi_closeconfirm", "Confirm"));
 
         await command.RespondAsync(confirmation);
-        closeReasons.Add(command.Channel.Id, reason);
+
+        if (closeReasons.TryGetValue(command.Channel.Id, out _))
+        {
+            closeReasons[command.Channel.Id] = reason;
+        }
+        else
+        {
+            closeReasons.Add(command.Channel.Id, reason);
+        }
     }
 
     public static async Task OnConfirmed(DiscordInteraction interaction)
