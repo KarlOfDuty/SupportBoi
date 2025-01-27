@@ -165,7 +165,7 @@ public class CloseCommand
             {
                 try
                 {
-                    DiscordUser staffMember = await SupportBoi.client.GetUserAsync(ticket.creatorID);
+                    DiscordUser ticketCreator = await SupportBoi.client.GetUserAsync(ticket.creatorID);
                     await using FileStream file = new(filePath, FileMode.Open, FileAccess.Read);
 
                     DiscordMessageBuilder message = new();
@@ -198,7 +198,7 @@ public class CloseCommand
 
                     message.AddFiles(new Dictionary<string, Stream> { { fileName, file } });
 
-                    await staffMember.SendMessageAsync(message);
+                    await ticketCreator.SendMessageAsync(message);
                 }
                 catch (NotFoundException) { /* ignore */ }
                 catch (UnauthorizedException) { /* ignore */ }
