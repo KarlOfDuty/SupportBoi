@@ -202,6 +202,7 @@ public class CloseCommand
                 }
                 catch (NotFoundException) { /* ignore */ }
                 catch (UnauthorizedException) { /* ignore */ }
+                catch (NullReferenceException) { /* ignore */ }
             }
 
             Database.ArchiveTicket(ticket);
