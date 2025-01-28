@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <Version>4.0.0</Version>
+    <Version>4.0.1</Version>
     <TargetFramework>net9.0</TargetFramework>
     <StartupObject>SupportBoi.SupportBoi</StartupObject>
     <RuntimeIdentifiers>win-x64;linux-x64</RuntimeIdentifiers>
@@ -18,7 +18,7 @@
     <PackageIconUrl>https://karlofduty.com/img/tardisIcon.jpg</PackageIconUrl>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/KarlOfDuty/SupportBoi</PackageProjectUrl>
-    <PackageVersion>4.0.0</PackageVersion>
+    <PackageVersion>4.0.1</PackageVersion>
     <LangVersion>default</LangVersion>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <GitVersion>false</GitVersion>
