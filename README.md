@@ -23,7 +23,7 @@ A support ticket Discord bot. Uses a MySQL database for storage of ticket inform
 | `SupportBoi-Windows.exe`    | Larger Windows version which does not require .NET 9 to be installed. |
 
 
-5. Run `./SupportBoi_Linux` on Linux or `./SupportBoi_Windows.exe` on Windows, this creates a config file in the current directory.
+5. Run the bot application, `./SupportBoi-<version>`, this creates a config file in the current directory.
 
 6. Set up the config, there are instructions inside. If you need more help either contact me in Discord or through an issue here.
 
