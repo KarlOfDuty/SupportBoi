@@ -619,6 +619,26 @@ public static class Database
         }
     }
 
+    public static bool UpdateMessage(string identifier, ulong userID, string message)
+    {
+        try
+        {
+            using MySqlConnection c = GetConnection();
+            c.Open();
+            using MySqlCommand cmd = new MySqlCommand(@"UPDATE messages SET message = @message, user_id = @user_id WHERE identifier=@identifier", c);
+            cmd.Parameters.AddWithValue("@identifier", identifier);
+            cmd.Parameters.AddWithValue("@user_id", userID);
+            cmd.Parameters.AddWithValue("@message", message);
+            cmd.Prepare();
+            return cmd.ExecuteNonQuery() > 0;
+        }
+        catch (MySqlException e)
+        {
+            Logger.Error("Could not add message to database.", e);
+            return false;
+        }
+    }
+
     public static bool RemoveMessage(string identifier)
     {
         try

@@ -205,6 +205,18 @@ public static class EventHandler
                         case not null when e.Id.StartsWith("supportboi_interviewbutton"):
                             await Interviewer.ProcessButtonOrSelectorResponse(e.Interaction);
                             return;
+                        case not null when e.Id.StartsWith("supportboi_confirmmessagedelete"):
+                            await SetMessageCommand.ConfirmMessageDeletion(e.Interaction, GetIDFromCustomID(e.Id));
+                            return;
+                        case not null when e.Id.StartsWith("supportboi_cancelmessagedelete"):
+                            await SetMessageCommand.CancelMessageDeletion(e.Interaction, GetIDFromCustomID(e.Id));
+                            return;
+                        case not null when e.Id.StartsWith("supportboi_confirmmessageupdate"):
+                            await SetMessageCommand.ConfirmMessageUpdate(e.Interaction, GetIDFromCustomID(e.Id));
+                            return;
+                        case not null when e.Id.StartsWith("supportboi_cancelmessageupdate"):
+                            await SetMessageCommand.CancelMessageUpdate(e.Interaction, GetIDFromCustomID(e.Id));
+                            return;
                         case "right":
                         case "left":
                         case "rightskip":
@@ -287,6 +299,19 @@ public static class EventHandler
         {
             Logger.Error("Interaction Exception occured: " + ex.GetType() + ": " + ex);
         }
+    }
+
+    private static ulong GetIDFromCustomID(string customID)
+    {
+        List<string> values = customID.Split(' ').ToList();
+
+        if (values.Count < 2 || !ulong.TryParse(values[1], out ulong id))
+        {
+            Logger.Warn("Got an invalid button/selector ID: " + customID);
+            return 0;
+        }
+
+        return id;
     }
 
     private static async Task OnNewTicketButtonUsed(DiscordInteraction interaction)
