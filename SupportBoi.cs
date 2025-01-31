@@ -147,8 +147,8 @@ internal static class SupportBoi
         try
         {
             Logger.Log("Connecting to database. (" + Config.hostName + ":" + Config.port + ")");
-            Database.SetConnectionString(Config.hostName, Config.port, Config.database, Config.username, Config.password);
-            Database.SetupTables();
+            Database.Connection.SetConnectionString(Config.hostName, Config.port, Config.database, Config.username, Config.password);
+            Database.Connection.SetupTables();
         }
         catch (Exception e)
         {

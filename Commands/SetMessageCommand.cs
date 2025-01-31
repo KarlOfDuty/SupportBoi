@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
-using System.Linq;
 using DSharpPlus.Entities;
 using System.Threading.Tasks;
 using DSharpPlus.Commands;
@@ -29,7 +28,7 @@ public class SetMessageCommand
     {
 
 
-        if (Database.TryGetMessage(identifier.ToLower(CultureInfo.InvariantCulture), out Database.Message oldMessage))
+        if (Database.Message.TryGetMessage(identifier.ToLower(CultureInfo.InvariantCulture), out Database.Message oldMessage))
         {
             if (string.IsNullOrEmpty(message))
             {
@@ -76,7 +75,7 @@ public class SetMessageCommand
 
     private static async Task AddNewMessage(SlashCommandContext command, string identifier, string message)
     {
-        if(Database.AddMessage(identifier, command.Member.Id, message))
+        if(Database.Message.AddMessage(identifier, command.Member.Id, message))
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {
@@ -108,7 +107,7 @@ public class SetMessageCommand
             return;
         }
 
-        if (!Database.TryGetMessage(command.identifier.ToLower(CultureInfo.InvariantCulture), out Database.Message _))
+        if (!Database.Message.TryGetMessage(command.identifier.ToLower(CultureInfo.InvariantCulture), out Database.Message _))
         {
             await interaction.CreateResponseAsync(DiscordInteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder
             {
@@ -118,7 +117,7 @@ public class SetMessageCommand
             return;
         }
 
-        if (Database.RemoveMessage(command.identifier))
+        if (Database.Message.RemoveMessage(command.identifier))
         {
             await interaction.CreateResponseAsync(DiscordInteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder
             {
@@ -159,7 +158,7 @@ public class SetMessageCommand
             return;
         }
 
-        if (!Database.TryGetMessage(command.identifier.ToLower(CultureInfo.InvariantCulture), out Database.Message _))
+        if (!Database.Message.TryGetMessage(command.identifier.ToLower(CultureInfo.InvariantCulture), out Database.Message _))
         {
             await interaction.CreateResponseAsync(DiscordInteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder
             {
@@ -169,7 +168,7 @@ public class SetMessageCommand
             return;
         }
 
-        if (Database.UpdateMessage(command.identifier, interaction.User.Id, command.message))
+        if (Database.Message.UpdateMessage(command.identifier, interaction.User.Id, command.message))
         {
             await interaction.CreateResponseAsync(DiscordInteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder
             {

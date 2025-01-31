@@ -20,7 +20,7 @@ public class ListOpen
     [Description("Lists all open tickets, oldest first.")]
     public async Task OnExecute(SlashCommandContext command)
     {
-        if (!Database.TryGetOpenTickets(out List<Database.Ticket> openTickets))
+        if (!Database.Ticket.TryGetOpenTickets(out List<Database.Ticket> openTickets))
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {

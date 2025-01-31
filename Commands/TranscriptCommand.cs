@@ -23,7 +23,7 @@ public class TranscriptCommand
         Database.Ticket ticket;
         if (ticketID == 0) // If there are no arguments use current channel
         {
-            if (Database.TryGetOpenTicket(command.Channel.Id, out ticket))
+            if (Database.Ticket.TryGetOpenTicket(command.Channel.Id, out ticket))
             {
                 try
                 {
@@ -52,7 +52,7 @@ public class TranscriptCommand
         else
         {
             // If the ticket is still open, generate a new fresh transcript
-            if (Database.TryGetOpenTicketByID((uint)ticketID, out ticket) && ticket?.creatorID == command.Member.Id)
+            if (Database.Ticket.TryGetOpenTicketByID((uint)ticketID, out ticket) && ticket?.creatorID == command.Member.Id)
             {
                 try
                 {
@@ -70,7 +70,7 @@ public class TranscriptCommand
 
             }
             // If there is no open or closed ticket, send an error. If there is a closed ticket we will simply use the old transcript from when the ticket was closed.
-            else if (!Database.TryGetClosedTicket((uint)ticketID, out ticket) || (ticket?.creatorID != command.Member.Id && !Database.IsStaff(command.Member.Id)))
+            else if (!Database.Ticket.TryGetClosedTicket((uint)ticketID, out ticket) || (ticket?.creatorID != command.Member.Id && !Database.StaffMember.IsStaff(command.Member.Id)))
             {
                 await command.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
                 {

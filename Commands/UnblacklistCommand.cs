@@ -18,7 +18,7 @@ public class UnblacklistCommand
     {
         try
         {
-            if (!Database.Unblacklist(user.Id))
+            if (!Database.Blacklist.Unban(user.Id))
             {
                 await command.RespondAsync(new DiscordEmbedBuilder
                 {

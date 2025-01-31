@@ -70,7 +70,7 @@ public static class Utilities
     public static async Task<List<Database.Category>> GetVerifiedCategories()
     {
         List<Database.Category> verifiedCategories = new List<Database.Category>();
-        foreach (Database.Category category in Database.GetAllCategories())
+        foreach (Database.Category category in Database.Category.GetAllCategories())
         {
             DiscordChannel channel = null;
             try

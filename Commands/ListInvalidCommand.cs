@@ -20,7 +20,7 @@ public class ListInvalidCommand
     [Description("List tickets which channels have been deleted. Use /admin unsetticket <id> to remove them.")]
     public async Task ListInvalid(SlashCommandContext command)
     {
-        if (!Database.TryGetOpenTickets(out List<Database.Ticket> openTickets))
+        if (!Database.Ticket.TryGetOpenTickets(out List<Database.Ticket> openTickets))
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {

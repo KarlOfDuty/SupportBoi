@@ -66,7 +66,7 @@ public static class EventHandler
         }
 
         // Ignore messages outside of tickets.
-        if (!Database.TryGetOpenTicket(e.Channel.Id, out Database.Ticket ticket))
+        if (!Database.Ticket.TryGetOpenTicket(e.Channel.Id, out Database.Ticket ticket))
         {
             return;
         }
@@ -87,7 +87,7 @@ public static class EventHandler
     private static async Task SendTicketUpdatedMessage(MessageCreatedEventArgs e, Database.Ticket ticket)
     {
         // Ignore staff messages
-        if (Database.IsStaff(e.Author.Id))
+        if (Database.StaffMember.IsStaff(e.Author.Id))
         {
             return;
         }
@@ -112,7 +112,7 @@ public static class EventHandler
 
     public static async Task OnMemberAdded(DiscordClient client, GuildMemberAddedEventArgs e)
     {
-        if (!Database.TryGetOpenTickets(e.Member.Id, out List<Database.Ticket> ownTickets))
+        if (!Database.Ticket.TryGetOpenTickets(e.Member.Id, out List<Database.Ticket> ownTickets))
         {
             return;
         }
@@ -147,7 +147,7 @@ public static class EventHandler
 
     public static async Task OnMemberRemoved(DiscordClient client, GuildMemberRemovedEventArgs e)
     {
-        if (Database.TryGetOpenTickets(e.Member.Id, out List<Database.Ticket> ownTickets))
+        if (Database.Ticket.TryGetOpenTickets(e.Member.Id, out List<Database.Ticket> ownTickets))
         {
             foreach(Database.Ticket ticket in ownTickets)
             {
@@ -167,7 +167,7 @@ public static class EventHandler
             }
         }
 
-        if (LogChannel.IsEnabled && Database.TryGetAssignedTickets(e.Member.Id, out List<Database.Ticket> assignedTickets))
+        if (LogChannel.IsEnabled && Database.Ticket.TryGetAssignedTickets(e.Member.Id, out List<Database.Ticket> assignedTickets))
         {
             foreach (Database.Ticket ticket in assignedTickets)
             {

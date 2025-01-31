@@ -26,7 +26,7 @@ public class CloseCommand
         [Parameter("reason")] [Description("(Optional) The reason for closing this ticket.")] string reason = "")
     {
         // Check if ticket exists in the database
-        if (!Database.TryGetOpenTicket(command.Channel.Id, out Database.Ticket _))
+        if (!Database.Ticket.TryGetOpenTicket(command.Channel.Id, out Database.Ticket _))
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {
@@ -75,7 +75,7 @@ public class CloseCommand
             await interaction.CreateResponseAsync(DiscordInteractionResponseType.DeferredMessageUpdate);
 
             // Check if ticket exists in the database
-            if (!Database.TryGetOpenTicket(interaction.Channel.Id, out Database.Ticket ticket))
+            if (!Database.Ticket.TryGetOpenTicket(interaction.Channel.Id, out Database.Ticket ticket))
             {
                 currentlyClosingTickets.Remove(interaction.Channel.Id);
                 await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
@@ -205,8 +205,8 @@ public class CloseCommand
                 catch (NullReferenceException) { /* ignore */ }
             }
 
-            Database.ArchiveTicket(ticket);
-            Database.TryDeleteInterview(interaction.Channel.Id);
+            Database.Ticket.ArchiveTicket(ticket);
+            Database.Interviews.TryDeleteInterview(interaction.Channel.Id);
 
             await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
             {
@@ -219,7 +219,7 @@ public class CloseCommand
             // Delete the channel and database entry
             await interaction.Channel.DeleteAsync("Ticket closed.");
 
-            Database.DeleteOpenTicket(ticket.id);
+            Database.Ticket.DeleteOpenTicket(ticket.id);
 
             closeReasons.Remove(interaction.Channel.Id);
             currentlyClosingTickets.Remove(interaction.Channel.Id);

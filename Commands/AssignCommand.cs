@@ -43,7 +43,7 @@ public class AssignCommand
         }
 
         // Check if ticket exists in the database
-        if (!Database.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
+        if (!Database.Ticket.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {
@@ -53,7 +53,7 @@ public class AssignCommand
             return;
         }
 
-        if (!Database.IsStaff(member.Id))
+        if (!Database.StaffMember.IsStaff(member.Id))
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {
@@ -63,7 +63,7 @@ public class AssignCommand
             return;
         }
 
-        if (!Database.AssignStaff(ticket, member.Id))
+        if (!Database.StaffMember.AssignStaff(ticket, member.Id))
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {

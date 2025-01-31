@@ -16,7 +16,7 @@ public class RemoveCategoryCommand
     public async Task OnExecute(SlashCommandContext command,
         [Parameter("category")] [Description("The category to remove.")] DiscordChannel category)
     {
-        if (!Database.TryGetCategory(category.Id, out Database.Category _))
+        if (!Database.Category.TryGetCategory(category.Id, out Database.Category _))
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {
@@ -26,7 +26,7 @@ public class RemoveCategoryCommand
             return;
         }
 
-        if (Database.RemoveCategory(category.Id))
+        if (Database.Category.RemoveCategory(category.Id))
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {

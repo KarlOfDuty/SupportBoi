@@ -16,7 +16,7 @@ public class InterviewCommands
   [Description("Restarts the interview in this ticket, using an updated template if available.")]
   public async Task Restart(SlashCommandContext command)
   {
-    if (!Database.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
+    if (!Database.Ticket.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
     {
       await command.RespondAsync(new DiscordEmbedBuilder
       {
@@ -52,7 +52,7 @@ public class InterviewCommands
   [Description("Stops the interview in this ticket.")]
   public async Task Stop(SlashCommandContext command)
   {
-    if (!Database.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
+    if (!Database.Ticket.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
     {
       await command.RespondAsync(new DiscordEmbedBuilder
       {
@@ -62,7 +62,7 @@ public class InterviewCommands
       return;
     }
 
-    if (!Database.TryGetInterview(command.Channel.Id, out Interview _))
+    if (!Database.Interviews.TryGetInterview(command.Channel.Id, out Interview _))
     {
       await command.RespondAsync(new DiscordEmbedBuilder
       {

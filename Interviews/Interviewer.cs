@@ -13,7 +13,7 @@ public static class Interviewer
 {
     public static async Task<bool> StartInterview(DiscordChannel channel)
     {
-        if (!Database.TryGetInterviewFromTemplate(channel.Parent.Id, channel.Id, out Interview interview))
+        if (!Database.Interviews.TryGetInterviewFromTemplate(channel.Parent.Id, channel.Id, out Interview interview))
         {
             return false;
         }
@@ -26,12 +26,12 @@ public static class Interviewer
                 Color = DiscordColor.Red
             });
             interview.interviewRoot.AddRelatedMessageIDs(errorMessage.Id);
-            Database.SaveInterview(interview);
+            Database.Interviews.SaveInterview(interview);
             return false;
         }
 
         await SendNextMessage(interview, channel, interview.interviewRoot);
-        return Database.SaveInterview(interview);
+        return Database.Interviews.SaveInterview(interview);
     }
 
     public static async Task<bool> RestartInterview(DiscordChannel channel)
@@ -47,14 +47,14 @@ public static class Interviewer
 
     public static async Task<bool> StopInterview(DiscordChannel channel)
     {
-        if (Database.TryGetInterview(channel.Id, out Interview interview))
+        if (Database.Interviews.TryGetInterview(channel.Id, out Interview interview))
         {
             if (Config.deleteMessagesAfterInterviewEnd)
             {
                 await DeletePreviousMessages(interview, channel);
             }
 
-            if (!Database.TryDeleteInterview(channel.Id))
+            if (!Database.Interviews.TryDeleteInterview(channel.Id))
             {
                 Logger.Warn("Could not delete interview from database. Channel ID: " + channel.Id);
             }
@@ -70,7 +70,7 @@ public static class Interviewer
             return;
         }
 
-        if (!Database.TryGetOpenTicket(interaction.Channel.Id, out Database.Ticket ticket))
+        if (!Database.Ticket.TryGetOpenTicket(interaction.Channel.Id, out Database.Ticket ticket))
         {
             await interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
                 .AddEmbed(new DiscordEmbedBuilder()
@@ -98,7 +98,7 @@ public static class Interviewer
         }
 
         // Return if there is no active interview in this channel
-        if (!Database.TryGetInterview(interaction.Channel.Id, out Interview interview))
+        if (!Database.Interviews.TryGetInterview(interaction.Channel.Id, out Interview interview))
         {
             await interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
                 .AddEmbed(new DiscordEmbedBuilder()
@@ -214,7 +214,7 @@ public static class Interviewer
                 Description = "Error: Could not determine the next question based on your answer. Check your response and ask an admin to check the bot logs if this seems incorrect."
             }).AsEphemeral());
             currentStep.AddRelatedMessageIDs(followupMessage.Id);
-            Database.SaveInterview(interview);
+            Database.Interviews.SaveInterview(interview);
         }
         else
         {
@@ -265,7 +265,7 @@ public static class Interviewer
         }
 
         // The channel does not have an active interview.
-        if (!Database.TryGetInterview(answerMessage.ReferencedMessage.Channel.Id,
+        if (!Database.Interviews.TryGetInterview(answerMessage.ReferencedMessage.Channel.Id,
                                       out Interview interview))
         {
             return;
@@ -299,7 +299,7 @@ public static class Interviewer
                 Color = DiscordColor.Red
             });
             currentStep.AddRelatedMessageIDs(answerMessage.Id, lengthMessage.Id);
-            Database.SaveInterview(interview);
+            Database.Interviews.SaveInterview(interview);
             return;
         }
 
@@ -311,7 +311,7 @@ public static class Interviewer
                 Color = DiscordColor.Red
             });
             currentStep.AddRelatedMessageIDs(answerMessage.Id, lengthMessage.Id);
-            Database.SaveInterview(interview);
+            Database.Interviews.SaveInterview(interview);
             return;
         }
 
@@ -334,7 +334,7 @@ public static class Interviewer
             Color = DiscordColor.Red
         });
         currentStep.AddRelatedMessageIDs(answerMessage.Id, errorMessage.Id);
-        Database.SaveInterview(interview);
+        Database.Interviews.SaveInterview(interview);
     }
 
     private static async Task HandleAnswer(string answer,
@@ -375,13 +375,13 @@ public static class Interviewer
                         nextStep.AddRelatedMessageIDs(answerMessage.Id, errorMessage.Id);
                         previousStep.answer = null;
                         previousStep.answerID = 0;
-                        Database.SaveInterview(interview);
+                        Database.Interviews.SaveInterview(interview);
                     }
                     return;
                 }
 
                 await SendNextMessage(interview, channel, nextStep);
-                Database.SaveInterview(interview);
+                Database.Interviews.SaveInterview(interview);
                 break;
             case StepType.INTERVIEW_END:
                 DiscordEmbedBuilder endEmbed = new()
@@ -403,7 +403,7 @@ public static class Interviewer
                     await DeletePreviousMessages(interview, channel);
                 }
 
-                if (!Database.TryDeleteInterview(channel.Id))
+                if (!Database.Interviews.TryDeleteInterview(channel.Id))
                 {
                     Logger.Error("Could not delete interview from database. Channel ID: " + channel.Id);
                 }
@@ -451,7 +451,7 @@ public static class Interviewer
                     previousStep.AddRelatedMessageIDs(errorMessage.Id, answerMessage.Id);
                 }
 
-                Database.SaveInterview(interview);
+                Database.Interviews.SaveInterview(interview);
 
                 Logger.Error("Could not find a step to return to after a reference step in channel " + channel.Id);
                 return;
@@ -480,7 +480,7 @@ public static class Interviewer
                     previousStep.AddRelatedMessageIDs(errorMessage.Id, answerMessage.Id);
                 }
 
-                Database.SaveInterview(interview);
+                Database.Interviews.SaveInterview(interview);
                 return;
         }
     }
@@ -604,7 +604,7 @@ public static class Interviewer
                 }
                 else
                 {
-                    lengthInfo = " (Maximum " + (step?.maxLength ?? InterviewStep.DEFAULT_MAX_FIELD_LENGTH) + " characters)";
+                    lengthInfo = " (Maximum " + (step.maxLength ?? InterviewStep.DEFAULT_MAX_FIELD_LENGTH) + " characters)";
                 }
                 embed.WithFooter("Reply to this message with your answer" + lengthInfo + ". You cannot include images or files.");
                 break;

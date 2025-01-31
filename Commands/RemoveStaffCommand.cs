@@ -18,7 +18,7 @@ public class RemoveStaffCommand
     public async Task OnExecute(SlashCommandContext command,
         [Parameter("user")] [Description("User to remove from staff.")] DiscordUser user)
     {
-        if (!Database.IsStaff(user.Id))
+        if (!Database.StaffMember.IsStaff(user.Id))
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {
@@ -30,11 +30,11 @@ public class RemoveStaffCommand
 
         await command.DeferResponseAsync(true);
 
-        if (Database.TryGetAssignedTickets(user.Id, out List<Database.Ticket> assignedTickets))
+        if (Database.Ticket.TryGetAssignedTickets(user.Id, out List<Database.Ticket> assignedTickets))
         {
             foreach (Database.Ticket assignedTicket in assignedTickets)
             {
-                Database.UnassignStaff(assignedTicket);
+                Database.StaffMember.UnassignStaff(assignedTicket);
                 try
                 {
                     DiscordChannel ticketChannel = await SupportBoi.client.GetChannelAsync(assignedTicket.channelID);
@@ -53,19 +53,23 @@ public class RemoveStaffCommand
             }
         }
 
-        await using MySqlConnection c = Database.GetConnection();
-        c.Open();
-        MySqlCommand deletion = new MySqlCommand(@"DELETE FROM staff WHERE user_id=@user_id", c);
-        deletion.Parameters.AddWithValue("@user_id", user.Id);
-        await deletion.PrepareAsync();
-        deletion.ExecuteNonQuery();
-
-        await command.RespondAsync(new DiscordEmbedBuilder
+        if (Database.StaffMember.RemoveStaff(user.Id))
         {
-            Color = DiscordColor.Green,
-            Description = "User was removed from staff."
-        }, true);
+            await command.RespondAsync(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Green,
+                Description = "User was removed from staff."
+            }, true);
 
-        await LogChannel.Success(user.Mention + " was removed from staff by " + command.User.Mention + ".");
+            await LogChannel.Success(user.Mention + " was removed from staff by " + command.User.Mention + ".");
+        }
+        else
+        {
+            await command.RespondAsync(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Red,
+                Description = "Error: Failed to remove user from staff."
+            }, true);
+        }
     }
 }

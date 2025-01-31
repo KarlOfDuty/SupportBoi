@@ -18,7 +18,7 @@ public class AddCommand
         [Parameter("user")] [Description("User to add to ticket.")] DiscordUser user)
     {
         // Check if ticket exists in the database
-        if (!Database.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
+        if (!Database.Ticket.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {

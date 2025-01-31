@@ -14,7 +14,7 @@ public class SummaryCommand
     [Description("Shows ticket information and summary if there is one.")]
     public async Task OnExecute(SlashCommandContext command)
     {
-        if (!Database.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
+        if (!Database.Ticket.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {

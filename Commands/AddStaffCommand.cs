@@ -18,7 +18,7 @@ public class AddStaffCommand
     public async Task OnExecute(SlashCommandContext command,
         [Parameter("user")] [Description("User to add to staff.")] DiscordUser user)
     {
-        DiscordMember staffMember = null;
+        DiscordMember staffMember;
         try
         {
             staffMember = user == null ? command.Member : await command.Guild.GetMemberAsync(user.Id);
@@ -43,16 +43,15 @@ public class AddStaffCommand
             return;
         }
 
-        bool alreadyStaff = Database.IsStaff(staffMember.Id);
-
-        await using MySqlConnection c = Database.GetConnection();
-        MySqlCommand cmd = alreadyStaff ? new MySqlCommand(@"UPDATE staff SET name = @name WHERE user_id = @user_id", c) : new MySqlCommand(@"INSERT INTO staff (user_id, name) VALUES (@user_id, @name);", c);
-
-        c.Open();
-        cmd.Parameters.AddWithValue("@user_id", staffMember.Id);
-        cmd.Parameters.AddWithValue("@name", staffMember.DisplayName);
-        cmd.ExecuteNonQuery();
-        cmd.Dispose();
+        bool alreadyStaff = Database.StaffMember.IsStaff(staffMember.Id);
+        if (!Database.StaffMember.AddStaff(staffMember.DisplayName, staffMember.Id))
+        {
+            await command.RespondAsync(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Red,
+                Description = "Error: Failed to add staff member to database."
+            }, true);
+        }
 
         if (alreadyStaff)
         {

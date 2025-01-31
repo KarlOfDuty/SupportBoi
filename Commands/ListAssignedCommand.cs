@@ -20,7 +20,7 @@ public class ListAssignedCommand
     {
         DiscordUser listUser = user == null ? command.User : user;
 
-        if (!Database.TryGetAssignedTickets(listUser.Id, out List<Database.Ticket> assignedTickets))
+        if (!Database.Ticket.TryGetAssignedTickets(listUser.Id, out List<Database.Ticket> assignedTickets))
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {

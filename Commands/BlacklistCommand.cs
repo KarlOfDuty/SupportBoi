@@ -19,7 +19,7 @@ public class BlacklistCommand
     {
         try
         {
-            if (!Database.Blacklist(user.Id, command.User.Id))
+            if (!Database.Blacklist.Ban(user.Id, command.User.Id))
             {
                 await command.RespondAsync(new DiscordEmbedBuilder
                 {

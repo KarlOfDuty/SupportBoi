@@ -20,7 +20,7 @@ public class RandomAssignCommand
     public async Task OnExecute(SlashCommandContext command, [Parameter("role")] [Description("(Optional) Limit the random assignment to a specific role.")] DiscordRole role = null)
     {
         // Check if ticket exists in the database
-        if (!Database.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
+        if (!Database.Ticket.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {
@@ -43,7 +43,7 @@ public class RandomAssignCommand
         }
 
         // Attempt to assign the staff member to the ticket
-        if (!Database.AssignStaff(ticket, staffMember.Id))
+        if (!Database.StaffMember.AssignStaff(ticket, staffMember.Id))
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {
@@ -85,14 +85,14 @@ public class RandomAssignCommand
         if (targetRole == null)
         {
             // No role was specified, any active staff will be picked
-            staffMembers = Database.GetActiveStaff(ignoredUserIDs);
+            staffMembers = Database.StaffMember.GetActiveStaff(ignoredUserIDs);
         }
         else
         {
             // Check if role rassign should override staff's active status
             staffMembers = Config.randomAssignRoleOverride
-                ? Database.GetAllStaff(ignoredUserIDs)
-                : Database.GetActiveStaff(ignoredUserIDs);
+                ? Database.StaffMember.GetAllStaff(ignoredUserIDs)
+                : Database.StaffMember.GetActiveStaff(ignoredUserIDs);
         }
 
         // Randomize the list before checking for roles in order to reduce number of API calls

@@ -16,7 +16,7 @@ public class UnassignCommand
     public async Task OnExecute(SlashCommandContext command)
     {
         // Check if ticket exists in the database
-        if (!Database.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
+        if (!Database.Ticket.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {
@@ -26,7 +26,7 @@ public class UnassignCommand
             return;
         }
 
-        if (!Database.UnassignStaff(ticket))
+        if (!Database.StaffMember.UnassignStaff(ticket))
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {

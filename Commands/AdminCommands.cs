@@ -21,7 +21,7 @@ public class AdminCommands
         [Parameter("user")] [Description("(Optional) The owner of the ticket.")] DiscordUser user = null)
     {
         // Check if ticket exists in the database
-        if (Database.IsOpenTicket(command.Channel.Id))
+        if (Database.Ticket.IsOpenTicket(command.Channel.Id))
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {
@@ -33,7 +33,7 @@ public class AdminCommands
 
         DiscordUser ticketUser = user == null ? command.User : user;
 
-        long id = Database.NewTicket(ticketUser.Id, 0, command.Channel.Id);
+        long id = Database.Ticket.NewTicket(ticketUser.Id, 0, command.Channel.Id);
         await command.RespondAsync(new DiscordEmbedBuilder
         {
             Color = DiscordColor.Green,
@@ -57,7 +57,7 @@ public class AdminCommands
         if (ticketID == 0)
         {
             // Check if ticket exists in the database
-            if (!Database.TryGetOpenTicket(command.Channel.Id, out ticket))
+            if (!Database.Ticket.TryGetOpenTicket(command.Channel.Id, out ticket))
             {
                 await command.RespondAsync(new DiscordEmbedBuilder
                 {
@@ -71,7 +71,7 @@ public class AdminCommands
         else
         {
             // Check if ticket exists in the database
-            if (!Database.TryGetOpenTicketByID((uint)ticketID, out ticket))
+            if (!Database.Ticket.TryGetOpenTicketByID((uint)ticketID, out ticket))
             {
                 await command.RespondAsync(new DiscordEmbedBuilder
                 {
@@ -96,7 +96,7 @@ public class AdminCommands
         }
 
         // Delete the ticket from the database and respond to command
-        if (Database.DeleteOpenTicket(ticket.id))
+        if (Database.Ticket.DeleteOpenTicket(ticket.id))
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {

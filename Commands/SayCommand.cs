@@ -27,7 +27,7 @@ public class SayCommand
             return;
         }
 
-        if (!Database.TryGetMessage(identifier.ToLower(CultureInfo.InvariantCulture),
+        if (!Database.Message.TryGetMessage(identifier.ToLower(CultureInfo.InvariantCulture),
                                     out Database.Message message))
         {
             await command.RespondAsync(new DiscordEmbedBuilder
@@ -49,7 +49,7 @@ public class SayCommand
 
     private static async Task SendMessageList(SlashCommandContext command)
     {
-        List<Database.Message> messages = Database.GetAllMessages();
+        List<Database.Message> messages = Database.Message.GetAllMessages();
         if (messages.Count == 0)
         {
             await command.RespondAsync(new DiscordEmbedBuilder

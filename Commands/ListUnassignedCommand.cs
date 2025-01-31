@@ -20,7 +20,7 @@ public class ListUnassignedCommand
     [Description("Lists unassigned tickets.")]
     public async Task OnExecute(SlashCommandContext command)
     {
-        if (!Database.TryGetAssignedTickets(0, out List<Database.Ticket> unassignedTickets))
+        if (!Database.Ticket.TryGetAssignedTickets(0, out List<Database.Ticket> unassignedTickets))
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {

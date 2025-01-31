@@ -21,7 +21,7 @@ public class ListCommand
         DiscordUser listUser = user == null ? command.User : user;
 
         List<DiscordEmbedBuilder> openEmbeds = new List<DiscordEmbedBuilder>();
-        if (Database.TryGetOpenTickets(listUser.Id, out List<Database.Ticket> openTickets))
+        if (Database.Ticket.TryGetOpenTickets(listUser.Id, out List<Database.Ticket> openTickets))
         {
             List<string> listItems = new List<string>();
             foreach (Database.Ticket ticket in openTickets)
@@ -46,7 +46,7 @@ public class ListCommand
         }
 
         List<DiscordEmbedBuilder> closedEmbeds = new List<DiscordEmbedBuilder>();
-        if (Database.TryGetClosedTickets(listUser.Id, out List<Database.Ticket> closedTickets))
+        if (Database.Ticket.TryGetClosedTickets(listUser.Id, out List<Database.Ticket> closedTickets))
         {
             List<string> listItems = new List<string>();
             foreach (Database.Ticket ticket in closedTickets)

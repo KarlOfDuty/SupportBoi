@@ -37,7 +37,7 @@ public class AddCategoryCommand
             return;
         }
 
-        if (Database.TryGetCategory(category.Id, out Database.Category _))
+        if (Database.Category.TryGetCategory(category.Id, out Database.Category _))
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {
@@ -47,7 +47,7 @@ public class AddCategoryCommand
             return;
         }
 
-        if (Database.TryGetCategory(title, out Database.Category _))
+        if (Database.Category.TryGetCategory(title, out Database.Category _))
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {
@@ -57,7 +57,7 @@ public class AddCategoryCommand
             return;
         }
 
-        if(Database.AddCategory(title, category.Id))
+        if(Database.Category.AddCategory(title, category.Id))
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {

@@ -18,7 +18,7 @@ public class ToggleActiveCommand
         DiscordUser staffUser = user == null ? command.User : user;
 
         // Check if ticket exists in the database
-        if (!Database.TryGetStaff(staffUser.Id, out Database.StaffMember staffMember))
+        if (!Database.StaffMember.TryGetStaff(staffUser.Id, out Database.StaffMember staffMember))
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {
@@ -28,7 +28,7 @@ public class ToggleActiveCommand
             return;
         }
 
-        if (Database.SetStaffActive(staffUser.Id, !staffMember.active))
+        if (Database.StaffMember.SetStaffActive(staffUser.Id, !staffMember.active))
         {
             if (user != null && user.Id != command.User.Id)
             {

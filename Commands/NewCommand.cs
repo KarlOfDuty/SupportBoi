@@ -104,18 +104,18 @@ public class NewCommand
     public static async Task<(bool, string)> OpenNewTicket(ulong userID, ulong commandChannelID, ulong categoryID)
     {
         // Check if user is blacklisted
-        if (Database.IsBlacklisted(userID))
+        if (Database.Blacklist.IsBanned(userID))
         {
             return (false, "You are banned from opening tickets.");
         }
 
-        if (Database.IsOpenTicket(commandChannelID))
+        if (Database.Ticket.IsOpenTicket(commandChannelID))
         {
             return (false, "You cannot use this command in a ticket channel.");
         }
 
-        if (!Database.IsStaff(userID)
-          && Database.TryGetOpenTickets(userID, out List<Database.Ticket> ownTickets)
+        if (!Database.StaffMember.IsStaff(userID)
+          && Database.Ticket.TryGetOpenTickets(userID, out List<Database.Ticket> ownTickets)
           && (ownTickets.Count >= Config.ticketLimit && Config.ticketLimit != 0))
         {
             return (false, "You have reached the limit for maximum open tickets.");
@@ -173,7 +173,7 @@ public class NewCommand
             assignedStaff = await RandomAssignCommand.GetRandomVerifiedStaffMember(ticketChannel, userID, 0, null);
         }
 
-        long id = Database.NewTicket(member.Id, assignedStaff?.Id ?? 0, ticketChannel.Id);
+        long id = Database.Ticket.NewTicket(member.Id, assignedStaff?.Id ?? 0, ticketChannel.Id);
         try
         {
             await ticketChannel.ModifyAsync(modifiedAttributes => modifiedAttributes.Name = "ticket-" + id.ToString("00000"));

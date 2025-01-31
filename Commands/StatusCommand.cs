@@ -14,8 +14,8 @@ public class StatusCommand
     [Description("Shows bot status and information.")]
     public async Task OnExecute(SlashCommandContext command)
     {
-        long openTickets = Database.GetNumberOfTickets();
-        long closedTickets = Database.GetNumberOfClosedTickets();
+        long openTickets = Database.Ticket.GetNumberOfTickets();
+        long closedTickets = Database.Ticket.GetNumberOfClosedTickets();
 
         DiscordEmbed botInfo = new DiscordEmbedBuilder()
             .WithAuthor("KarlofDuty/SupportBoi @ GitHub", "https://github.com/KarlofDuty/SupportBoi", "https://karlofduty.com/img/tardisIcon.jpg")

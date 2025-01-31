@@ -16,9 +16,8 @@ public class SetSummaryCommand
     [Description("Sets a ticket's summary for the summary command.")]
     public async Task OnExecute(SlashCommandContext command, [Parameter("Summary")] [Description("The ticket summary text.")] string summary)
     {
-        ulong channelID = command.Channel.Id;
         // Check if ticket exists in the database
-        if (!Database.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
+        if (!Database.Ticket.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {
@@ -28,21 +27,23 @@ public class SetSummaryCommand
             return;
         }
 
-        await using MySqlConnection c = Database.GetConnection();
-        c.Open();
-        MySqlCommand update = new MySqlCommand(@"UPDATE tickets SET summary = @summary WHERE channel_id = @channel_id", c);
-        update.Parameters.AddWithValue("@summary", summary);
-        update.Parameters.AddWithValue("@channel_id", channelID);
-        await update.PrepareAsync();
-        update.ExecuteNonQuery();
-        update.Dispose();
-
-        await command.RespondAsync(new DiscordEmbedBuilder
+        if (Database.Ticket.SetSummary(command.Channel.Id, summary))
         {
-            Color = DiscordColor.Green,
-            Description = "Summary set."
-        }, true);
+            await command.RespondAsync(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Green,
+                Description = "Summary set."
+            }, true);
 
-        await LogChannel.Success(command.User.Mention + " set the summary for " + command.Channel.Mention + " to:\n\n" + summary, ticket.id);
+            await LogChannel.Success(command.User.Mention + " set the summary for " + command.Channel.Mention + " to:\n\n" + summary, ticket.id);
+        }
+        else
+        {
+            await command.RespondAsync(new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Red,
+                Description = "Error: Failed setting the summary of a ticket in database."
+            }, true);
+        }
     }
 }

@@ -20,7 +20,7 @@ public class MoveCommand
         [Parameter("category")] [Description("The category to move the ticket to. Only has to be the beginning of the name.")] string category)
     {
         // Check if ticket exists in the database
-        if (!Database.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
+        if (!Database.Ticket.TryGetOpenTicket(command.Channel.Id, out Database.Ticket ticket))
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {

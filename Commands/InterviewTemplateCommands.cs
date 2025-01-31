@@ -39,7 +39,7 @@ public class InterviewTemplateCommands
             return;
         }
 
-        if (Database.TryGetInterviewTemplateJSON(category.Id, out string templateJSON))
+        if (Database.Interviews.TryGetInterviewTemplateJSON(category.Id, out string templateJSON))
         {
             MemoryStream stream = new(Encoding.UTF8.GetBytes(templateJSON));
             await command.RespondAsync(new DiscordInteractionResponseBuilder()
@@ -172,7 +172,7 @@ public class InterviewTemplateCommands
                 return;
             }
 
-            if (!Database.SetInterviewTemplate(template))
+            if (!Database.Interviews.SetInterviewTemplate(template))
             {
                 await command.RespondAsync(new DiscordEmbedBuilder
                 {
@@ -207,7 +207,7 @@ public class InterviewTemplateCommands
 
             try
             {
-                if (Database.TryGetInterviewTemplateJSON(template.categoryID, out string templateJSON))
+                if (Database.Interviews.TryGetInterviewTemplateJSON(template.categoryID, out string templateJSON))
                 {
                     MemoryStream memStream = new(Encoding.UTF8.GetBytes(templateJSON));
                     await LogChannel.Success(command.User.Mention + " uploaded a new interview template for the `" + category.Name + "` category.", 0,
@@ -256,7 +256,7 @@ public class InterviewTemplateCommands
             return;
         }
 
-        if (!Database.TryGetInterviewFromTemplate(category.Id, 0, out Interview _))
+        if (!Database.Interviews.TryGetInterviewFromTemplate(category.Id, 0, out Interview _))
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {
@@ -266,7 +266,7 @@ public class InterviewTemplateCommands
             return;
         }
 
-        if (!Database.TryGetInterviewTemplateJSON(category.Id, out string templateJSON))
+        if (!Database.Interviews.TryGetInterviewTemplateJSON(category.Id, out string templateJSON))
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {
@@ -277,7 +277,7 @@ public class InterviewTemplateCommands
         }
 
         MemoryStream memStream = new(Encoding.UTF8.GetBytes(templateJSON));
-        if (!Database.TryDeleteInterviewTemplate(category.Id))
+        if (!Database.Interviews.TryDeleteInterviewTemplate(category.Id))
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {
