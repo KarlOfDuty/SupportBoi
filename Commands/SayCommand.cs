@@ -44,7 +44,7 @@ public class SayCommand
             Description = message.message.Replace("\\n", "\n")
         });
 
-        await LogChannel.Success(command.User.Mention + " posted the " + message.identifier + " message in " + command.Channel.Mention + ".");
+        await LogChannel.Success(command.User.Mention + " posted the `" + message.identifier + "` message in " + command.Channel.Mention + ".");
     }
 
     private static async Task SendMessageList(SlashCommandContext command)
