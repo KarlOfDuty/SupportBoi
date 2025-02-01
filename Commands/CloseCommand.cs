@@ -46,13 +46,16 @@ public class CloseCommand
 
         await command.RespondAsync(confirmation);
 
-        if (closeReasons.TryGetValue(command.Channel.Id, out _))
+        if (!string.IsNullOrWhiteSpace(reason))
         {
-            closeReasons[command.Channel.Id] = reason;
-        }
-        else
-        {
-            closeReasons.Add(command.Channel.Id, reason);
+            if (closeReasons.TryGetValue(command.Channel.Id, out _))
+            {
+                closeReasons[command.Channel.Id] = reason;
+            }
+            else
+            {
+                closeReasons.Add(command.Channel.Id, reason);
+            }
         }
     }
 
