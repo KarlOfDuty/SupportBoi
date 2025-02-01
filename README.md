@@ -9,7 +9,7 @@ A support ticket Discord bot. Uses a MySQL database for storage of ticket inform
 
 1. Set up a mysql-compatible server, create a user and empty database for the bot to use.
 
-2. (Optional) Install .NET 8 if it doesn't already exist on your system.
+2. (Optional) Install .NET 9 if it doesn't already exist on your system.
 
 3. [Create a new bot application and invite it to your server](docs/CreateBot.md).
 
