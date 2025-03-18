@@ -1,0 +1,14 @@
+[Unit]
+Description=SupportBoi Ticket Discord Bot
+Documentation=https://github.com/KarlOfDuty/SupportBoi
+After=network.target
+Wants=network.target
+
+[Service]
+User=supportboi
+ExecStart=/usr/bin/supportboi --config /etc/supportboi/config.yml
+Restart=no
+Type=exec
+
+[Install]
+WantedBy=multi-user.target

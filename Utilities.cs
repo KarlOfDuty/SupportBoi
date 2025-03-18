@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using DSharpPlus.Entities;
 
@@ -102,7 +103,7 @@ public static class Utilities
             throw new InvalidOperationException("Could not load manifest resource stream.");
         }
 
-        using StreamReader reader = new StreamReader(stream);
+        using StreamReader reader = new StreamReader(stream, Encoding.Unicode);
         return reader.ReadToEnd();
     }
 

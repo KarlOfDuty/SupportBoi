@@ -10,3 +10,6 @@
 /Windows-x64
 
 Folder.DotSettings.user
+
+packaging/rpmbuild-nightly/
+packaging/rpmbuild/

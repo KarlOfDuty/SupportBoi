@@ -4,6 +4,7 @@
     <OutputType>Exe</OutputType>
     <Version>4.0.1</Version>
     <TargetFramework>net9.0</TargetFramework>
+    <AssemblyName>supportboi</AssemblyName>
     <StartupObject>SupportBoi.SupportBoi</StartupObject>
     <RuntimeIdentifiers>win-x64;linux-x64</RuntimeIdentifiers>
     <PublishSingleFile>true</PublishSingleFile>
