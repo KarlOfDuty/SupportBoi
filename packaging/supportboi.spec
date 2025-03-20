@@ -1,13 +1,21 @@
 %global debug_package %{nil}
 %global repo_root %{_topdir}/..
+%global base_version %(echo "$(sed -ne '/Version/{s/.*<Version>\\(.*\\)<\\/Version>.*/\\1/p;q;}' < SupportBoi.csproj)")
 
-Summary:    A support ticket Discord bot
+%if %{defined dev_build}
+Name:       supportboi-dev
+Summary:    A support ticket Discord bot (dev build)
+Version:    %{base_version}~%(date "+%%Y%%m%%d%%H%%M%%S")git%(git rev-parse --short HEAD)
+Source:     https://github.com/KarlOfDuty/SupportBoi/archive/%(git rev-parse HEAD).zip
+%else
 Name:       supportboi
-Version:    %(sed -ne '/Version/{s/.*<Version>\(.*\)<\/Version>.*/\1/p;q;}' < SupportBoi.csproj)
+Summary:    A support ticket Discord bot
+Version:    %{base_version}
+Source:     https://github.com/KarlOfDuty/SupportBoi/archive/refs/tags/%{base_version}.zip
+%endif
 Release:    1%{?dist}
 License:    GPLv3
 URL:        https://github.com/KarlOfDuty/SupportBoi
-Source:     https://github.com/KarlOfDuty/SupportBoi/archive/refs/heads/main.zip
 Packager:   KarlofDuty
 
 BuildRequires: systemd-rpm-macros
@@ -25,20 +33,25 @@ information. Creates formatted HTML ticket transcripts when tickets are closed.
 dotnet publish %{repo_root}/SupportBoi.csproj -p:PublishSingleFile=true -r linux-x64 -c Release --self-contained false --output %{_builddir}/out
 
 %install
+if [[ -d %{_rpmdir}/%{_arch} ]]; then
+  %{__rm} %{_rpmdir}/%{_arch}/*
+fi
+
 %{__install} -d %{buildroot}/usr/bin
-%{__install} %{_builddir}/out/supportboi %{buildroot}/usr/bin/supportboi
 # rpmbuild post-processing using the strip command breaks dotnet binaries, remove the executable bit to avoid it
-chmod 644 %{buildroot}/usr/bin/supportboi
+%{__install} -m 644 %{_builddir}/out/supportboi %{buildroot}/usr/bin/supportboi
 
 %{__install} -d %{buildroot}/usr/lib/systemd/system
-%{__install} %{repo_root}/packaging/supportboi.service %{buildroot}/usr/lib/systemd/system/
+%{__install} -m 644 %{repo_root}/packaging/supportboi.service %{buildroot}/usr/lib/systemd/system/
 
 %{__install} -d %{buildroot}/etc/supportboi/
-%{__install} %{repo_root}/default_config.yml %{buildroot}/etc/supportboi/config.yml
+%{__install} -m 600 %{repo_root}/default_config.yml %{buildroot}/etc/supportboi/config.yml
+
+%{__install} -d %{buildroot}/var/lib/supportboi/transcripts
 
 %pre
 getent group supportboi > /dev/null || groupadd supportboi
-getent passwd supportboi > /dev/null || useradd -r -s /sbin/nologin -g supportboi supportboi
+getent passwd supportboi > /dev/null || useradd -r -m -d /var/lib/supportboi -s /sbin/nologin -g supportboi supportboi
 
 %post
 %systemd_post supportboi.service
@@ -56,3 +69,5 @@ fi
 %attr(0755,root,root) /usr/bin/supportboi
 %attr(0644,root,root) /usr/lib/systemd/system/supportboi.service
 %config %attr(0600, supportboi, supportboi) /etc/supportboi/config.yml
+%dir %attr(0700, supportboi, supportboi) /var/lib/supportboi
+%dir %attr(0755, supportboi, supportboi) /var/lib/supportboi/transcripts

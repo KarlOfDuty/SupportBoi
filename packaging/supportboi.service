@@ -6,7 +6,7 @@ Wants=network.target
 
 [Service]
 User=supportboi
-ExecStart=/usr/bin/supportboi --config /etc/supportboi/config.yml
+ExecStart=/usr/bin/supportboi --config /etc/supportboi/config.yml --transcripts /var/lib/supportboi/transcripts
 Restart=no
 Type=exec
 

@@ -40,15 +40,9 @@ pipeline
         {
           agent
           {
-            dockerfile
-            {
-              filename 'packaging/RHEL9.Dockerfile'
-            }
+            dockerfile { filename 'packaging/RHEL9.Dockerfile' }
           }
-          environment
-          {
-            DOTNET_CLI_HOME = "/tmp/.dotnet"
-          }
+          environment { DOTNET_CLI_HOME = "/tmp/.dotnet" }
           when
           {
             expression
@@ -58,25 +52,19 @@ pipeline
           }
           steps
           {
-            sh 'rpmbuild -bb packaging/supportboi-nightly.spec --define "_topdir $PWD/.rpmbuild-el9"'
+            sh 'rpmbuild -bb packaging/supportboi.spec --define "_topdir $PWD/.rpmbuild-el9" --define "dev_build true"'
             sh 'mkdir linux-x64'
-            sh 'cp .rpmbuild-el9/RPMS/x86_64/supportboi-nightly-*.el9.x86_64.rpm linux-x64/'
-            archiveArtifacts(artifacts: 'linux-x64/supportboi-nightly-*.el9.x86_64.rpm', caseSensitive: true)
+            sh 'cp .rpmbuild-el9/RPMS/x86_64/supportboi-dev-*.el9.x86_64.rpm linux-x64/'
+            archiveArtifacts(artifacts: 'linux-x64/supportboi-dev-*.el9.x86_64.rpm', caseSensitive: true)
           }
         }
         stage('RHEL8')
         {
           agent
           {
-            dockerfile
-            {
-              filename 'packaging/RHEL8.Dockerfile'
-            }
+            dockerfile { filename 'packaging/RHEL8.Dockerfile' }
           }
-          environment
-          {
-            DOTNET_CLI_HOME = "/tmp/.dotnet"
-          }
+          environment { DOTNET_CLI_HOME = "/tmp/.dotnet" }
           when
           {
             expression
@@ -86,10 +74,10 @@ pipeline
           }
           steps
           {
-            sh 'rpmbuild -bb packaging/supportboi-nightly.spec --define "_topdir $PWD/.rpmbuild-el8"'
+            sh 'rpmbuild -bb packaging/supportboi.spec --define "_topdir $PWD/.rpmbuild-el8" --define "dev_build true"'
             sh 'mkdir linux-x64'
-            sh 'cp .rpmbuild-el8/RPMS/x86_64/supportboi-nightly-*.el8.x86_64.rpm linux-x64/'
-            archiveArtifacts(artifacts: 'linux-x64/supportboi-nightly-*.el8.x86_64.rpm', caseSensitive: true)
+            sh 'cp .rpmbuild-el8/RPMS/x86_64/supportboi-dev-*.el8.x86_64.rpm linux-x64/'
+            archiveArtifacts(artifacts: 'linux-x64/supportboi-dev-*.el8.x86_64.rpm', caseSensitive: true)
           }
         }
       }
