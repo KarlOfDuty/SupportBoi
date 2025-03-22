@@ -43,19 +43,13 @@ pipeline
             dockerfile { filename 'packaging/RHEL9.Dockerfile' }
           }
           environment { DOTNET_CLI_HOME = "/tmp/.dotnet" }
-          when
-          {
-            expression
-            {
-              return env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'beta' || env.BRANCH_NAME == 'jenkins-testing';
-            }
-          }
           steps
           {
             sh 'rpmbuild -bb packaging/supportboi.spec --define "_topdir $PWD/.rpmbuild-el9" --define "dev_build true"'
             sh 'mkdir linux-x64'
             sh 'cp .rpmbuild-el9/RPMS/x86_64/supportboi-dev-*.el9.x86_64.rpm linux-x64/'
             archiveArtifacts(artifacts: 'linux-x64/supportboi-dev-*.el9.x86_64.rpm', caseSensitive: true)
+            stash includes: 'linux-x64/supportboi-dev-*.el9.x86_64.rpm', name: 'el9-rpm'
           }
         }
         stage('RHEL8')
@@ -65,19 +59,47 @@ pipeline
             dockerfile { filename 'packaging/RHEL8.Dockerfile' }
           }
           environment { DOTNET_CLI_HOME = "/tmp/.dotnet" }
-          when
-          {
-            expression
-            {
-              return env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'beta' || env.BRANCH_NAME == 'jenkins-testing';
-            }
-          }
           steps
           {
             sh 'rpmbuild -bb packaging/supportboi.spec --define "_topdir $PWD/.rpmbuild-el8" --define "dev_build true"'
             sh 'mkdir linux-x64'
             sh 'cp .rpmbuild-el8/RPMS/x86_64/supportboi-dev-*.el8.x86_64.rpm linux-x64/'
             archiveArtifacts(artifacts: 'linux-x64/supportboi-dev-*.el8.x86_64.rpm', caseSensitive: true)
+            stash includes: 'linux-x64/supportboi-dev-*.el8.x86_64.rpm', name: 'el8-rpm'
+          }
+        }
+      }
+    }
+    stage('Deploy')
+    {
+      parallel
+      {
+        stage('RHEL9')
+        {
+          when
+          {
+            expression { return env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'beta'; }
+          }
+          steps
+          {
+            unstash name: 'el9-rpm'
+            sh 'mkdir -p /usr/share/nginx/repo.karlofduty.com/rhel/el9/packages/supportboi/'
+            sh 'cp linux-x64/supportboi-dev-*.el9.x86_64.rpm /usr/share/nginx/repo.karlofduty.com/rhel/el9/packages/supportboi/'
+            sh 'createrepo_c --update /usr/share/nginx/repo.karlofduty.com/rhel/el9'
+          }
+        }
+        stage('RHEL8')
+        {
+          when
+          {
+            expression { return env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'beta'; }
+          }
+          steps
+          {
+            unstash name: 'el8-rpm'
+            sh 'mkdir -p /usr/share/nginx/repo.karlofduty.com/rhel/el8/packages/supportboi/'
+            sh 'cp linux-x64/supportboi-dev-*.el8.x86_64.rpm /usr/share/nginx/repo.karlofduty.com/rhel/el8/packages/supportboi/'
+            sh 'createrepo_c --update /usr/share/nginx/repo.karlofduty.com/rhel/el8'
           }
         }
       }
