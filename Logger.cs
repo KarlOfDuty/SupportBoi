@@ -2,10 +2,11 @@ using Microsoft.Extensions.Logging;
 using System;
 using DSharpPlus;
 using DSharpPlus.Exceptions;
+using Microsoft.Extensions.Hosting.Systemd;
 
 namespace SupportBoi;
 
-internal class LogTestFactory : ILoggerProvider
+internal class LoggerProvider : ILoggerProvider
 {
     public void Dispose() { /* nothing to dispose */ }
 
@@ -74,13 +75,10 @@ public class Logger : ILogger
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
     {
-        if (!IsEnabled(logLevel))
-        {
-            return;
-        }
+        string message = formatter(state, exception);
 
         // Ratelimit messages are usually warnings, but they are unimportant in this case so downgrade them to debug.
-        if (formatter(state, exception).StartsWith("Hit Discord ratelimit on route ") && logLevel == LogLevel.Warning)
+        if (message.StartsWith("Hit Discord ratelimit on route ") && logLevel == LogLevel.Warning)
         {
             logLevel = LogLevel.Debug;
         }
@@ -90,6 +88,44 @@ public class Logger : ILogger
             logLevel = LogLevel.Debug;
         }
 
+        if (!IsEnabled(logLevel))
+        {
+            return;
+        }
+
+        if (SystemdHelpers.IsSystemdService())
+        {
+            SystemdLog(logLevel, eventId, exception, message);
+        }
+        else
+        {
+            ConsoleLog(logLevel, eventId, exception, message);
+        }
+    }
+
+    public void SystemdLog(LogLevel logLevel, EventId eventId, Exception exception, string message)
+    {
+        // TODO: Replace with logging directly to systemd using correct log levels.
+        string logLevelTag = logLevel switch
+        {
+            LogLevel.Trace       => "[Trace] ",
+            LogLevel.Debug       => "[Debug] ",
+            LogLevel.Information => " [Info] ",
+            LogLevel.Warning     => " [Warn] ",
+            LogLevel.Error       => "[Error] ",
+            LogLevel.Critical    => " [\u001b[1mCrit\u001b[0m] ",
+            _                    => " [None] ",
+        };
+
+        Console.WriteLine(logLevelTag + message);
+        if (exception != null)
+        {
+            Console.WriteLine($"{exception} : {exception.Message}\n{exception.StackTrace}");
+        }
+    }
+
+    public void ConsoleLog(LogLevel logLevel, EventId eventId, Exception exception, string message)
+    {
         string[] logLevelParts = logLevel switch
         {
             LogLevel.Trace       => ["[", "Trace", "] "],
@@ -148,7 +184,7 @@ public class Logger : ILogger
             {
                 Console.ForegroundColor = ConsoleColor.Red;
             }
-            Console.WriteLine(formatter(state, exception));
+            Console.WriteLine(message);
 
             if (exception != null)
             {

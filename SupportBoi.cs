@@ -238,7 +238,7 @@ internal static class SupportBoi
 
         clientBuilder.ConfigureLogging(config =>
         {
-            config.AddProvider(new LogTestFactory());
+            config.AddProvider(new LoggerProvider());
         });
 
         client = clientBuilder.Build();
