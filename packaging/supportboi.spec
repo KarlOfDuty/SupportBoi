@@ -7,6 +7,7 @@ Name:       supportboi-dev
 Summary:    A support ticket Discord bot (dev build)
 Version:    %{base_version}~%(date "+%%Y%%m%%d%%H%%M%%S")git%(git rev-parse --short HEAD)
 Source:     https://github.com/KarlOfDuty/SupportBoi/archive/%(git rev-parse HEAD).zip
+Provides:   supportboi
 %else
 Name:       supportboi
 Summary:    A support ticket Discord bot
