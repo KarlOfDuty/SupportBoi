@@ -47,9 +47,9 @@ pipeline
           {
             sh 'rpmbuild -bb packaging/supportboi.spec --define "_topdir $PWD/.rpmbuild-el9" --define "dev_build true"'
             sh 'mkdir linux-x64'
-            sh 'cp .rpmbuild-el9/RPMS/x86_64/supportboi-dev-*.el9.x86_64.rpm linux-x64/'
-            archiveArtifacts(artifacts: 'linux-x64/supportboi-dev-*.el9.x86_64.rpm', caseSensitive: true)
-            stash includes: 'linux-x64/supportboi-dev-*.el9.x86_64.rpm', name: 'el9-rpm'
+            sh 'cp .rpmbuild-el9/RPMS/x86_64/supportboi-dev-*.x86_64.rpm linux-x64/'
+            archiveArtifacts(artifacts: 'linux-x64/supportboi-dev-*.x86_64.rpm', caseSensitive: true)
+            stash includes: 'linux-x64/supportboi-dev-*.x86_64.rpm', name: 'el9-rpm'
           }
         }
         stage('RHEL8')
@@ -63,9 +63,25 @@ pipeline
           {
             sh 'rpmbuild -bb packaging/supportboi.spec --define "_topdir $PWD/.rpmbuild-el8" --define "dev_build true"'
             sh 'mkdir linux-x64'
-            sh 'cp .rpmbuild-el8/RPMS/x86_64/supportboi-dev-*.el8.x86_64.rpm linux-x64/'
-            archiveArtifacts(artifacts: 'linux-x64/supportboi-dev-*.el8.x86_64.rpm', caseSensitive: true)
-            stash includes: 'linux-x64/supportboi-dev-*.el8.x86_64.rpm', name: 'el8-rpm'
+            sh 'cp .rpmbuild-el8/RPMS/x86_64/supportboi-dev-*.x86_64.rpm linux-x64/'
+            archiveArtifacts(artifacts: 'linux-x64/supportboi-dev-*.x86_64.rpm', caseSensitive: true)
+            stash includes: 'linux-x64/supportboi-dev-*.x86_64.rpm', name: 'el8-rpm'
+          }
+        }
+        stage('Fedora')
+        {
+          agent
+          {
+            dockerfile { filename 'packaging/Fedora.Dockerfile' }
+          }
+          environment { DOTNET_CLI_HOME = "/tmp/.dotnet" }
+          steps
+          {
+            sh 'rpmbuild -bb packaging/supportboi.spec --define "_topdir $PWD/.rpmbuild-fedora" --define "dev_build true"'
+            sh 'mkdir linux-x64'
+            sh 'cp .rpmbuild-fedora/RPMS/x86_64/supportboi-dev-*.x86_64.rpm linux-x64/'
+            archiveArtifacts(artifacts: 'linux-x64/supportboi-dev-*.x86_64.rpm', caseSensitive: true)
+            stash includes: 'linux-x64/supportboi-dev-*.x86_64.rpm', name: 'fedora-rpm'
           }
         }
       }
@@ -84,7 +100,7 @@ pipeline
           {
             unstash name: 'el9-rpm'
             sh 'mkdir -p /usr/share/nginx/repo.karlofduty.com/rhel/el9/packages/supportboi/'
-            sh 'cp linux-x64/supportboi-dev-*.el9.x86_64.rpm /usr/share/nginx/repo.karlofduty.com/rhel/el9/packages/supportboi/'
+            sh 'cp linux-x64/supportboi-dev-*.x86_64.rpm /usr/share/nginx/repo.karlofduty.com/rhel/el9/packages/supportboi/'
             sh 'createrepo_c --update /usr/share/nginx/repo.karlofduty.com/rhel/el9'
           }
         }
@@ -98,8 +114,22 @@ pipeline
           {
             unstash name: 'el8-rpm'
             sh 'mkdir -p /usr/share/nginx/repo.karlofduty.com/rhel/el8/packages/supportboi/'
-            sh 'cp linux-x64/supportboi-dev-*.el8.x86_64.rpm /usr/share/nginx/repo.karlofduty.com/rhel/el8/packages/supportboi/'
+            sh 'cp linux-x64/supportboi-dev-*.x86_64.rpm /usr/share/nginx/repo.karlofduty.com/rhel/el8/packages/supportboi/'
             sh 'createrepo_c --update /usr/share/nginx/repo.karlofduty.com/rhel/el8'
+          }
+        }
+        stage('Fedora')
+        {
+          when
+          {
+            expression { return env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'beta'; }
+          }
+          steps
+          {
+            unstash name: 'fedora-rpm'
+            sh 'mkdir -p /usr/share/nginx/repo.karlofduty.com/fedora/packages/supportboi/'
+            sh 'cp linux-x64/supportboi-dev-*.x86_64.rpm /usr/share/nginx/repo.karlofduty.com/fedora/packages/supportboi/'
+            sh 'createrepo_c --update /usr/share/nginx/repo.karlofduty.com/fedora'
           }
         }
       }
