@@ -97,8 +97,8 @@ pipeline
           steps
           {
             sh './packaging/generate-deb.sh'
-            archiveArtifacts(artifacts: 'debian/supportboi-dev_*.amd64.deb, debian/supportboi-dev_*.orig.tar.gz, debian/supportboi-dev_*.tar.xz', caseSensitive: true)
-            stash includes: 'debian/supportboi-dev_*.amd64.deb, debian/supportboi-dev_*.orig.tar.gz, debian/supportboi-dev_*.tar.xz', name: 'debian-deb'
+            archiveArtifacts(artifacts: 'debian/supportboi-dev_*_amd64.deb, debian/supportboi-dev_*.orig.tar.gz, debian/supportboi-dev_*.tar.xz', caseSensitive: true)
+            stash includes: 'debian/supportboi-dev_*_amd64.deb, debian/supportboi-dev_*.orig.tar.gz, debian/supportboi-dev_*.tar.xz', name: 'debian-deb'
           }
         }
         stage('Ubuntu')
@@ -117,8 +117,8 @@ pipeline
           steps
           {
             sh './packaging/generate-deb.sh'
-            archiveArtifacts(artifacts: 'ubuntu/supportboi-dev_*.amd64.deb, ubuntu/supportboi-dev_*.orig.tar.gz, ubuntu/supportboi-dev_*.tar.xz', caseSensitive: true)
-            stash includes: 'ubuntu/supportboi-dev_*.amd64.deb, ubuntu/supportboi-dev_*.orig.tar.gz, ubuntu/supportboi-dev_*.tar.xz', name: 'ubuntu-deb'
+            archiveArtifacts(artifacts: 'ubuntu/supportboi-dev_*_amd64.deb, ubuntu/supportboi-dev_*.orig.tar.gz, ubuntu/supportboi-dev_*.tar.xz', caseSensitive: true)
+            stash includes: 'ubuntu/supportboi-dev_*_amd64.deb, ubuntu/supportboi-dev_*.orig.tar.gz, ubuntu/supportboi-dev_*.tar.xz', name: 'ubuntu-deb'
           }
         }
       }
