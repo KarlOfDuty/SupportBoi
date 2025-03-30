@@ -1,0 +1,10 @@
+# Example file for upstream/metadata.
+# See https://wiki.debian.org/UpstreamMetadata for more info/fields.
+# Below an example based on a github project.
+
+Bug-Database: https://github.com/KarlofDuty/supportboi/issues
+Bug-Submit: https://github.com/KarlofDuty/supportboi/issues/new
+Changelog: https://github.com/KarlofDuty/supportboi/blob/master/CHANGES
+Documentation: https://github.com/KarlofDuty/supportboi/wiki
+Repository-Browse: https://github.com/KarlofDuty/supportboi
+Repository: https://github.com/KarlofDuty/supportboi.git

@@ -1,0 +1,20 @@
+Source: PACKAGE_NAME
+Section: net
+Priority: optional
+Maintainer: Karl Essinger <xkaess22@gmail.com>
+Rules-Requires-Root: no
+Build-Depends:
+ debhelper-compat (= 13),
+Standards-Version: 4.6.2
+Homepage: https://github.com/KarlOfDuty/SupportBoi
+Vcs-Browser: https://github.com/KarlOfDuty/SupportBoi
+Vcs-Git: https://github.com/KarlOfDuty/SupportBoi.git
+
+Package: PACKAGE_NAME
+Architecture: amd64
+Multi-Arch: foreign
+Depends:
+ dotnet-runtime-9.0,
+ ${shlibs:Depends},
+ ${misc:Depends},
+Description: A support ticket Discord bot.

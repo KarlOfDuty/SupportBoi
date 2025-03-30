@@ -10,11 +10,11 @@ pipeline
         sh 'dotnet restore'
       }
     }
-    stage('Build')
+    stage('Build / Package')
     {
       parallel
       {
-        stage('Linux')
+        stage('Basic Linux')
         {
           steps
           {
@@ -25,7 +25,7 @@ pipeline
             archiveArtifacts(artifacts: 'linux-x64/supportboi-sc', caseSensitive: true)
           }
         }
-        stage('Windows')
+        stage('Basic Windows')
         {
           steps
           {
@@ -45,11 +45,10 @@ pipeline
           environment { DOTNET_CLI_HOME = "/tmp/.dotnet" }
           steps
           {
-            sh 'rpmbuild -bb packaging/supportboi.spec --define "_topdir $PWD/.rpmbuild-el9" --define "dev_build true"'
-            sh 'mkdir linux-x64'
-            sh 'cp .rpmbuild-el9/RPMS/x86_64/supportboi-dev-*.x86_64.rpm linux-x64/'
-            archiveArtifacts(artifacts: 'linux-x64/supportboi-dev-*.x86_64.rpm', caseSensitive: true)
-            stash includes: '.rpmbuild-el9/RPMS/x86_64/supportboi-dev-*.x86_64.rpm', name: 'el9-rpm'
+            sh 'rpmbuild -bb packaging/supportboi.spec --define "_topdir $PWD/rhel" --define "dev_build true"'
+            sh 'cp .rpmbuild-el9/RPMS/x86_64/supportboi-dev-*.x86_64.rpm rhel/'
+            archiveArtifacts(artifacts: 'rhel/supportboi-dev-*.x86_64.rpm', caseSensitive: true)
+            stash includes: 'rhel/supportboi-dev-*.x86_64.rpm', name: 'el9-rpm'
           }
         }
         stage('RHEL8')
@@ -61,11 +60,10 @@ pipeline
           environment { DOTNET_CLI_HOME = "/tmp/.dotnet" }
           steps
           {
-            sh 'rpmbuild -bb packaging/supportboi.spec --define "_topdir $PWD/.rpmbuild-el8" --define "dev_build true"'
-            sh 'mkdir linux-x64'
-            sh 'cp .rpmbuild-el8/RPMS/x86_64/supportboi-dev-*.x86_64.rpm linux-x64/'
-            archiveArtifacts(artifacts: 'linux-x64/supportboi-dev-*.x86_64.rpm', caseSensitive: true)
-            stash includes: '.rpmbuild-el8/RPMS/x86_64/supportboi-dev-*.x86_64.rpm', name: 'el8-rpm'
+            sh 'rpmbuild -bb packaging/supportboi.spec --define "_topdir $PWD/rhel" --define "dev_build true"'
+            sh 'cp rhel/RPMS/x86_64/supportboi-dev-*.x86_64.rpm rhel/'
+            archiveArtifacts(artifacts: 'rhel/supportboi-dev-*.x86_64.rpm', caseSensitive: true)
+            stash includes: 'rhel/supportboi-dev-*.x86_64.rpm', name: 'el8-rpm'
           }
         }
         stage('Fedora')
@@ -77,11 +75,50 @@ pipeline
           environment { DOTNET_CLI_HOME = "/tmp/.dotnet" }
           steps
           {
-            sh 'rpmbuild -bb packaging/supportboi.spec --define "_topdir $PWD/.rpmbuild-fedora" --define "dev_build true"'
-            sh 'mkdir linux-x64'
-            sh 'cp .rpmbuild-fedora/RPMS/x86_64/supportboi-dev-*.x86_64.rpm linux-x64/'
-            archiveArtifacts(artifacts: 'linux-x64/supportboi-dev-*.x86_64.rpm', caseSensitive: true)
-            stash includes: '.rpmbuild-fedora/RPMS/x86_64/supportboi-dev-*.x86_64.rpm', name: 'fedora-rpm'
+            sh 'rpmbuild -bb packaging/supportboi.spec --define "_topdir $PWD/fedora" --define "dev_build true"'
+            sh 'cp fedora/RPMS/x86_64/supportboi-dev-*.x86_64.rpm linux-x64/'
+            archiveArtifacts(artifacts: 'fedora/supportboi-dev-*.x86_64.rpm', caseSensitive: true)
+            stash includes: 'fedora/supportboi-dev-*.x86_64.rpm', name: 'fedora-rpm'
+          }
+        }
+        stage('Debian')
+        {
+          agent
+          {
+            dockerfile { filename 'packaging/Debian.Dockerfile' }
+          }
+          environment
+          {
+            DOTNET_CLI_HOME = "/tmp/.dotnet"
+            DEBEMAIL="xkaess22@gmail.com"
+            DEBFULLNAME="Karl Essinger"
+            PACKAGE_ROOT="${WORKSPACE}/debian"
+          }
+          steps
+          {
+            sh './packaging/generate-deb.sh'
+            archiveArtifacts(artifacts: 'debian/supportboi-dev-*.amd64.deb, debian/supportboi-dev-*.orig.tar.gz, debian/supportboi-dev-*.tar.xz', caseSensitive: true)
+            stash includes: 'debian/supportboi-dev-*.amd64.deb, debian/supportboi-dev-*.orig.tar.gz, debian/supportboi-dev-*.tar.xz', name: 'debian-deb'
+          }
+        }
+        stage('Ubuntu')
+        {
+          agent
+          {
+            dockerfile { filename 'packaging/Ubuntu.Dockerfile' }
+          }
+          environment
+          {
+            DOTNET_CLI_HOME = "/tmp/.dotnet"
+            DEBEMAIL="xkaess22@gmail.com"
+            DEBFULLNAME="Karl Essinger"
+            PACKAGE_ROOT="${WORKSPACE}/ubuntu"
+          }
+          steps
+          {
+            sh './packaging/generate-deb.sh'
+            archiveArtifacts(artifacts: 'ubuntu/supportboi-dev-*.amd64.deb, ubuntu/supportboi-dev-*.orig.tar.gz, ubuntu/supportboi-dev-*.tar.xz', caseSensitive: true)
+            stash includes: 'ubuntu/supportboi-dev-*.amd64.deb, ubuntu/supportboi-dev-*.orig.tar.gz, ubuntu/supportboi-dev-*.tar.xz', name: 'ubuntu-deb'
           }
         }
       }
