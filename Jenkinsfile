@@ -93,6 +93,7 @@ pipeline
             DEBEMAIL="xkaess22@gmail.com"
             DEBFULLNAME="Karl Essinger"
             PACKAGE_ROOT="${WORKSPACE}/debian"
+            DEV_BUILD="true"
           }
           steps
           {
@@ -113,6 +114,7 @@ pipeline
             DEBEMAIL="xkaess22@gmail.com"
             DEBFULLNAME="Karl Essinger"
             PACKAGE_ROOT="${WORKSPACE}/ubuntu"
+            DEV_BUILD="true"
           }
           steps
           {
