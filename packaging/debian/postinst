@@ -19,23 +19,30 @@ set -e
 
 
 case "$1" in
-    configure)
-        getent group supportboi > /dev/null || groupadd supportboi
-        getent passwd supportboi > /dev/null || useradd -r -m -d /var/lib/supportboi -s /sbin/nologin -g supportboi supportboi
-        chmod 400 /etc/supportboi/config.yml
-        chmod 555 /usr/bin/supportboi
-        chown supportboi:supportboi /etc/supportboi/config.yml
-        chown supportboi:supportboi /usr/bin/supportboi
-    ;;
+  configure)
+    getent group supportboi > /dev/null || groupadd supportboi
+    getent passwd supportboi > /dev/null || useradd -r -m -d /var/lib/supportboi -s /sbin/nologin -g supportboi supportboi
+    chmod 400 /etc/supportboi/config.yml
+    chmod 555 /usr/bin/supportboi
+    chown supportboi:supportboi /etc/supportboi/config.yml
+    chown supportboi:supportboi /usr/bin/supportboi
+    install -m 700 -o supportboi -g supportboi -d /var/lib/supportboi
+    install -m 700 -o supportboi -g supportboi -d /var/lib/supportboi/transcripts
+    systemctl daemon-reload
+    if [ -f "/tmp/.supportboi-upgrade-stopped-service" ]; then
+      systemctl start supportboi.service
+      rm "/tmp/.supportboi-upgrade-stopped-service"
+    fi
+  ;;
 
-    abort-upgrade|abort-remove|abort-deconfigure)
-        getent passwd supportboi > /dev/null && userdel supportboi
-    ;;
+  abort-upgrade|abort-remove|abort-deconfigure)
+    systemctl daemon-reload
+  ;;
 
-    *)
-        echo "postinst called with unknown argument '$1'" >&2
-        exit 1
-    ;;
+  *)
+    echo "postinst called with unknown argument '$1'" >&2
+    exit 1
+  ;;
 esac
 
 # dh_installdeb will replace this with shell code automatically

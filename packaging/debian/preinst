@@ -15,16 +15,16 @@ set -e
 
 
 case "$1" in
-    install|upgrade)
-    ;;
+  install|upgrade)
+  ;;
 
-    abort-upgrade)
-    ;;
+  abort-upgrade)
+  ;;
 
-    *)
-        echo "preinst called with unknown argument '$1'" >&2
-        exit 1
-    ;;
+  *)
+    echo "preinst called with unknown argument '$1'" >&2
+    exit 1
+  ;;
 esac
 
 # dh_installdeb will replace this with shell code automatically

@@ -57,9 +57,6 @@ else
   sed -i 's/DIST/'"dev"'/' "$PACKAGE_DIR/debian/changelog"
 fi
 
-# Copy the service file
-cp "$REPO_ROOT/packaging/supportboi.service" "$PACKAGE_DIR/debian"
-
 # Set packager name and email if not explicitly set
 if [[ -z "$DEBEMAIL" || -z "$DEBEMAIL" ]]; then
   echo -e "You must set DEBFULLNAME and DEBEMAIL. Example:\nexport DEBFULLNAME=\"Karl Essinger\"\nexport DEBEMAIL=\"xkaess22@gmail.com\""

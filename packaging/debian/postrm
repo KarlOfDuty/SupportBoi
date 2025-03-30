@@ -20,17 +20,26 @@ set -e
 
 
 case "$1" in
-    purge|remove|abort-install|disappear)
-      getent passwd supportboi > /dev/null && userdel supportboi
-    ;;
+  remove|abort-install|disappear)
+    systemctl daemon-reload
+    getent passwd supportboi > /dev/null && userdel supportboi
+    rmdir --parents --ignore-fail-on-non-empty "/var/lib/supportboi/transcripts"
+  ;;
 
-    upgrade|failed-upgrade|abort-upgrade)
-    ;;
+  purge)
+    systemctl daemon-reload
+    getent passwd supportboi > /dev/null && userdel supportboi
+    rm -rf "/var/lib/supportboi"
+  ;;
 
-    *)
-        echo "postrm called with unknown argument '$1'" >&2
-        exit 1
-    ;;
+  upgrade|failed-upgrade|abort-upgrade)
+    systemctl daemon-reload
+  ;;
+
+  *)
+    echo "postrm called with unknown argument '$1'" >&2
+    exit 1
+  ;;
 esac
 
 # dh_installdeb will replace this with shell code automatically

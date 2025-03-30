@@ -18,16 +18,30 @@ set -e
 
 
 case "$1" in
-    remove|upgrade|deconfigure)
-    ;;
+  upgrade|deconfigure)
+    if systemctl -q is-active supportboi.service; then
+      systemctl stop supportboi.service
+      touch "/tmp/.supportboi-upgrade-stopped-service"
+    fi
+  ;;
 
-    failed-upgrade)
-    ;;
+  remove)
+    if systemctl -q is-enabled supportboi.service; then
+      systemctl disable supportboi.service
+    fi
 
-    *)
-        echo "prerm called with unknown argument '$1'" >&2
-        exit 1
-    ;;
+    if systemctl -q is-active supportboi.service; then
+      systemctl stop supportboi.service
+    fi
+  ;;
+
+  failed-upgrade)
+  ;;
+
+  *)
+    echo "prerm called with unknown argument '$1'" >&2
+    exit 1
+  ;;
 esac
 
 # dh_installdeb will replace this with shell code automatically
