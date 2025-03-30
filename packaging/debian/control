@@ -18,3 +18,4 @@ Depends:
  ${shlibs:Depends},
  ${misc:Depends},
 Description: A support ticket Discord bot.
+Conflicts: supportboi, supportboi-dev
