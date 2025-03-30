@@ -13,3 +13,5 @@ Folder.DotSettings.user
 
 packaging/rpmbuild-nightly/
 packaging/rpmbuild/
+
+.dpkg-deb/

@@ -46,7 +46,7 @@ pipeline
           steps
           {
             sh 'rpmbuild -bb packaging/supportboi.spec --define "_topdir $PWD/rhel" --define "dev_build true"'
-            sh 'cp .rpmbuild-el9/RPMS/x86_64/supportboi-dev-*.x86_64.rpm rhel/'
+            sh 'cp rhel/RPMS/x86_64/supportboi-dev-*.x86_64.rpm rhel/'
             archiveArtifacts(artifacts: 'rhel/supportboi-dev-*.x86_64.rpm', caseSensitive: true)
             stash includes: 'rhel/supportboi-dev-*.x86_64.rpm', name: 'el9-rpm'
           }
@@ -76,7 +76,7 @@ pipeline
           steps
           {
             sh 'rpmbuild -bb packaging/supportboi.spec --define "_topdir $PWD/fedora" --define "dev_build true"'
-            sh 'cp fedora/RPMS/x86_64/supportboi-dev-*.x86_64.rpm linux-x64/'
+            sh 'cp fedora/RPMS/x86_64/supportboi-dev-*.x86_64.rpm fedora/'
             archiveArtifacts(artifacts: 'fedora/supportboi-dev-*.x86_64.rpm', caseSensitive: true)
             stash includes: 'fedora/supportboi-dev-*.x86_64.rpm', name: 'fedora-rpm'
           }
@@ -97,8 +97,8 @@ pipeline
           steps
           {
             sh './packaging/generate-deb.sh'
-            archiveArtifacts(artifacts: 'debian/supportboi-dev-*.amd64.deb, debian/supportboi-dev-*.orig.tar.gz, debian/supportboi-dev-*.tar.xz', caseSensitive: true)
-            stash includes: 'debian/supportboi-dev-*.amd64.deb, debian/supportboi-dev-*.orig.tar.gz, debian/supportboi-dev-*.tar.xz', name: 'debian-deb'
+            archiveArtifacts(artifacts: 'debian/supportboi-dev_*.amd64.deb, debian/supportboi-dev_*.orig.tar.gz, debian/supportboi-dev_*.tar.xz', caseSensitive: true)
+            stash includes: 'debian/supportboi-dev_*.amd64.deb, debian/supportboi-dev_*.orig.tar.gz, debian/supportboi-dev_*.tar.xz', name: 'debian-deb'
           }
         }
         stage('Ubuntu')
@@ -117,8 +117,8 @@ pipeline
           steps
           {
             sh './packaging/generate-deb.sh'
-            archiveArtifacts(artifacts: 'ubuntu/supportboi-dev-*.amd64.deb, ubuntu/supportboi-dev-*.orig.tar.gz, ubuntu/supportboi-dev-*.tar.xz', caseSensitive: true)
-            stash includes: 'ubuntu/supportboi-dev-*.amd64.deb, ubuntu/supportboi-dev-*.orig.tar.gz, ubuntu/supportboi-dev-*.tar.xz', name: 'ubuntu-deb'
+            archiveArtifacts(artifacts: 'ubuntu/supportboi-dev_*.amd64.deb, ubuntu/supportboi-dev_*.orig.tar.gz, ubuntu/supportboi-dev_*.tar.xz', caseSensitive: true)
+            stash includes: 'ubuntu/supportboi-dev_*.amd64.deb, ubuntu/supportboi-dev_*.orig.tar.gz, ubuntu/supportboi-dev_*.tar.xz', name: 'ubuntu-deb'
           }
         }
       }
@@ -137,7 +137,7 @@ pipeline
           {
             unstash name: 'el9-rpm'
             sh 'mkdir -p /usr/share/nginx/repo.karlofduty.com/rhel/el9/packages/supportboi/'
-            sh 'cp .rpmbuild-el9/RPMS/x86_64/supportboi-dev-*.x86_64.rpm /usr/share/nginx/repo.karlofduty.com/rhel/el9/packages/supportboi/'
+            sh 'cp rhel/supportboi-dev-*.el9.x86_64.rpm /usr/share/nginx/repo.karlofduty.com/rhel/el8/packages/supportboi/'
             sh 'createrepo_c --update /usr/share/nginx/repo.karlofduty.com/rhel/el9'
           }
         }
@@ -151,7 +151,7 @@ pipeline
           {
             unstash name: 'el8-rpm'
             sh 'mkdir -p /usr/share/nginx/repo.karlofduty.com/rhel/el8/packages/supportboi/'
-            sh 'cp .rpmbuild-el8/RPMS/x86_64/supportboi-dev-*.x86_64.rpm /usr/share/nginx/repo.karlofduty.com/rhel/el8/packages/supportboi/'
+            sh 'cp rhel/supportboi-dev-*.el8.x86_64.rpm /usr/share/nginx/repo.karlofduty.com/rhel/el8/packages/supportboi/'
             sh 'createrepo_c --update /usr/share/nginx/repo.karlofduty.com/rhel/el8'
           }
         }
@@ -165,7 +165,7 @@ pipeline
           {
             unstash name: 'fedora-rpm'
             sh 'mkdir -p /usr/share/nginx/repo.karlofduty.com/fedora/packages/supportboi/'
-            sh 'cp .rpmbuild-fedora/RPMS/x86_64/supportboi-dev-*.x86_64.rpm /usr/share/nginx/repo.karlofduty.com/fedora/packages/supportboi/'
+            sh 'cp fedora/supportboi-dev-*.fc*.x86_64.rpm /usr/share/nginx/repo.karlofduty.com/fedora/packages/supportboi/'
             sh 'createrepo_c --update /usr/share/nginx/repo.karlofduty.com/fedora'
           }
         }
