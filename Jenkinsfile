@@ -171,6 +171,34 @@ pipeline
             sh 'createrepo_c --update /usr/share/nginx/repo.karlofduty.com/fedora'
           }
         }
+        stage('Debian')
+        {
+          when
+          {
+            expression { return env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'beta'; }
+          }
+          steps
+          {
+            unstash name: 'debian-deb'
+            sh 'mkdir -p /usr/share/nginx/repo.karlofduty.com/debian/packages/supportboi/'
+            sh 'cp debian/supportboi-dev_*_amd64.deb /usr/share/nginx/repo.karlofduty.com/debian/packages/supportboi'
+            sh 'dpkg-scanpackages -m /usr/share/nginx/repo.karlofduty.com/debian | gzip -9c > /usr/share/nginx/repo.karlofduty.com/debian/Packages.gz'
+          }
+        }
+        stage('Ubuntu')
+        {
+          when
+          {
+            expression { return env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'beta'; }
+          }
+          steps
+          {
+            unstash name: 'ubuntu-deb'
+            sh 'mkdir -p /usr/share/nginx/repo.karlofduty.com/ubuntu/packages/supportboi/'
+            sh 'cp ubuntu/supportboi-dev_*_amd64.deb /usr/share/nginx/repo.karlofduty.com/ubuntu/packages/supportboi'
+            sh 'dpkg-scanpackages -m /usr/share/nginx/repo.karlofduty.com/ubuntu | gzip -9c > /usr/share/nginx/repo.karlofduty.com/ubuntu/Packages.gz'
+          }
+        }
       }
     }
   }
