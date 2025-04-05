@@ -180,7 +180,7 @@ pipeline
           steps
           {
             sh 'mkdir -p /usr/share/nginx/repo.karlofduty.com/rhel/el9/packages/supportboi/'
-            sh 'cp rhel/supportboi-dev-*.el9.x86_64.rpm /usr/share/nginx/repo.karlofduty.com/rhel/el8/packages/supportboi/'
+            sh 'cp rhel/supportboi-dev-*.el9.x86_64.rpm /usr/share/nginx/repo.karlofduty.com/rhel/el9/packages/supportboi/'
             sh 'createrepo_c --update /usr/share/nginx/repo.karlofduty.com/rhel/el9'
           }
         }
