@@ -177,14 +177,21 @@ pipeline
           {
             expression { return env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'beta'; }
           }
+          environment
+          {
+            DISTRO="debian"
+          }
           steps
           {
-            unstash name: 'debian-deb'
-            sh 'mkdir -p /usr/share/nginx/repo.karlofduty.com/debian/packages/supportboi/'
-            sh 'cp debian/supportboi-dev_*_amd64.deb /usr/share/nginx/repo.karlofduty.com/debian/packages/supportboi'
-            sh 'mkdir -p /usr/share/nginx/repo.karlofduty.com/debian/sources/supportboi/'
-            sh 'cp debian/supportboi-dev_*.tar.xz /usr/share/nginx/repo.karlofduty.com/debian/sources/supportboi'
-            sh 'dpkg-scanpackages -m /usr/share/nginx/repo.karlofduty.com/debian | gzip -9c > /usr/share/nginx/repo.karlofduty.com/debian/Packages.gz'
+            unstash name: '$DISTRO-deb'
+            sh 'mkdir -p /usr/share/nginx/repo.karlofduty.com/$DISTRO/packages/supportboi/'
+            sh 'cp $DISTRO/supportboi-dev_*_amd64.deb /usr/share/nginx/repo.karlofduty.com/$DISTRO/packages/supportboi'
+            sh 'mkdir -p /usr/share/nginx/repo.karlofduty.com/$DISTRO/sources/supportboi/'
+            sh 'cp $DISTRO/supportboi-dev_*.tar.xz /usr/share/nginx/repo.karlofduty.com/$DISTRO/sources/supportboi'
+            dir('/usr/share/nginx/repo.karlofduty.com/$DISTRO')
+            {
+              sh 'dpkg-scanpackages -m ./ | gzip -9c > Packages.gz'
+            }
           }
         }
         stage('Ubuntu')
@@ -193,14 +200,21 @@ pipeline
           {
             expression { return env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'beta'; }
           }
+          environment
+          {
+            DISTRO="ubuntu"
+          }
           steps
           {
-            unstash name: 'ubuntu-deb'
-            sh 'mkdir -p /usr/share/nginx/repo.karlofduty.com/ubuntu/packages/supportboi/'
-            sh 'cp ubuntu/supportboi-dev_*_amd64.deb /usr/share/nginx/repo.karlofduty.com/ubuntu/packages/supportboi'
-            sh 'mkdir -p /usr/share/nginx/repo.karlofduty.com/ubuntu/sources/supportboi/'
-            sh 'cp ubuntu/supportboi-dev_*.tar.xz /usr/share/nginx/repo.karlofduty.com/ubuntu/sources/supportboi'
-            sh 'dpkg-scanpackages -m /usr/share/nginx/repo.karlofduty.com/ubuntu | gzip -9c > /usr/share/nginx/repo.karlofduty.com/ubuntu/Packages.gz'
+            unstash name: '$DISTRO-deb'
+            sh 'mkdir -p /usr/share/nginx/repo.karlofduty.com/$DISTRO/packages/supportboi/'
+            sh 'cp $DISTRO/supportboi-dev_*_amd64.deb /usr/share/nginx/repo.karlofduty.com/$DISTRO/packages/supportboi'
+            sh 'mkdir -p /usr/share/nginx/repo.karlofduty.com/$DISTRO/sources/supportboi/'
+            sh 'cp $DISTRO/supportboi-dev_*.tar.xz /usr/share/nginx/repo.karlofduty.com/$DISTRO/sources/supportboi'
+            dir('/usr/share/nginx/repo.karlofduty.com/$DISTRO')
+            {
+              sh 'dpkg-scanpackages -m ./ | gzip -9c > Packages.gz'
+            }
           }
         }
       }
