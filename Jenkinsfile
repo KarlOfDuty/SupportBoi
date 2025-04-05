@@ -47,7 +47,6 @@ pipeline
           {
             sh 'rpmbuild -bb packaging/supportboi.spec --define "_topdir $PWD/rhel" --define "dev_build true"'
             sh 'cp rhel/RPMS/x86_64/supportboi-dev-*.x86_64.rpm rhel/'
-            archiveArtifacts(artifacts: 'rhel/supportboi-dev-*.x86_64.rpm', caseSensitive: true)
             stash includes: 'rhel/supportboi-dev-*.x86_64.rpm', name: 'el9-rpm'
           }
         }
@@ -62,7 +61,6 @@ pipeline
           {
             sh 'rpmbuild -bb packaging/supportboi.spec --define "_topdir $PWD/rhel" --define "dev_build true"'
             sh 'cp rhel/RPMS/x86_64/supportboi-dev-*.x86_64.rpm rhel/'
-            archiveArtifacts(artifacts: 'rhel/supportboi-dev-*.x86_64.rpm', caseSensitive: true)
             stash includes: 'rhel/supportboi-dev-*.x86_64.rpm', name: 'el8-rpm'
           }
         }
@@ -77,7 +75,6 @@ pipeline
           {
             sh 'rpmbuild -bb packaging/supportboi.spec --define "_topdir $PWD/fedora" --define "dev_build true"'
             sh 'cp fedora/RPMS/x86_64/supportboi-dev-*.x86_64.rpm fedora/'
-            archiveArtifacts(artifacts: 'fedora/supportboi-dev-*.x86_64.rpm', caseSensitive: true)
             stash includes: 'fedora/supportboi-dev-*.x86_64.rpm', name: 'fedora-rpm'
           }
         }
@@ -125,6 +122,51 @@ pipeline
         }
       }
     }
+    stage('Sign')
+    {
+      parallel
+      {
+        stage('RHEL9')
+        {
+          steps
+          {
+            unstash name: 'el9-rpm'
+            withCredentials([string(credentialsId: 'JENKINS_GPG_KEY_PASSWORD', variable: 'JENKINS_GPG_KEY_PASSWORD')]) {
+              sh '/usr/lib/gnupg/gpg-preset-passphrase --passphrase "$JENKINS_GPG_KEY_PASSWORD" --preset 0D27E4CD885E9DD79C252E825F70A1590922C51E'
+              sh 'rpmsign --define "_gpg_name Karl Essinger (Jenkins Signing) <xkaess22@gmail.com>" --addsign rhel/supportboi-dev-*.el9.x86_64.rpm'
+              sh 'rpm -vv --checksig rhel/supportboi-dev-*.el9.x86_64.rpm'
+            }
+            archiveArtifacts(artifacts: 'rhel/supportboi-dev-*.el9.x86_64.rpm', caseSensitive: true)
+          }
+        }
+        stage('RHEL8')
+        {
+          steps
+          {
+            unstash name: 'el8-rpm'
+            withCredentials([string(credentialsId: 'JENKINS_GPG_KEY_PASSWORD', variable: 'JENKINS_GPG_KEY_PASSWORD')]) {
+              sh '/usr/lib/gnupg/gpg-preset-passphrase --passphrase "$JENKINS_GPG_KEY_PASSWORD" --preset 0D27E4CD885E9DD79C252E825F70A1590922C51E'
+              sh 'rpmsign --define "_gpg_name Karl Essinger (Jenkins Signing) <xkaess22@gmail.com>" --addsign rhel/supportboi-dev-*.el8.x86_64.rpm'
+              sh 'rpm -vv --checksig rhel/supportboi-dev-*.el8.x86_64.rpm'
+            }
+            archiveArtifacts(artifacts: 'rhel/supportboi-dev-*.el8.x86_64.rpm', caseSensitive: true)
+          }
+        }
+        stage('Fedora')
+        {
+          steps
+          {
+            unstash name: 'fedora-rpm'
+            withCredentials([string(credentialsId: 'JENKINS_GPG_KEY_PASSWORD', variable: 'JENKINS_GPG_KEY_PASSWORD')]) {
+              sh '/usr/lib/gnupg/gpg-preset-passphrase --passphrase "$JENKINS_GPG_KEY_PASSWORD" --preset 0D27E4CD885E9DD79C252E825F70A1590922C51E'
+              sh 'rpmsign --define "_gpg_name Karl Essinger (Jenkins Signing) <xkaess22@gmail.com>" --addsign fedora/supportboi-dev-*.x86_64.rpm'
+              sh 'rpm -vv --checksig fedora/supportboi-dev-*.x86_64.rpm'
+            }
+            archiveArtifacts(artifacts: 'fedora/supportboi-dev-*.x86_64.rpm', caseSensitive: true)
+          }
+        }
+      }
+    }
     stage('Deploy')
     {
       parallel
@@ -137,7 +179,6 @@ pipeline
           }
           steps
           {
-            unstash name: 'el9-rpm'
             sh 'mkdir -p /usr/share/nginx/repo.karlofduty.com/rhel/el9/packages/supportboi/'
             sh 'cp rhel/supportboi-dev-*.el9.x86_64.rpm /usr/share/nginx/repo.karlofduty.com/rhel/el8/packages/supportboi/'
             sh 'createrepo_c --update /usr/share/nginx/repo.karlofduty.com/rhel/el9'
@@ -151,7 +192,6 @@ pipeline
           }
           steps
           {
-            unstash name: 'el8-rpm'
             sh 'mkdir -p /usr/share/nginx/repo.karlofduty.com/rhel/el8/packages/supportboi/'
             sh 'cp rhel/supportboi-dev-*.el8.x86_64.rpm /usr/share/nginx/repo.karlofduty.com/rhel/el8/packages/supportboi/'
             sh 'createrepo_c --update /usr/share/nginx/repo.karlofduty.com/rhel/el8'
@@ -165,7 +205,6 @@ pipeline
           }
           steps
           {
-            unstash name: 'fedora-rpm'
             sh 'mkdir -p /usr/share/nginx/repo.karlofduty.com/fedora/packages/supportboi/'
             sh 'cp fedora/supportboi-dev-*.fc*.x86_64.rpm /usr/share/nginx/repo.karlofduty.com/fedora/packages/supportboi/'
             sh 'createrepo_c --update /usr/share/nginx/repo.karlofduty.com/fedora'
@@ -206,43 +245,59 @@ pipeline
               sh "dpkg-scansources pool/ > ${env.DISTS_SRC_DIR}/Sources"
               sh "cat ${env.DISTS_SRC_DIR}/Sources | gzip -9c > ${env.DISTS_SRC_DIR}/Sources.gz"
             }
+
+            dir("${env.REPO_DIR}/dists/${env.DISTRO}")
+            {
+              // Generate release file
+              sh "${WORKSPACE}/CIUtilities/scripts/generate-deb-release-file.sh > Release"
+            }
+
+            sh "rmdir ${env.REPO_DIR}@tmp"
           }
-          stage('Ubuntu')
+        }
+        stage('Ubuntu')
+        {
+          when
           {
-            when
-            {
-              expression { return env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'beta'; }
-            }
-            environment
-            {
-              DISTRO="ubuntu"
-              REPO_DIR="/usr/share/nginx/repo.karlofduty.com/${env.DISTRO}"
-              POOL_DIR="${env.REPO_DIR}/pool/dev/supportboi"
-              DISTS_BIN_DIR="${env.REPO_DIR}/dists/${env.DISTRO}/dev/binary-amd64"
-              DISTS_SRC_DIR="${env.REPO_DIR}/dists/${env.DISTRO}/dev/source"
-            }
-            steps
-            {
-              unstash name: "${env.DISTRO}-deb"
+            expression { return env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'beta'; }
+          }
+          environment
+          {
+            DISTRO="ubuntu"
+            REPO_DIR="/usr/share/nginx/repo.karlofduty.com/${env.DISTRO}"
+            POOL_DIR="${env.REPO_DIR}/pool/dev/supportboi"
+            DISTS_BIN_DIR="${env.REPO_DIR}/dists/${env.DISTRO}/dev/binary-amd64"
+            DISTS_SRC_DIR="${env.REPO_DIR}/dists/${env.DISTRO}/dev/source"
+          }
+          steps
+          {
+            unstash name: "${env.DISTRO}-deb"
 
-              // Copy package and sources to pool directory
-              sh "mkdir -p ${env.POOL_DIR}"
-              sh "cp ${env.DISTRO}/supportboi-dev_*_amd64.deb ${env.POOL_DIR}"
-              sh "cp ${env.DISTRO}/supportboi-dev_*.tar.xz ${env.POOL_DIR}"
-              sh "cp ${env.DISTRO}/supportboi-dev_*.dsc ${env.POOL_DIR}"
-              dir("${env.REPO_DIR}")
-              {
-                // Generate package lists
-                sh "mkdir -p ${env.DISTS_BIN_DIR}"
-                sh "dpkg-scanpackages --arch amd64 -m pool/ > ${env.DISTS_BIN_DIR}/Packages"
-                sh "cat ${env.DISTS_BIN_DIR}/Packages | gzip -9c > ${env.DISTS_BIN_DIR}/Packages.gz"
+            // Copy package and sources to pool directory
+            sh "mkdir -p ${env.POOL_DIR}"
+            sh "cp ${env.DISTRO}/supportboi-dev_*_amd64.deb ${env.POOL_DIR}"
+            sh "cp ${env.DISTRO}/supportboi-dev_*.tar.xz ${env.POOL_DIR}"
+            sh "cp ${env.DISTRO}/supportboi-dev_*.dsc ${env.POOL_DIR}"
+            dir("${env.REPO_DIR}")
+            {
+              // Generate package lists
+              sh "mkdir -p ${env.DISTS_BIN_DIR}"
+              sh "dpkg-scanpackages --arch amd64 -m pool/ > ${env.DISTS_BIN_DIR}/Packages"
+              sh "cat ${env.DISTS_BIN_DIR}/Packages | gzip -9c > ${env.DISTS_BIN_DIR}/Packages.gz"
 
-                // Generate source lists
-                sh "mkdir -p ${env.DISTS_SRC_DIR}"
-                sh "dpkg-scansources pool/ > ${env.DISTS_SRC_DIR}/Sources"
-                sh "cat ${env.DISTS_SRC_DIR}/Sources | gzip -9c > ${env.DISTS_SRC_DIR}/Sources.gz"
-              }
+              // Generate source lists
+              sh "mkdir -p ${env.DISTS_SRC_DIR}"
+              sh "dpkg-scansources pool/ > ${env.DISTS_SRC_DIR}/Sources"
+              sh "cat ${env.DISTS_SRC_DIR}/Sources | gzip -9c > ${env.DISTS_SRC_DIR}/Sources.gz"
             }
+
+            dir("${env.REPO_DIR}/dists/${env.DISTRO}")
+            {
+              // Generate release file
+              sh "${WORKSPACE}/CIUtilities/scripts/generate-deb-release-file.sh > Release"
+            }
+
+            sh "rmdir ${env.REPO_DIR}@tmp"
           }
         }
       }
