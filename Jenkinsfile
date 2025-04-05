@@ -98,8 +98,8 @@ pipeline
           steps
           {
             sh './packaging/generate-deb.sh'
-            archiveArtifacts(artifacts: 'debian/supportboi-dev_*_amd64.deb, debian/supportboi-dev_*.orig.tar.gz, debian/supportboi-dev_*.tar.xz', caseSensitive: true)
-            stash includes: 'debian/supportboi-dev_*_amd64.deb, debian/supportboi-dev_*.orig.tar.gz, debian/supportboi-dev_*.tar.xz', name: 'debian-deb'
+            archiveArtifacts(artifacts: 'debian/supportboi-dev_*_amd64.deb, debian/supportboi-dev_*.tar.xz', caseSensitive: true)
+            stash includes: 'debian/supportboi-dev_*_amd64.deb, debian/supportboi-dev_*.tar.xz, debian/supportboi-dev_*.dsc', name: 'debian-deb'
           }
         }
         stage('Ubuntu')
@@ -120,7 +120,7 @@ pipeline
           {
             sh './packaging/generate-deb.sh'
             archiveArtifacts(artifacts: 'ubuntu/supportboi-dev_*_amd64.deb, ubuntu/supportboi-dev_*.orig.tar.gz, ubuntu/supportboi-dev_*.tar.xz', caseSensitive: true)
-            stash includes: 'ubuntu/supportboi-dev_*_amd64.deb, ubuntu/supportboi-dev_*.orig.tar.gz, ubuntu/supportboi-dev_*.tar.xz', name: 'ubuntu-deb'
+            stash includes: 'ubuntu/supportboi-dev_*_amd64.deb, ubuntu/supportboi-dev_*.tar.xz, ubuntu/supportboi-dev_*.dsc', name: 'ubuntu-deb'
           }
         }
       }
@@ -180,40 +180,68 @@ pipeline
           environment
           {
             DISTRO="debian"
+            REPO_DIR="/usr/share/nginx/repo.karlofduty.com/${env.DISTRO}"
+            POOL_DIR="${env.REPO_DIR}/pool/dev/supportboi"
+            DISTS_BIN_DIR="${env.REPO_DIR}/dists/${env.DISTRO}/dev/binary-amd64"
+            DISTS_SRC_DIR="${env.REPO_DIR}/dists/${env.DISTRO}/dev/source"
           }
           steps
           {
-            unstash name: 'debian-deb'
-            sh 'mkdir -p /usr/share/nginx/repo.karlofduty.com/$DISTRO/packages/supportboi/'
-            sh 'cp $DISTRO/supportboi-dev_*_amd64.deb /usr/share/nginx/repo.karlofduty.com/$DISTRO/packages/supportboi'
-            sh 'mkdir -p /usr/share/nginx/repo.karlofduty.com/$DISTRO/sources/supportboi/'
-            sh 'cp $DISTRO/supportboi-dev_*.tar.xz /usr/share/nginx/repo.karlofduty.com/$DISTRO/sources/supportboi'
-            dir('/usr/share/nginx/repo.karlofduty.com/debian')
+            unstash name: "${env.DISTRO}-deb"
+
+            // Copy package and sources to pool directory
+            sh "mkdir -p ${env.POOL_DIR}"
+            sh "cp ${env.DISTRO}/supportboi-dev_*_amd64.deb ${env.POOL_DIR}"
+            sh "cp ${env.DISTRO}/supportboi-dev_*.tar.xz ${env.POOL_DIR}"
+            sh "cp ${env.DISTRO}/supportboi-dev_*.dsc ${env.POOL_DIR}"
+            dir("${env.REPO_DIR}")
             {
-              sh 'dpkg-scanpackages -m ./ | gzip -9c > Packages.gz'
+              // Generate package lists
+              sh "mkdir -p ${env.DISTS_BIN_DIR}"
+              sh "dpkg-scanpackages --arch amd64 -m pool/ > ${env.DISTS_BIN_DIR}/Packages"
+              sh "cat ${env.DISTS_BIN_DIR}/Packages | gzip -9c > ${env.DISTS_BIN_DIR}/Packages.gz"
+
+              // Generate source lists
+              sh "mkdir -p ${env.DISTS_SRC_DIR}"
+              sh "dpkg-scansources pool/ > ${env.DISTS_SRC_DIR}/Sources"
+              sh "cat ${env.DISTS_SRC_DIR}/Sources | gzip -9c > ${env.DISTS_SRC_DIR}/Sources.gz"
             }
           }
-        }
-        stage('Ubuntu')
-        {
-          when
+          stage('Ubuntu')
           {
-            expression { return env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'beta'; }
-          }
-          environment
-          {
-            DISTRO="ubuntu"
-          }
-          steps
-          {
-            unstash name: 'ubuntu-deb'
-            sh 'mkdir -p /usr/share/nginx/repo.karlofduty.com/$DISTRO/packages/supportboi/'
-            sh 'cp $DISTRO/supportboi-dev_*_amd64.deb /usr/share/nginx/repo.karlofduty.com/$DISTRO/packages/supportboi'
-            sh 'mkdir -p /usr/share/nginx/repo.karlofduty.com/$DISTRO/sources/supportboi/'
-            sh 'cp $DISTRO/supportboi-dev_*.tar.xz /usr/share/nginx/repo.karlofduty.com/$DISTRO/sources/supportboi'
-            dir('/usr/share/nginx/repo.karlofduty.com/ubuntu')
+            when
             {
-              sh 'dpkg-scanpackages -m ./ | gzip -9c > Packages.gz'
+              expression { return env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'beta'; }
+            }
+            environment
+            {
+              DISTRO="ubuntu"
+              REPO_DIR="/usr/share/nginx/repo.karlofduty.com/${env.DISTRO}"
+              POOL_DIR="${env.REPO_DIR}/pool/dev/supportboi"
+              DISTS_BIN_DIR="${env.REPO_DIR}/dists/${env.DISTRO}/dev/binary-amd64"
+              DISTS_SRC_DIR="${env.REPO_DIR}/dists/${env.DISTRO}/dev/source"
+            }
+            steps
+            {
+              unstash name: "${env.DISTRO}-deb"
+
+              // Copy package and sources to pool directory
+              sh "mkdir -p ${env.POOL_DIR}"
+              sh "cp ${env.DISTRO}/supportboi-dev_*_amd64.deb ${env.POOL_DIR}"
+              sh "cp ${env.DISTRO}/supportboi-dev_*.tar.xz ${env.POOL_DIR}"
+              sh "cp ${env.DISTRO}/supportboi-dev_*.dsc ${env.POOL_DIR}"
+              dir("${env.REPO_DIR}")
+              {
+                // Generate package lists
+                sh "mkdir -p ${env.DISTS_BIN_DIR}"
+                sh "dpkg-scanpackages --arch amd64 -m pool/ > ${env.DISTS_BIN_DIR}/Packages"
+                sh "cat ${env.DISTS_BIN_DIR}/Packages | gzip -9c > ${env.DISTS_BIN_DIR}/Packages.gz"
+
+                // Generate source lists
+                sh "mkdir -p ${env.DISTS_SRC_DIR}"
+                sh "dpkg-scansources pool/ > ${env.DISTS_SRC_DIR}/Sources"
+                sh "cat ${env.DISTS_SRC_DIR}/Sources | gzip -9c > ${env.DISTS_SRC_DIR}/Sources.gz"
+              }
             }
           }
         }
