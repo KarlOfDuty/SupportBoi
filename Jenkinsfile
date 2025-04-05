@@ -183,7 +183,7 @@ pipeline
           }
           steps
           {
-            unstash name: '$DISTRO-deb'
+            unstash name: 'debian-deb'
             sh 'mkdir -p /usr/share/nginx/repo.karlofduty.com/$DISTRO/packages/supportboi/'
             sh 'cp $DISTRO/supportboi-dev_*_amd64.deb /usr/share/nginx/repo.karlofduty.com/$DISTRO/packages/supportboi'
             sh 'mkdir -p /usr/share/nginx/repo.karlofduty.com/$DISTRO/sources/supportboi/'
@@ -206,7 +206,7 @@ pipeline
           }
           steps
           {
-            unstash name: '$DISTRO-deb'
+            unstash name: 'ubuntu-deb'
             sh 'mkdir -p /usr/share/nginx/repo.karlofduty.com/$DISTRO/packages/supportboi/'
             sh 'cp $DISTRO/supportboi-dev_*_amd64.deb /usr/share/nginx/repo.karlofduty.com/$DISTRO/packages/supportboi'
             sh 'mkdir -p /usr/share/nginx/repo.karlofduty.com/$DISTRO/sources/supportboi/'
