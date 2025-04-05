@@ -40,7 +40,7 @@ pipeline
         {
           agent
           {
-            dockerfile { filename 'packaging/RHEL9.Dockerfile' }
+            dockerfile { filename 'CIUtilities/docker/RHEL9.Dockerfile' }
           }
           environment { DOTNET_CLI_HOME = "/tmp/.dotnet" }
           steps
@@ -54,7 +54,7 @@ pipeline
         {
           agent
           {
-            dockerfile { filename 'packaging/RHEL8.Dockerfile' }
+            dockerfile { filename 'CIUtilities/docker/RHEL8.Dockerfile' }
           }
           environment { DOTNET_CLI_HOME = "/tmp/.dotnet" }
           steps
@@ -68,7 +68,7 @@ pipeline
         {
           agent
           {
-            dockerfile { filename 'packaging/Fedora.Dockerfile' }
+            dockerfile { filename 'CIUtilities/docker/Fedora.Dockerfile' }
           }
           environment { DOTNET_CLI_HOME = "/tmp/.dotnet" }
           steps
@@ -82,7 +82,7 @@ pipeline
         {
           agent
           {
-            dockerfile { filename 'packaging/Debian.Dockerfile' }
+            dockerfile { filename 'CIUtilities/docker/Debian.Dockerfile' }
           }
           environment
           {
@@ -103,7 +103,7 @@ pipeline
         {
           agent
           {
-            dockerfile { filename 'packaging/Ubuntu.Dockerfile' }
+            dockerfile { filename 'CIUtilities/docker/Ubuntu.Dockerfile' }
           }
           environment
           {
