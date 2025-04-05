@@ -188,7 +188,7 @@ pipeline
             sh 'cp $DISTRO/supportboi-dev_*_amd64.deb /usr/share/nginx/repo.karlofduty.com/$DISTRO/packages/supportboi'
             sh 'mkdir -p /usr/share/nginx/repo.karlofduty.com/$DISTRO/sources/supportboi/'
             sh 'cp $DISTRO/supportboi-dev_*.tar.xz /usr/share/nginx/repo.karlofduty.com/$DISTRO/sources/supportboi'
-            dir('/usr/share/nginx/repo.karlofduty.com/$DISTRO')
+            dir('/usr/share/nginx/repo.karlofduty.com/debian')
             {
               sh 'dpkg-scanpackages -m ./ | gzip -9c > Packages.gz'
             }
@@ -211,7 +211,7 @@ pipeline
             sh 'cp $DISTRO/supportboi-dev_*_amd64.deb /usr/share/nginx/repo.karlofduty.com/$DISTRO/packages/supportboi'
             sh 'mkdir -p /usr/share/nginx/repo.karlofduty.com/$DISTRO/sources/supportboi/'
             sh 'cp $DISTRO/supportboi-dev_*.tar.xz /usr/share/nginx/repo.karlofduty.com/$DISTRO/sources/supportboi'
-            dir('/usr/share/nginx/repo.karlofduty.com/$DISTRO')
+            dir('/usr/share/nginx/repo.karlofduty.com/ubuntu')
             {
               sh 'dpkg-scanpackages -m ./ | gzip -9c > Packages.gz'
             }
