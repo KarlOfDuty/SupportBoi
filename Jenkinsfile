@@ -207,41 +207,41 @@ pipeline
               sh "cat ${env.DISTS_SRC_DIR}/Sources | gzip -9c > ${env.DISTS_SRC_DIR}/Sources.gz"
             }
           }
-          stage('Ubuntu')
+        }
+        stage('Ubuntu')
+        {
+          when
           {
-            when
-            {
-              expression { return env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'beta'; }
-            }
-            environment
-            {
-              DISTRO="ubuntu"
-              REPO_DIR="/usr/share/nginx/repo.karlofduty.com/${env.DISTRO}"
-              POOL_DIR="${env.REPO_DIR}/pool/dev/supportboi"
-              DISTS_BIN_DIR="${env.REPO_DIR}/dists/${env.DISTRO}/dev/binary-amd64"
-              DISTS_SRC_DIR="${env.REPO_DIR}/dists/${env.DISTRO}/dev/source"
-            }
-            steps
-            {
-              unstash name: "${env.DISTRO}-deb"
+            expression { return env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'beta'; }
+          }
+          environment
+          {
+            DISTRO="ubuntu"
+            REPO_DIR="/usr/share/nginx/repo.karlofduty.com/${env.DISTRO}"
+            POOL_DIR="${env.REPO_DIR}/pool/dev/supportboi"
+            DISTS_BIN_DIR="${env.REPO_DIR}/dists/${env.DISTRO}/dev/binary-amd64"
+            DISTS_SRC_DIR="${env.REPO_DIR}/dists/${env.DISTRO}/dev/source"
+          }
+          steps
+          {
+            unstash name: "${env.DISTRO}-deb"
 
-              // Copy package and sources to pool directory
-              sh "mkdir -p ${env.POOL_DIR}"
-              sh "cp ${env.DISTRO}/supportboi-dev_*_amd64.deb ${env.POOL_DIR}"
-              sh "cp ${env.DISTRO}/supportboi-dev_*.tar.xz ${env.POOL_DIR}"
-              sh "cp ${env.DISTRO}/supportboi-dev_*.dsc ${env.POOL_DIR}"
-              dir("${env.REPO_DIR}")
-              {
-                // Generate package lists
-                sh "mkdir -p ${env.DISTS_BIN_DIR}"
-                sh "dpkg-scanpackages --arch amd64 -m pool/ > ${env.DISTS_BIN_DIR}/Packages"
-                sh "cat ${env.DISTS_BIN_DIR}/Packages | gzip -9c > ${env.DISTS_BIN_DIR}/Packages.gz"
+            // Copy package and sources to pool directory
+            sh "mkdir -p ${env.POOL_DIR}"
+            sh "cp ${env.DISTRO}/supportboi-dev_*_amd64.deb ${env.POOL_DIR}"
+            sh "cp ${env.DISTRO}/supportboi-dev_*.tar.xz ${env.POOL_DIR}"
+            sh "cp ${env.DISTRO}/supportboi-dev_*.dsc ${env.POOL_DIR}"
+            dir("${env.REPO_DIR}")
+            {
+              // Generate package lists
+              sh "mkdir -p ${env.DISTS_BIN_DIR}"
+              sh "dpkg-scanpackages --arch amd64 -m pool/ > ${env.DISTS_BIN_DIR}/Packages"
+              sh "cat ${env.DISTS_BIN_DIR}/Packages | gzip -9c > ${env.DISTS_BIN_DIR}/Packages.gz"
 
-                // Generate source lists
-                sh "mkdir -p ${env.DISTS_SRC_DIR}"
-                sh "dpkg-scansources pool/ > ${env.DISTS_SRC_DIR}/Sources"
-                sh "cat ${env.DISTS_SRC_DIR}/Sources | gzip -9c > ${env.DISTS_SRC_DIR}/Sources.gz"
-              }
+              // Generate source lists
+              sh "mkdir -p ${env.DISTS_SRC_DIR}"
+              sh "dpkg-scansources pool/ > ${env.DISTS_SRC_DIR}/Sources"
+              sh "cat ${env.DISTS_SRC_DIR}/Sources | gzip -9c > ${env.DISTS_SRC_DIR}/Sources.gz"
             }
           }
         }

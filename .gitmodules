@@ -1,0 +1,3 @@
+[submodule "CIUtilities"]
+	path = CIUtilities
+	url = git@github.com:KarlOfDuty/CIUtilities.git
