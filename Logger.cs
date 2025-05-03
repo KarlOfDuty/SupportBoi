@@ -3,6 +3,7 @@ using System;
 using DSharpPlus;
 using DSharpPlus.Exceptions;
 using Microsoft.Extensions.Hosting.Systemd;
+using System.Threading;
 
 namespace SupportBoi;
 
@@ -21,7 +22,7 @@ public class Logger : ILogger
     public static Logger instance { get; } = new Logger();
 
     private static LogLevel minimumLogLevel = LogLevel.Trace;
-    private readonly object @lock = new();
+    private readonly Lock @lock = new();
 
     internal static void SetLogLevel(LogLevel level)
     {
