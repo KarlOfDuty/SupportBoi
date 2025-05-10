@@ -116,7 +116,7 @@ pipeline
           steps
           {
             sh './packaging/generate-deb.sh'
-            archiveArtifacts(artifacts: 'ubuntu/supportboi-dev_*_amd64.deb, ubuntu/supportboi-dev_*.orig.tar.gz, ubuntu/supportboi-dev_*.tar.xz', caseSensitive: true)
+            archiveArtifacts(artifacts: 'ubuntu/supportboi-dev_*_amd64.deb, ubuntu/supportboi-dev_*.tar.xz', caseSensitive: true)
             stash includes: 'ubuntu/supportboi-dev_*_amd64.deb, ubuntu/supportboi-dev_*.tar.xz, ubuntu/supportboi-dev_*.dsc', name: 'ubuntu-deb'
           }
         }
