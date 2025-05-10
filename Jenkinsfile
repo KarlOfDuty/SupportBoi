@@ -8,8 +8,11 @@ pipeline
       steps
       {
         sh 'dotnet restore'
-        common = load("${env.WORKSPACE}/ci-utilities/scripts/common.groovy")
-        common.prepare_gpg_key()
+        script
+        {
+          common = load("${env.WORKSPACE}/ci-utilities/scripts/common.groovy")
+          common.prepare_gpg_key()
+        }
       }
     }
     stage('Build / Package')
