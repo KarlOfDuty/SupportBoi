@@ -3,11 +3,13 @@ pipeline
   agent any
   stages
   {
-    stage('Setup Dependencies')
+    stage('Preparation')
     {
       steps
       {
         sh 'dotnet restore'
+        common = load("${env.WORKSPACE}/ci-utilities/scripts/common.groovy")
+        common.prepare_gpg_key()
       }
     }
     stage('Build / Package')
@@ -36,88 +38,113 @@ pipeline
             archiveArtifacts(artifacts: 'windows-x64/supportboi-sc.exe', caseSensitive: true)
           }
         }
-        stage('RHEL9')
+        stage('RHEL')
         {
-          agent
+          agent { dockerfile { filename 'ci-utilities/docker/RHEL8.Dockerfile' } }
+          environment
           {
-            dockerfile { filename 'CIUtilities/docker/RHEL9.Dockerfile' }
+            DOTNET_CLI_HOME = "/tmp/.dotnet"
+            DISTRO="rhel"
+            PACKAGE_NAME="supportboi"
           }
-          environment { DOTNET_CLI_HOME = "/tmp/.dotnet" }
           steps
           {
-            sh 'rpmbuild -bb packaging/supportboi.spec --define "_topdir $PWD/rhel" --define "dev_build true"'
-            sh 'cp rhel/RPMS/x86_64/supportboi-dev-*.x86_64.rpm rhel/'
-            stash includes: 'rhel/supportboi-dev-*.x86_64.rpm', name: 'el9-rpm'
-          }
-        }
-        stage('RHEL8')
-        {
-          agent
-          {
-            dockerfile { filename 'CIUtilities/docker/RHEL8.Dockerfile' }
-          }
-          environment { DOTNET_CLI_HOME = "/tmp/.dotnet" }
-          steps
-          {
-            sh 'rpmbuild -bb packaging/supportboi.spec --define "_topdir $PWD/rhel" --define "dev_build true"'
-            sh 'cp rhel/RPMS/x86_64/supportboi-dev-*.x86_64.rpm rhel/'
-            stash includes: 'rhel/supportboi-dev-*.x86_64.rpm', name: 'el8-rpm'
+            script
+            {
+              common.build_rpm_package(env.DISTRO, env.PACKAGE_NAME, "--define 'dev_build true'")
+              env.RHEL_RPM_NAME = sh(script: "cd ${env.DISTRO} && ls ${env.PACKAGE_NAME}-*.x86_64.rpm", returnStdout: true).trim()
+              env.RHEL_RPM_PATH = "${env.DISTRO}/${env.RHEL_RPM_NAME}"
+              env.RHEL_SRPM_NAME = sh(script: "cd ${env.DISTRO} && ls ${env.PACKAGE_NAME}-*.src.rpm", returnStdout: true).trim()
+              env.RHEL_SRPM_PATH = "${env.DISTRO}/${env.RHEL_RPM_NAME}"
+            }
+            stash(includes: "${env.RHEL_RPM_PATH}, ${env.RHEL_SRPM_NAME}", name: "${env.DISTRO}-rpm")
           }
         }
         stage('Fedora')
         {
           agent
           {
-            dockerfile { filename 'CIUtilities/docker/Fedora.Dockerfile' }
+            dockerfile { filename 'ci-utilities/docker/Fedora42.Dockerfile' }
           }
-          environment { DOTNET_CLI_HOME = "/tmp/.dotnet" }
+          environment
+          {
+            DOTNET_CLI_HOME = "/tmp/.dotnet"
+            DISTRO="fedora"
+            PACKAGE_NAME="karlofduty-repo"
+          }
           steps
           {
-            sh 'rpmbuild -bb packaging/supportboi.spec --define "_topdir $PWD/fedora" --define "dev_build true"'
-            sh 'cp fedora/RPMS/x86_64/supportboi-dev-*.x86_64.rpm fedora/'
-            stash includes: 'fedora/supportboi-dev-*.x86_64.rpm', name: 'fedora-rpm'
+            script
+            {
+              common.build_rpm_package(env.DISTRO, env.PACKAGE_NAME, "--define 'dev_build true'")
+              env.FEDORA_RPM_NAME = sh(script: "cd ${env.DISTRO} && ls ${env.PACKAGE_NAME}-*.x86_64.rpm", returnStdout: true).trim()
+              env.FEDORA_RPM_PATH = "${env.DISTRO}/${env.FEDORA_RPM_NAME}"
+              env.FEDORA_SRPM_NAME = sh(script: "cd ${env.DISTRO} && ls ${env.PACKAGE_NAME}-*.src.rpm", returnStdout: true).trim()
+              env.FEDORA_SRPM_PATH = "${env.DISTRO}/${env.FEDORA_SRPM_NAME}"
+            }
+            stash(includes: "${env.FEDORA_RPM_PATH}, ${env.FEDORA_SRPM_PATH}", name: "${env.DISTRO}-rpm")
           }
         }
         stage('Debian')
         {
           agent
           {
-            dockerfile { filename 'CIUtilities/docker/Debian.Dockerfile' }
+            dockerfile { filename 'ci-utilities/docker/Debian12.Dockerfile' }
           }
           environment
           {
             DOTNET_CLI_HOME = "/tmp/.dotnet"
             DEBEMAIL="xkaess22@gmail.com"
             DEBFULLNAME="Karl Essinger"
+            DISTRO="debian"
             PACKAGE_ROOT="${WORKSPACE}/debian"
             DEV_BUILD="true"
+            PACKAGE_NAME="supportboi"
           }
           steps
           {
             sh './packaging/generate-deb.sh'
-            archiveArtifacts(artifacts: 'debian/supportboi-dev_*_amd64.deb, debian/supportboi-dev_*.tar.xz', caseSensitive: true)
-            stash includes: 'debian/supportboi-dev_*_amd64.deb, debian/supportboi-dev_*.tar.xz, debian/supportboi-dev_*.dsc', name: 'debian-deb'
+            script
+            {
+              env.DEBIAN_DEB_NAME = sh(script: "cd ${env.DISTRO} && ls ${env.PACKAGE_NAME}_*_amd64.deb", returnStdout: true).trim()
+              env.DEBIAN_DEB_PATH = "${env.DISTRO}/${env.DEBIAN_DEB_NAME}"
+              env.DEBIAN_DSC_NAME = sh(script: "cd ${env.DISTRO} && ls ${env.PACKAGE_NAME}_*.dsc", returnStdout: true).trim()
+              env.DEBIAN_DSC_PATH = "${env.DISTRO}/${env.DEBIAN_DSC_NAME}"
+              env.DEBIAN_SRC_NAME = sh(script: "cd ${env.DISTRO} && ls ${env.PACKAGE_NAME}_*.tar.xz", returnStdout: true).trim()
+              env.DEBIAN_SRC_PATH = "${env.DISTRO}/${env.DEBIAN_SRC_NAME}"
+            }
+            stash(includes: "${env.DEBIAN_DEB_PATH}, ${env.DEBIAN_SRC_PATH}, ${env.DEBIAN_DSC_PATH}", name: "${env.DISTRO}-deb")
           }
         }
         stage('Ubuntu')
         {
           agent
           {
-            dockerfile { filename 'CIUtilities/docker/Ubuntu.Dockerfile' }
+            dockerfile { filename 'ci-utilities/docker/Ubuntu24.04.Dockerfile' }
           }
           environment
           {
             DOTNET_CLI_HOME = "/tmp/.dotnet"
             DEBEMAIL="xkaess22@gmail.com"
             DEBFULLNAME="Karl Essinger"
+            DISTRO="ubuntu"
             PACKAGE_ROOT="${WORKSPACE}/ubuntu"
             DEV_BUILD="true"
+            PACKAGE_NAME="supportboi"
           }
           steps
           {
             sh './packaging/generate-deb.sh'
-            archiveArtifacts(artifacts: 'ubuntu/supportboi-dev_*_amd64.deb, ubuntu/supportboi-dev_*.tar.xz', caseSensitive: true)
-            stash includes: 'ubuntu/supportboi-dev_*_amd64.deb, ubuntu/supportboi-dev_*.tar.xz, ubuntu/supportboi-dev_*.dsc', name: 'ubuntu-deb'
+            script
+            {
+              env.UBUNTU_DEB_NAME = sh(script: "cd ${env.DISTRO} && ls ${env.PACKAGE_NAME}_*_amd64.deb", returnStdout: true).trim()
+              env.UBUNTU_DEB_PATH = "${env.DISTRO}/${env.UBUNTU_DEB_NAME}"
+              env.UBUNTU_DSC_NAME = sh(script: "cd ${env.DISTRO} && ls ${env.PACKAGE_NAME}_*.dsc", returnStdout: true).trim()
+              env.UBUNTU_DSC_PATH = "${env.DISTRO}/${env.UBUNTU_DSC_NAME}"
+              env.UBUNTU_SRC_NAME = sh(script: "cd ${env.DISTRO} && ls ${env.PACKAGE_NAME}_*.tar.xz", returnStdout: true).trim()
+              env.UBUNTU_SRC_PATH = "${env.DISTRO}/${env.UBUNTU_SRC_NAME}"
+            }
+            stash(includes: "${env.UBUNTU_DEB_PATH}, ${env.UBUNTU_SRC_PATH}, ${env.UBUNTU_DSC_PATH}", name: "${env.DISTRO}-deb")
           }
         }
       }
@@ -126,43 +153,48 @@ pipeline
     {
       parallel
       {
-        stage('RHEL9')
+        stage('RHEL')
         {
           steps
           {
-            unstash name: 'el9-rpm'
-            withCredentials([string(credentialsId: 'JENKINS_GPG_KEY_PASSWORD', variable: 'JENKINS_GPG_KEY_PASSWORD')]) {
-              sh '/usr/lib/gnupg/gpg-preset-passphrase --passphrase "$JENKINS_GPG_KEY_PASSWORD" --preset 0D27E4CD885E9DD79C252E825F70A1590922C51E'
-              sh 'rpmsign --define "_gpg_name Karl Essinger (Jenkins Signing) <xkaess22@gmail.com>" --addsign rhel/supportboi-dev-*.el9.x86_64.rpm'
-              sh 'rpm -vv --checksig rhel/supportboi-dev-*.el9.x86_64.rpm'
+            unstash(name: 'rhel-rpm')
+            script
+            {
+              common.sign_rpm_package(env.RHEL_RPM_PATH)
+              common.sign_rpm_package(env.RHEL_SRPM_PATH)
             }
-            archiveArtifacts(artifacts: 'rhel/supportboi-dev-*.el9.x86_64.rpm', caseSensitive: true)
-          }
-        }
-        stage('RHEL8')
-        {
-          steps
-          {
-            unstash name: 'el8-rpm'
-            withCredentials([string(credentialsId: 'JENKINS_GPG_KEY_PASSWORD', variable: 'JENKINS_GPG_KEY_PASSWORD')]) {
-              sh '/usr/lib/gnupg/gpg-preset-passphrase --passphrase "$JENKINS_GPG_KEY_PASSWORD" --preset 0D27E4CD885E9DD79C252E825F70A1590922C51E'
-              sh 'rpmsign --define "_gpg_name Karl Essinger (Jenkins Signing) <xkaess22@gmail.com>" --addsign rhel/supportboi-dev-*.el8.x86_64.rpm'
-              sh 'rpm -vv --checksig rhel/supportboi-dev-*.el8.x86_64.rpm'
-            }
-            archiveArtifacts(artifacts: 'rhel/supportboi-dev-*.el8.x86_64.rpm', caseSensitive: true)
+            archiveArtifacts(artifacts: "${env.RHEL_RPM_PATH}, ${env.RHEL_SRPM_PATH}", caseSensitive: true)
           }
         }
         stage('Fedora')
         {
           steps
           {
-            unstash name: 'fedora-rpm'
-            withCredentials([string(credentialsId: 'JENKINS_GPG_KEY_PASSWORD', variable: 'JENKINS_GPG_KEY_PASSWORD')]) {
-              sh '/usr/lib/gnupg/gpg-preset-passphrase --passphrase "$JENKINS_GPG_KEY_PASSWORD" --preset 0D27E4CD885E9DD79C252E825F70A1590922C51E'
-              sh 'rpmsign --define "_gpg_name Karl Essinger (Jenkins Signing) <xkaess22@gmail.com>" --addsign fedora/supportboi-dev-*.x86_64.rpm'
-              sh 'rpm -vv --checksig fedora/supportboi-dev-*.x86_64.rpm'
+            unstash(name: 'fedora-rpm')
+            script
+            {
+              common.sign_rpm_package(env.FEDORA_RPM_PATH)
+              common.sign_rpm_package(env.FEDORA_SRPM_PATH)
             }
-            archiveArtifacts(artifacts: 'fedora/supportboi-dev-*.x86_64.rpm', caseSensitive: true)
+            archiveArtifacts(artifacts: "${env.FEDORA_RPM_PATH}, ${env.FEDORA_SRPM_PATH}", caseSensitive: true)
+          }
+        }
+        stage('Debian')
+        {
+          steps
+          {
+            unstash(name: "debian-deb")
+            script { common.sign_deb_package(env.DEBIAN_DEB_PATH, env.DEBIAN_DSC_PATH) }
+            archiveArtifacts(artifacts: "${env.DEBIAN_DEB_PATH}, ${env.DEBIAN_SRC_PATH}", caseSensitive: true)
+          }
+        }
+        stage('Ubuntu')
+        {
+          steps
+          {
+            unstash(name: "ubuntu-deb")
+            script { common.sign_deb_package(env.UBUNTU_DEB_PATH, env.UBUNTU_DSC_PATH) }
+            archiveArtifacts(artifacts: "${env.UBUNTU_DEB_PATH}, ${env.UBUNTU_SRC_PATH}", caseSensitive: true)
           }
         }
       }
@@ -171,7 +203,7 @@ pipeline
     {
       parallel
       {
-        stage('RHEL9')
+        stage('RHEL')
         {
           when
           {
@@ -179,22 +211,11 @@ pipeline
           }
           steps
           {
-            sh 'mkdir -p /usr/share/nginx/repo.karlofduty.com/rhel/el9/packages/supportboi/'
-            sh 'cp rhel/supportboi-dev-*.el9.x86_64.rpm /usr/share/nginx/repo.karlofduty.com/rhel/el9/packages/supportboi/'
-            sh 'createrepo_c --update /usr/share/nginx/repo.karlofduty.com/rhel/el9'
-          }
-        }
-        stage('RHEL8')
-        {
-          when
-          {
-            expression { return env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'beta'; }
-          }
-          steps
-          {
-            sh 'mkdir -p /usr/share/nginx/repo.karlofduty.com/rhel/el8/packages/supportboi/'
-            sh 'cp rhel/supportboi-dev-*.el8.x86_64.rpm /usr/share/nginx/repo.karlofduty.com/rhel/el8/packages/supportboi/'
-            sh 'createrepo_c --update /usr/share/nginx/repo.karlofduty.com/rhel/el8'
+            script
+            {
+              common.publish_rpm_package("rhel/el8", env.RHEL_RPM_PATH, env.RHEL_SRPM_PATH, "supportboi-dev")
+              common.publish_rpm_package("rhel/el9", env.RHEL_RPM_PATH, env.RHEL_SRPM_PATH, "supportboi-dev")
+            }
           }
         }
         stage('Fedora')
@@ -205,9 +226,10 @@ pipeline
           }
           steps
           {
-            sh 'mkdir -p /usr/share/nginx/repo.karlofduty.com/fedora/packages/supportboi/'
-            sh 'cp fedora/supportboi-dev-*.fc*.x86_64.rpm /usr/share/nginx/repo.karlofduty.com/fedora/packages/supportboi/'
-            sh 'createrepo_c --update /usr/share/nginx/repo.karlofduty.com/fedora'
+            script
+            {
+              common.publish_rpm_package("fedora", env.FEDORA_RPM_PATH, env.FEDORA_SRPM_PATH, "supportboi-dev")
+            }
           }
         }
         stage('Debian')
@@ -219,40 +241,16 @@ pipeline
           environment
           {
             DISTRO="debian"
-            REPO_DIR="/usr/share/nginx/repo.karlofduty.com/${env.DISTRO}"
-            POOL_DIR="${env.REPO_DIR}/pool/dev/supportboi"
-            DISTS_BIN_DIR="${env.REPO_DIR}/dists/${env.DISTRO}/dev/binary-amd64"
-            DISTS_SRC_DIR="${env.REPO_DIR}/dists/${env.DISTRO}/dev/source"
+            PACKAGE_NAME="supportboi"
+            COMPONENT="main"
           }
           steps
           {
-            unstash name: "${env.DISTRO}-deb"
-
-            // Copy package and sources to pool directory
-            sh "mkdir -p ${env.POOL_DIR}"
-            sh "cp ${env.DISTRO}/supportboi-dev_*_amd64.deb ${env.POOL_DIR}"
-            sh "cp ${env.DISTRO}/supportboi-dev_*.tar.xz ${env.POOL_DIR}"
-            sh "cp ${env.DISTRO}/supportboi-dev_*.dsc ${env.POOL_DIR}"
-            dir("${env.REPO_DIR}")
+            script
             {
-              // Generate package lists
-              sh "mkdir -p ${env.DISTS_BIN_DIR}"
-              sh "dpkg-scanpackages --arch amd64 -m pool/ > ${env.DISTS_BIN_DIR}/Packages"
-              sh "cat ${env.DISTS_BIN_DIR}/Packages | gzip -9c > ${env.DISTS_BIN_DIR}/Packages.gz"
-
-              // Generate source lists
-              sh "mkdir -p ${env.DISTS_SRC_DIR}"
-              sh "dpkg-scansources pool/ > ${env.DISTS_SRC_DIR}/Sources"
-              sh "cat ${env.DISTS_SRC_DIR}/Sources | gzip -9c > ${env.DISTS_SRC_DIR}/Sources.gz"
+              common.publish_deb_package(env.DISTRO, env.PACKAGE_NAME, env.PACKAGE_NAME, "${WORKSPACE}/${env.DISTRO}", env.COMPONENT)
+              common.generate_debian_release_file("${WORKSPACE}", env.DISTRO)
             }
-
-            dir("${env.REPO_DIR}/dists/${env.DISTRO}")
-            {
-              // Generate release file
-              sh "${WORKSPACE}/CIUtilities/scripts/generate-deb-release-file.sh > Release"
-            }
-
-            sh "rmdir ${env.REPO_DIR}@tmp"
           }
         }
         stage('Ubuntu')
@@ -264,40 +262,16 @@ pipeline
           environment
           {
             DISTRO="ubuntu"
-            REPO_DIR="/usr/share/nginx/repo.karlofduty.com/${env.DISTRO}"
-            POOL_DIR="${env.REPO_DIR}/pool/dev/supportboi"
-            DISTS_BIN_DIR="${env.REPO_DIR}/dists/${env.DISTRO}/dev/binary-amd64"
-            DISTS_SRC_DIR="${env.REPO_DIR}/dists/${env.DISTRO}/dev/source"
+            PACKAGE_NAME="supportboi"
+            COMPONENT="main"
           }
           steps
           {
-            unstash name: "${env.DISTRO}-deb"
-
-            // Copy package and sources to pool directory
-            sh "mkdir -p ${env.POOL_DIR}"
-            sh "cp ${env.DISTRO}/supportboi-dev_*_amd64.deb ${env.POOL_DIR}"
-            sh "cp ${env.DISTRO}/supportboi-dev_*.tar.xz ${env.POOL_DIR}"
-            sh "cp ${env.DISTRO}/supportboi-dev_*.dsc ${env.POOL_DIR}"
-            dir("${env.REPO_DIR}")
+            script
             {
-              // Generate package lists
-              sh "mkdir -p ${env.DISTS_BIN_DIR}"
-              sh "dpkg-scanpackages --arch amd64 -m pool/ > ${env.DISTS_BIN_DIR}/Packages"
-              sh "cat ${env.DISTS_BIN_DIR}/Packages | gzip -9c > ${env.DISTS_BIN_DIR}/Packages.gz"
-
-              // Generate source lists
-              sh "mkdir -p ${env.DISTS_SRC_DIR}"
-              sh "dpkg-scansources pool/ > ${env.DISTS_SRC_DIR}/Sources"
-              sh "cat ${env.DISTS_SRC_DIR}/Sources | gzip -9c > ${env.DISTS_SRC_DIR}/Sources.gz"
+              common.publish_deb_package(env.DISTRO, env.PACKAGE_NAME, env.PACKAGE_NAME, "${WORKSPACE}/${env.DISTRO}", env.COMPONENT)
+              common.generate_debian_release_file("${WORKSPACE}", env.DISTRO)
             }
-
-            dir("${env.REPO_DIR}/dists/${env.DISTRO}")
-            {
-              // Generate release file
-              sh "${WORKSPACE}/CIUtilities/scripts/generate-deb-release-file.sh > Release"
-            }
-
-            sh "rmdir ${env.REPO_DIR}@tmp"
           }
         }
       }
