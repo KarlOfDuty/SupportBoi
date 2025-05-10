@@ -54,7 +54,7 @@ pipeline
           {
             script
             {
-              common.build_rpm_package(env.DISTRO, env.PACKAGE_NAME, "--define 'dev_build true'")
+              common.build_rpm_package(env.DISTRO, "packaging/supportboi.spec", env.PACKAGE_NAME, "--define 'dev_build true'")
               env.RHEL_RPM_NAME = sh(script: "cd ${env.DISTRO} && ls ${env.PACKAGE_NAME}-*.x86_64.rpm", returnStdout: true).trim()
               env.RHEL_RPM_PATH = "${env.DISTRO}/${env.RHEL_RPM_NAME}"
               env.RHEL_SRPM_NAME = sh(script: "cd ${env.DISTRO} && ls ${env.PACKAGE_NAME}-*.src.rpm", returnStdout: true).trim()
@@ -73,13 +73,13 @@ pipeline
           {
             DOTNET_CLI_HOME = "/tmp/.dotnet"
             DISTRO="fedora"
-            PACKAGE_NAME="karlofduty-repo"
+            PACKAGE_NAME="supportboi"
           }
           steps
           {
             script
             {
-              common.build_rpm_package(env.DISTRO, env.PACKAGE_NAME, "--define 'dev_build true'")
+              common.build_rpm_package(env.DISTRO, "packaging/supportboi.spec", env.PACKAGE_NAME, "--define 'dev_build true'")
               env.FEDORA_RPM_NAME = sh(script: "cd ${env.DISTRO} && ls ${env.PACKAGE_NAME}-*.x86_64.rpm", returnStdout: true).trim()
               env.FEDORA_RPM_PATH = "${env.DISTRO}/${env.FEDORA_RPM_NAME}"
               env.FEDORA_SRPM_NAME = sh(script: "cd ${env.DISTRO} && ls ${env.PACKAGE_NAME}-*.src.rpm", returnStdout: true).trim()
@@ -102,7 +102,7 @@ pipeline
             DISTRO="debian"
             PACKAGE_ROOT="${WORKSPACE}/debian"
             DEV_BUILD="true"
-            PACKAGE_NAME="supportboi"
+            PACKAGE_NAME="supportboi-dev"
           }
           steps
           {
@@ -133,7 +133,7 @@ pipeline
             DISTRO="ubuntu"
             PACKAGE_ROOT="${WORKSPACE}/ubuntu"
             DEV_BUILD="true"
-            PACKAGE_NAME="supportboi"
+            PACKAGE_NAME="supportboi-dev"
           }
           steps
           {
