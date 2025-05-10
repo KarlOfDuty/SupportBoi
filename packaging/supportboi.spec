@@ -6,18 +6,17 @@
 Name:       supportboi-dev
 Summary:    A support ticket Discord bot (dev build)
 Version:    %{base_version}~%(date "+%%Y%%m%%d%%H%%M%%S")git%(git rev-parse --short HEAD)
-Source:     https://github.com/KarlOfDuty/SupportBoi/archive/%(git rev-parse HEAD).zip
 Provides:   supportboi
 %else
 Name:       supportboi
 Summary:    A support ticket Discord bot
 Version:    %{base_version}
-Source:     https://github.com/KarlOfDuty/SupportBoi/archive/refs/tags/%{base_version}.zip
 %endif
 Release:    1%{?dist}
 License:    GPLv3
 URL:        https://github.com/KarlOfDuty/SupportBoi
 Packager:   KarlofDuty
+Source:     rpm-source.tar.gz
 
 BuildRequires: systemd-rpm-macros
 Requires: dotnet-runtime-9.0
