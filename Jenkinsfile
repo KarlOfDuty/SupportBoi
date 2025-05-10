@@ -58,7 +58,7 @@ pipeline
               env.RHEL_RPM_NAME = sh(script: "cd ${env.DISTRO} && ls ${env.PACKAGE_NAME}-*.x86_64.rpm", returnStdout: true).trim()
               env.RHEL_RPM_PATH = "${env.DISTRO}/${env.RHEL_RPM_NAME}"
               env.RHEL_SRPM_NAME = sh(script: "cd ${env.DISTRO} && ls ${env.PACKAGE_NAME}-*.src.rpm", returnStdout: true).trim()
-              env.RHEL_SRPM_PATH = "${env.DISTRO}/${env.RHEL_RPM_NAME}"
+              env.RHEL_SRPM_PATH = "${env.DISTRO}/${env.RHEL_SRPM_NAME}"
             }
             stash(includes: "${env.RHEL_RPM_PATH}, ${env.RHEL_SRPM_NAME}", name: "${env.DISTRO}-rpm")
           }
