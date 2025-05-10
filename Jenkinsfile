@@ -244,7 +244,7 @@ pipeline
           environment
           {
             DISTRO="debian"
-            PACKAGE_NAME="supportboi"
+            PACKAGE_NAME="supportboi-dev"
             COMPONENT="main"
           }
           steps
@@ -265,7 +265,7 @@ pipeline
           environment
           {
             DISTRO="ubuntu"
-            PACKAGE_NAME="supportboi"
+            PACKAGE_NAME="supportboi-dev"
             COMPONENT="main"
           }
           steps
