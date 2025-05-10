@@ -252,7 +252,7 @@ pipeline
             script
             {
               common.publish_deb_package(env.DISTRO, env.PACKAGE_NAME, env.PACKAGE_NAME, "${WORKSPACE}/${env.DISTRO}", env.COMPONENT)
-              common.generate_debian_release_file("${WORKSPACE}", env.DISTRO)
+              common.generate_debian_release_file("${WORKSPACE}/ci-utilities", env.DISTRO)
             }
           }
         }
@@ -273,7 +273,7 @@ pipeline
             script
             {
               common.publish_deb_package(env.DISTRO, env.PACKAGE_NAME, env.PACKAGE_NAME, "${WORKSPACE}/${env.DISTRO}", env.COMPONENT)
-              common.generate_debian_release_file("${WORKSPACE}", env.DISTRO)
+              common.generate_debian_release_file("${WORKSPACE}/ci-utilities", env.DISTRO)
             }
           }
         }
