@@ -132,7 +132,7 @@ internal static class SupportBoi
         }
         catch (Exception e)
         {
-            Logger.Fatal("Unable to read the config file: \"" + commandLineArgs.configPath + "\"", e);
+            Logger.Fatal("Unable to read the config file: \"" + Config.configPath + "\"", e);
             return false;
         }
 

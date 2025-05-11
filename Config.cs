@@ -36,7 +36,7 @@ internal static class Config
     internal static string username = "supportbot";
     internal static string password = "";
 
-    private static string configPath = "./config.yml";
+    public static string configPath { get; private set; } = "./config.yml";
 
     public static void LoadConfig()
     {
