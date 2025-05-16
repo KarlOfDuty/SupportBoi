@@ -46,10 +46,18 @@ build() {
 package() {
   cd "$_srcdir"
 
-  install -Dm 755 out/supportboi "${pkgdir}/usr/bin/supportboi"
+  install -d "${pkgdir}/usr/bin/"
+  install -Dm 755 out/supportboi "${pkgdir}/usr/bin/"
+
+  install -d "${pkgdir}/usr/lib/systemd/system/"
   install -Dm 644 packaging/supportboi.service "${pkgdir}/usr/lib/systemd/system/"
+
+  install -d "${pkgdir}/etc/supportboi/"
   install -Dm 600 default_config.yml "${pkgdir}/etc/supportboi/config.yml"
 
+  install -d "${pkgdir}/usr/lib/sysusers.d/"
   install -Dm 644 "packaging/supportboi.sysusers" "${pkgdir}/usr/lib/sysusers.d/supportboi.conf"
+
+  install -d "${pkgdir}/usr/lib/tmpfiles.d/"
   install -Dm 644 "packaging/supportboi.tmpfiles" "${pkgdir}/usr/lib/tmpfiles.d/supportboi.conf"
 }
