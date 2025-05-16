@@ -61,9 +61,6 @@ getent passwd supportboi > /dev/null || useradd -r -m -d /var/lib/supportboi -s 
 
 %postun
 %systemd_postun_with_restart supportboi.service
-if [[ "$1" == "0" ]]; then
-  getent passwd supportboi > /dev/null && userdel supportboi
-fi
 
 %files
 %attr(0755,root,root) /usr/bin/supportboi

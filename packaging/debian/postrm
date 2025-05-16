@@ -20,19 +20,7 @@ set -e
 
 
 case "$1" in
-  remove|abort-install|disappear)
-    systemctl daemon-reload
-    getent passwd supportboi > /dev/null && userdel supportboi
-    rmdir --parents --ignore-fail-on-non-empty "/var/lib/supportboi/transcripts"
-  ;;
-
-  purge)
-    systemctl daemon-reload
-    getent passwd supportboi > /dev/null && userdel supportboi
-    rm -rf "/var/lib/supportboi"
-  ;;
-
-  upgrade|failed-upgrade|abort-upgrade)
+  remove|abort-install|disappear|purge|upgrade|failed-upgrade|abort-upgrade)
     systemctl daemon-reload
   ;;
 
