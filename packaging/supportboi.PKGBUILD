@@ -23,7 +23,7 @@ conflicts=(
 #replaces=()
 #backup=()
 #options=()
-#install=supportboi.install
+install=supportboi.install
 #changelog=
 #source=("git+${url}.git#tag=${pkgver}")
 source=("git+${url}.git")
@@ -40,22 +40,16 @@ prepare() {
 
 build() {
   cd "$_srcdir"
-  ls -lah
   dotnet publish SupportBoi.csproj -p:PublishSingleFile=true -r linux-x64 -c Release --self-contained false --output out
 }
 
 package() {
   cd "$_srcdir"
-  ls -lah out
 
-  install -d "${pkgdir}"/usr/bin
-  install -m 755 out/supportboi "${pkgdir}"/usr/bin/supportboi
-  
-  install -d "${pkgdir}"/usr/lib/systemd/system
-  install -m 644 packaging/supportboi.service "${pkgdir}"/usr/lib/systemd/system/
-  
-  install -d "${pkgdir}"/etc/supportboi/
-  install -m 600 default_config.yml "${pkgdir}"/etc/supportboi/config.yml
-  
-  install -d "${pkgdir}"/var/lib/supportboi/transcripts
+  install -Dm 755 out/supportboi "${pkgdir}/usr/bin/supportboi"
+  install -Dm 644 packaging/supportboi.service "${pkgdir}/usr/lib/systemd/system/"
+  install -Dm 600 default_config.yml "${pkgdir}/etc/supportboi/config.yml"
+
+  install -Dm 644 "packaging/supportboi.sysusers" "${pkgdir}/usr/lib/sysusers.d/supportboi.conf"
+  install -Dm 644 "packaging/supportboi.tmpfiles" "${pkgdir}/usr/lib/tmpfiles.d/supportboi.conf"
 }

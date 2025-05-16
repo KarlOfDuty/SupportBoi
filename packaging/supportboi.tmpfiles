@@ -1,0 +1,2 @@
+d /var/lib/supportboi 0755 supportboi supportboi -
+d /var/lib/supportboi/transcripts 0700 supportboi supportboi -
