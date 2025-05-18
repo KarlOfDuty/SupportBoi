@@ -16,14 +16,10 @@ pipeline
     }
     stage('Update AUR Version')
     {
-      environment
-      {
-        PACKAGE_NAME="supportboi-git"
-      }
       when {
         expression {
           def remoteBranch = sh(
-            script: "curl -s \"https://aur.archlinux.org/cgit/aur.git/plain/.git_branch?h=${env.PACKAGE_NAME}\"",
+            script: 'curl -s "https://aur.archlinux.org/cgit/aur.git/plain/.git_branch?h=supportboi-git"',
             returnStdout: true
           ).trim()
           return remoteBranch == env.BRANCH_NAME
@@ -31,10 +27,9 @@ pipeline
       }
       steps
       {
-        sh 'dotnet restore'
         script
         {
-          common.update_aur_git_package(${env.PACKAGE_NAME})
+          common.update_aur_git_package('supportboi-git')
         }
       }
     }
