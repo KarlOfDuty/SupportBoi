@@ -9,7 +9,7 @@ pipeline
       {
         script
         {
-          common = load("${env.WORKSPACE}/ci-utilities/scripts/common.groovy")
+          def common = load("${env.WORKSPACE}/ci-utilities/scripts/common.groovy")
           common.prepare_gpg_key()
         }
       }
@@ -23,7 +23,7 @@ pipeline
       when {
         expression {
           def remoteBranch = sh(
-            script: "curl -s 'https://aur.archlinux.org/cgit/aur.git/plain/.git_branch?h=${env.PACKAGE_NAME}'",
+            script: "curl -s \"https://aur.archlinux.org/cgit/aur.git/plain/.git_branch?h=${env.PACKAGE_NAME}\"",
             returnStdout: true
           ).trim()
           return remoteBranch == env.BRANCH_NAME
