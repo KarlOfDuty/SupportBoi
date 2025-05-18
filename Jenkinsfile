@@ -9,7 +9,7 @@ pipeline
       {
         script
         {
-          def common = load("${env.WORKSPACE}/ci-utilities/scripts/common.groovy")
+          common = load("${env.WORKSPACE}/ci-utilities/scripts/common.groovy")
           common.prepare_gpg_key()
         }
       }
