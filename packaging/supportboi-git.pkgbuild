@@ -34,7 +34,7 @@ _srcdir="SupportBoi"
 
 pkgver() {
   cd "$_srcdir"
-  git describe --long --tags 2>/dev/null | sed 's/^v//;s/-/./g' || echo "r$(git rev-list --count HEAD).g$(git rev-parse --short HEAD)"
+  git describe --long --tags 2>/dev/null | sed 's/^v//;s/-/./g;s/g/git/' || echo "r$(git rev-list --count HEAD).git$(git rev-parse --short HEAD)"
 }
 
 prepare() {
