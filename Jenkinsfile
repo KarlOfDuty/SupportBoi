@@ -3,15 +3,48 @@ pipeline
   agent any
   stages
   {
-    stage('Preparation')
+    stage('Load CI Scripts')
     {
+      steps
+      {
+        script
+        {
+          common = load("${env.WORKSPACE}/ci-utilities/scripts/common.groovy")
+          common.prepare_gpg_key()
+        }
+      }
+    }
+    stage('Update AUR Version')
+    {
+      environment
+      {
+        PACKAGE_NAME="supportboi-git"
+      }
+      when {
+        expression {
+          def remoteBranch = sh(
+            script: "curl -s https://aur.archlinux.org/cgit/aur.git/plain/.git_branch?h=${env.PACKAGE_NAME}",
+            returnStdout: true
+          ).trim()
+          return remoteBranch == env.BRANCH_NAME
+        }
+      }
       steps
       {
         sh 'dotnet restore'
         script
         {
-          common = load("${env.WORKSPACE}/ci-utilities/scripts/common.groovy")
-          common.prepare_gpg_key()
+          common.update_aur_git_package(${env.PACKAGE_NAME})
+        }
+      }
+    }
+    stage('Prepare Build')
+    {
+      steps
+      {
+        script
+        {
+          sh 'dotnet restore'
         }
       }
     }
