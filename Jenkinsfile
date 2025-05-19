@@ -4,6 +4,7 @@ pipeline
   parameters
   {
     choice(name: 'BUILD_TYPE', choices: ['dev', 'pre-release', 'release'], description: 'Choose build type')
+    string(name: 'RELEASE_VERSION', defaultValue: '', description: 'Enter the git tag name to create for a (pre-)release')
   }
   stages
   {
@@ -54,6 +55,32 @@ pipeline
         }
       }
     }
+    stage('Checks')
+    {
+      when
+      {
+        expression { params.BUILD_TYPE != 'dev'; }
+      }
+      steps
+      {
+        script
+        {
+          withCredentials([usernamePassword(credentialsId: 'karlofduty_github', usernameVariable: 'GH_USER', passwordVariable: 'GH_TOKEN')]) {
+            sh """
+              if [ -z "${params.RELEASE_VERSION}" ]; then
+                echo "Error: RELEASE_VERSION parameter is not set."
+                exit 1
+              fi
+
+              if gh release view ${params.RELEASE_VERSION} --repo KarlOfDuty/SupportBoi > /dev/null 2>&1; then
+                echo "Error: Release '${params.RELEASE_VERSION}' already exists."
+                exit 1
+              fi
+            """
+          }
+        }
+      }
+    }
     stage('Build / Package')
     {
       parallel
@@ -67,6 +94,11 @@ pipeline
             sh 'dotnet publish -r linux-x64 -c Release --self-contained false --no-restore --output linux-x64/'
             archiveArtifacts(artifacts: 'linux-x64/supportboi', caseSensitive: true)
             archiveArtifacts(artifacts: 'linux-x64/supportboi-sc', caseSensitive: true)
+            script
+            {
+              env.BASIC_LINUX_PATH = 'linux-x64/supportboi'
+              env.BASIC_LINUX_SC_PATH = 'linux-x64/supportboi-sc'
+            }
           }
         }
         stage('Basic Windows')
@@ -78,6 +110,11 @@ pipeline
             sh 'dotnet publish -r win-x64 -c Release --self-contained false --no-restore --output windows-x64/'
             archiveArtifacts(artifacts: 'windows-x64/supportboi.exe', caseSensitive: true)
             archiveArtifacts(artifacts: 'windows-x64/supportboi-sc.exe', caseSensitive: true)
+            script
+            {
+              env.BASIC_WINDOWS_PATH = 'windows-x64/supportboi.exe'
+              env.BASIC_WINDOWS_SC_PATH = 'windows-x64/supportboi-sc.exe'
+            }
           }
         }
         stage('RHEL')
@@ -289,6 +326,58 @@ pipeline
               common.publish_deb_package(env.DISTRO, env.PACKAGE_NAME, env.PACKAGE_NAME, "${WORKSPACE}/${env.DISTRO}", env.COMPONENT)
               common.generate_debian_release_file("${WORKSPACE}/ci-utilities", env.DISTRO)
             }
+          }
+        }
+      }
+    }
+    stage('Release')
+    {
+      when
+      {
+        expression { params.BUILD_TYPE != 'dev'; }
+      }
+      steps
+      {
+        script
+        {
+          def ARTIFACTS = [
+            env.BASIC_LINUX_PATH,
+            env.BASIC_LINUX_SC_PATH,
+            env.BASIC_WINDOWS_PATH,
+            env.BASIC_WINDOWS_SC_PATH,
+            env.RHEL_RPM_PATH,
+            env.RHEL_SRPM_PATH,
+            env.FEDORA_RPM_PATH,
+            env.FEDORA_SRPM_PATH,
+            env.DEBIAN_DEB_PATH,
+            env.DEBIAN_SRC_PATH,
+            env.UBUNTU_DEB_PATH,
+            env.UBUNTU_SRC_PATH
+          ]
+
+          if (params.RELEASE_VERSION.toUpperCase().contains("RC"))
+          {
+            def TITLE = "Release Candidate ${params.RELEASE_VERSION}"
+          }
+          else if (params.BUILD_TYPE == 'pre-release')
+          {
+            def TITLE = "Pre-release ${params.RELEASE_VERSION}"
+          }
+          else
+          {
+            def TITLE = "Release ${params.RELEASE_VERSION}"
+          }
+          def EXTRA_PARAMETERS = params.BUILD_TYPE == 'pre-release' ? '--prerelease' : ''
+
+          def ARTIFACTS_STR = ARTIFACTS.collect { "\"${it}\"" }.join(' ')
+          withCredentials([usernamePassword(credentialsId: 'karlofduty_github', usernameVariable: 'GH_USER', passwordVariable: 'GH_TOKEN')]) {
+            sh """
+              gh release create ${params.RELEASE_VERSION} ${artifactsStr} \\
+                --title "${TITLE}" \\
+                --notes "Automated Jenkins release for ${params.RELEASE_VERSION}. This description will be replaced shortly." \\
+                --repo KarlOfDuty/SupportBoi \\
+                ${EXTRA_PARAMETERS}
+            """
           }
         }
       }
