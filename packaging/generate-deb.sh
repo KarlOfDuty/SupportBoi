@@ -10,7 +10,7 @@
 
 # Set up package version and name depending on whether this is a dev build or release
 BASE_VERSION="$(sed -ne '/Version/{s/.*<Version>\(.*\)<\/Version>.*/\1/p;q;}' < SupportBoi.csproj)"
-if [[ -z "$DEV_BUILD" ]]; then
+if [[ "$DEV_BUILD" == "false" ]]; then
   PACKAGE_VERSION="$BASE_VERSION"
   PACKAGE_NAME="supportboi"
 else

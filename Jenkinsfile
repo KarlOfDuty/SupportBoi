@@ -43,7 +43,7 @@ pipeline
       {
         script
         {
-          env.DEV_BUILD = params.BUILD_TYPE == 'dev' ? "true" : null
+          env.DEV_BUILD = params.BUILD_TYPE == 'dev' ? "true" : "false"
           env.PACKAGE_NAME = params.BUILD_TYPE == 'dev' ? "supportboi-dev" : "supportboi"
           env.RPMBUILD_ARGS = params.BUILD_TYPE == 'dev' ? "--define 'dev_build true'" : ""
           env.DOTNET_CLI_HOME = "/tmp/.dotnet"
