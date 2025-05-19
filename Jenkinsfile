@@ -1,6 +1,10 @@
 pipeline
 {
   agent any
+  parameters
+  {
+    choice(name: 'BUILD_TYPE', choices: ['dev', 'pre-release', 'release'], description: 'Choose build type')
+  }
   stages
   {
     stage('Load CI Scripts')
@@ -22,7 +26,7 @@ pipeline
             script: 'curl -s "https://aur.archlinux.org/cgit/aur.git/plain/.git_branch?h=supportboi-git"',
             returnStdout: true
           ).trim()
-          return remoteBranch == env.BRANCH_NAME
+          return remoteBranch == env.BRANCH_NAME && params.BUILD_TYPE == 'dev'
         }
       }
       steps
@@ -39,6 +43,13 @@ pipeline
       {
         script
         {
+          def env.DEV_BUILD = params.BUILD_TYPE == 'dev' ? "true" : null
+          def env.PACKAGE_NAME = params.BUILD_TYPE == 'dev' ? "supportboi-dev" : "supportboi"
+          def env.RPMBUILD_ARGS = params.BUILD_TYPE == 'dev' ? "--define 'dev_build true'" : ""
+          def env.DOTNET_CLI_HOME = "/tmp/.dotnet"
+          def env.DEBEMAIL="xkaess22@gmail.com"
+          def env.DEBFULLNAME="Karl Essinger"
+
           sh 'dotnet restore'
         }
       }
@@ -72,17 +83,12 @@ pipeline
         stage('RHEL')
         {
           agent { dockerfile { filename 'ci-utilities/docker/RHEL8.Dockerfile' } }
-          environment
-          {
-            DOTNET_CLI_HOME = "/tmp/.dotnet"
-            DISTRO="rhel"
-            PACKAGE_NAME="supportboi"
-          }
+          environment{ DISTRO="rhel" }
           steps
           {
             script
             {
-              common.build_rpm_package(env.DISTRO, "packaging/supportboi.spec", env.PACKAGE_NAME, "--define 'dev_build true'")
+              common.build_rpm_package(env.DISTRO, "packaging/supportboi.spec", env.PACKAGE_NAME, env.RPMBUILD_ARGS)
               env.RHEL_RPM_NAME = sh(script: "cd ${env.DISTRO} && ls ${env.PACKAGE_NAME}-*.x86_64.rpm", returnStdout: true).trim()
               env.RHEL_RPM_PATH = "${env.DISTRO}/${env.RHEL_RPM_NAME}"
               env.RHEL_SRPM_NAME = sh(script: "cd ${env.DISTRO} && ls ${env.PACKAGE_NAME}-*.src.rpm", returnStdout: true).trim()
@@ -93,21 +99,13 @@ pipeline
         }
         stage('Fedora')
         {
-          agent
-          {
-            dockerfile { filename 'ci-utilities/docker/Fedora42.Dockerfile' }
-          }
-          environment
-          {
-            DOTNET_CLI_HOME = "/tmp/.dotnet"
-            DISTRO="fedora"
-            PACKAGE_NAME="supportboi"
-          }
+          agent { dockerfile { filename 'ci-utilities/docker/Fedora42.Dockerfile' } }
+          environment { DISTRO="fedora" }
           steps
           {
             script
             {
-              common.build_rpm_package(env.DISTRO, "packaging/supportboi.spec", env.PACKAGE_NAME, "--define 'dev_build true'")
+              common.build_rpm_package(env.DISTRO, "packaging/supportboi.spec", env.PACKAGE_NAME, env.RPMBUILD_ARGS)
               env.FEDORA_RPM_NAME = sh(script: "cd ${env.DISTRO} && ls ${env.PACKAGE_NAME}-*.x86_64.rpm", returnStdout: true).trim()
               env.FEDORA_RPM_PATH = "${env.DISTRO}/${env.FEDORA_RPM_NAME}"
               env.FEDORA_SRPM_NAME = sh(script: "cd ${env.DISTRO} && ls ${env.PACKAGE_NAME}-*.src.rpm", returnStdout: true).trim()
@@ -124,13 +122,8 @@ pipeline
           }
           environment
           {
-            DOTNET_CLI_HOME = "/tmp/.dotnet"
-            DEBEMAIL="xkaess22@gmail.com"
-            DEBFULLNAME="Karl Essinger"
             DISTRO="debian"
             PACKAGE_ROOT="${WORKSPACE}/debian"
-            DEV_BUILD="true"
-            PACKAGE_NAME="supportboi-dev"
           }
           steps
           {
@@ -155,13 +148,8 @@ pipeline
           }
           environment
           {
-            DOTNET_CLI_HOME = "/tmp/.dotnet"
-            DEBEMAIL="xkaess22@gmail.com"
-            DEBFULLNAME="Karl Essinger"
             DISTRO="ubuntu"
             PACKAGE_ROOT="${WORKSPACE}/ubuntu"
-            DEV_BUILD="true"
-            PACKAGE_NAME="supportboi-dev"
           }
           steps
           {
@@ -238,14 +226,14 @@ pipeline
         {
           when
           {
-            expression { return env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'beta'; }
+            expression { return env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'beta' || params.BUILD_TYPE != 'dev'; }
           }
           steps
           {
             script
             {
-              common.publish_rpm_package("rhel/el8", env.RHEL_RPM_PATH, env.RHEL_SRPM_PATH, "supportboi-dev")
-              common.publish_rpm_package("rhel/el9", env.RHEL_RPM_PATH, env.RHEL_SRPM_PATH, "supportboi-dev")
+              common.publish_rpm_package("rhel/el8", env.RHEL_RPM_PATH, env.RHEL_SRPM_PATH, env.PACKAGE_NAME)
+              common.publish_rpm_package("rhel/el9", env.RHEL_RPM_PATH, env.RHEL_SRPM_PATH, env.PACKAGE_NAME)
             }
           }
         }
@@ -253,13 +241,13 @@ pipeline
         {
           when
           {
-            expression { return env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'beta'; }
+            expression { return env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'beta' || params.BUILD_TYPE != 'dev'; }
           }
           steps
           {
             script
             {
-              common.publish_rpm_package("fedora", env.FEDORA_RPM_PATH, env.FEDORA_SRPM_PATH, "supportboi-dev")
+              common.publish_rpm_package("fedora", env.FEDORA_RPM_PATH, env.FEDORA_SRPM_PATH, env.PACKAGE_NAME)
             }
           }
         }
@@ -267,12 +255,11 @@ pipeline
         {
           when
           {
-            expression { return env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'beta'; }
+            expression { return env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'beta' || params.BUILD_TYPE != 'dev'; }
           }
           environment
           {
             DISTRO="debian"
-            PACKAGE_NAME="supportboi-dev"
             COMPONENT="main"
           }
           steps
@@ -288,12 +275,11 @@ pipeline
         {
           when
           {
-            expression { return env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'beta'; }
+            expression { return env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'beta' || params.BUILD_TYPE != 'dev'; }
           }
           environment
           {
             DISTRO="ubuntu"
-            PACKAGE_NAME="supportboi-dev"
             COMPONENT="main"
           }
           steps
