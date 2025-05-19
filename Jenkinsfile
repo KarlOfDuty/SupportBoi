@@ -55,7 +55,7 @@ pipeline
         }
       }
     }
-    stage('Checks')
+    stage('Release Checks')
     {
       when
       {
