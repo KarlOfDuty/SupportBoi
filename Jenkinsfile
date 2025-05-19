@@ -372,7 +372,7 @@ pipeline
           def ARTIFACTS_STR = ARTIFACTS.collect { "\"${it}\"" }.join(' ')
           withCredentials([usernamePassword(credentialsId: 'karlofduty_github', usernameVariable: 'GH_USER', passwordVariable: 'GH_TOKEN')]) {
             sh """
-              gh release create ${params.RELEASE_VERSION} ${artifactsStr} \\
+              gh release create ${params.RELEASE_VERSION} ${ARTIFACTS_STR} \\
                 --title "${TITLE}" \\
                 --notes "Automated Jenkins release for ${params.RELEASE_VERSION}. This description will be replaced shortly." \\
                 --repo KarlOfDuty/SupportBoi \\
