@@ -43,12 +43,12 @@ pipeline
       {
         script
         {
-          def env.DEV_BUILD = params.BUILD_TYPE == 'dev' ? "true" : null
-          def env.PACKAGE_NAME = params.BUILD_TYPE == 'dev' ? "supportboi-dev" : "supportboi"
-          def env.RPMBUILD_ARGS = params.BUILD_TYPE == 'dev' ? "--define 'dev_build true'" : ""
-          def env.DOTNET_CLI_HOME = "/tmp/.dotnet"
-          def env.DEBEMAIL="xkaess22@gmail.com"
-          def env.DEBFULLNAME="Karl Essinger"
+          env.DEV_BUILD = params.BUILD_TYPE == 'dev' ? "true" : null
+          env.PACKAGE_NAME = params.BUILD_TYPE == 'dev' ? "supportboi-dev" : "supportboi"
+          env.RPMBUILD_ARGS = params.BUILD_TYPE == 'dev' ? "--define 'dev_build true'" : ""
+          env.DOTNET_CLI_HOME = "/tmp/.dotnet"
+          env.DEBEMAIL="xkaess22@gmail.com"
+          env.DEBFULLNAME="Karl Essinger"
 
           sh 'dotnet restore'
         }
