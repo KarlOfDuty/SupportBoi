@@ -128,6 +128,7 @@ pipeline
           steps
           {
             sh './packaging/generate-deb.sh'
+            sh "ls -lah ${env.DISTRO}"
             script
             {
               env.DEBIAN_DEB_NAME = sh(script: "cd ${env.DISTRO} && ls ${env.PACKAGE_NAME}_*_amd64.deb", returnStdout: true).trim()
