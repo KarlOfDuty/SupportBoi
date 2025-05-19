@@ -7,6 +7,11 @@
 # Usage: Run this script from the root of the repository.
 # Set the DEV_BUILD environment variable to true to generate a dev build instead of a release.
 
+# Check if DEBFULLNAME and DEBEMAIL are set
+if [[ -z "$DEBEMAIL" || -z "$DEBEMAIL" ]]; then
+  echo -e "You must set DEBFULLNAME and DEBEMAIL. Example:\nexport DEBFULLNAME=\"Karl Essinger\"\nexport DEBEMAIL=\"xkaess22@gmail.com\""
+  exit 3
+fi
 
 # Set up package version and name depending on whether this is a dev build or release
 BASE_VERSION="$(sed -ne '/Version/{s/.*<Version>\(.*\)<\/Version>.*/\1/p;q;}' < SupportBoi.csproj)"
@@ -17,6 +22,12 @@ else
   PACKAGE_VERSION="$BASE_VERSION~$(date "+%Y%m%d%H%M%S")git$(git rev-parse --short HEAD)"
   PACKAGE_NAME="supportboi-dev"
 fi
+
+case "$DISTRO" in
+    ubuntu) PACKAGE_VERSION="${PACKAGE_VERSION}~u$(lsb_release -rs)" ;;
+    debian) PACKAGE_VERSION="${PACKAGE_VERSION}~deb$(lsb_release -rs)" ;;
+    *) echo "Unknown distro: '$DISTRO'! Have you set the DISTRO variable?" && exit 2 ;;
+esac
 
 export REPO_ROOT="$PWD"
 
@@ -55,12 +66,6 @@ if [[ -z "$DEV_BUILD" ]]; then
   sed -i 's/DIST/'"release"'/' "$PACKAGE_DIR/debian/changelog"
 else
   sed -i 's/DIST/'"dev"'/' "$PACKAGE_DIR/debian/changelog"
-fi
-
-# Set packager name and email if not explicitly set
-if [[ -z "$DEBEMAIL" || -z "$DEBEMAIL" ]]; then
-  echo -e "You must set DEBFULLNAME and DEBEMAIL. Example:\nexport DEBFULLNAME=\"Karl Essinger\"\nexport DEBEMAIL=\"xkaess22@gmail.com\""
-  exit 1
 fi
 
 # Build the .deb package
