@@ -357,15 +357,15 @@ pipeline
 
           if (params.RELEASE_VERSION.toUpperCase().contains("RC"))
           {
-            def TITLE = "Release Candidate ${params.RELEASE_VERSION}"
+            env.TITLE = "Release Candidate ${params.RELEASE_VERSION}"
           }
           else if (params.BUILD_TYPE == 'pre-release')
           {
-            def TITLE = "Pre-release ${params.RELEASE_VERSION}"
+            env.TITLE = "Pre-release ${params.RELEASE_VERSION}"
           }
           else
           {
-            def TITLE = "Release ${params.RELEASE_VERSION}"
+            env.TITLE = "Release ${params.RELEASE_VERSION}"
           }
           def EXTRA_PARAMETERS = params.BUILD_TYPE == 'pre-release' ? '--prerelease' : ''
 
@@ -373,7 +373,7 @@ pipeline
           withCredentials([usernamePassword(credentialsId: 'karlofduty_github', usernameVariable: 'GH_USER', passwordVariable: 'GH_TOKEN')]) {
             sh """
               gh release create ${params.RELEASE_VERSION} ${ARTIFACTS_STR} \\
-                --title "${TITLE}" \\
+                --title "${env.TITLE}" \\
                 --notes "Automated Jenkins release for ${params.RELEASE_VERSION}. This description will be replaced shortly." \\
                 --repo KarlOfDuty/SupportBoi \\
                 ${EXTRA_PARAMETERS}
