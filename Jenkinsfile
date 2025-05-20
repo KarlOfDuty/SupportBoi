@@ -1,6 +1,17 @@
 pipeline
 {
   agent any
+
+  environment
+  {
+    DEV_BUILD = params.BUILD_TYPE == 'dev' ? "true" : "false"
+    PACKAGE_NAME = params.BUILD_TYPE == 'dev' ? "supportboi-dev" : "supportboi"
+    RPMBUILD_ARGS = params.BUILD_TYPE == 'dev' ? "--define 'dev_build true'" : ""
+    DOTNET_CLI_HOME = "/tmp/.dotnet"
+    DEBEMAIL="xkaess22@gmail.com"
+    DEBFULLNAME="Karl Essinger"
+  }
+
   parameters
   {
     choice(name: 'BUILD_TYPE', choices: ['dev', 'pre-release', 'release'], description: 'Choose build type')
@@ -38,24 +49,7 @@ pipeline
         }
       }
     }
-    stage('Prepare Build')
-    {
-      steps
-      {
-        script
-        {
-          env.DEV_BUILD = params.BUILD_TYPE == 'dev' ? "true" : "false"
-          env.PACKAGE_NAME = params.BUILD_TYPE == 'dev' ? "supportboi-dev" : "supportboi"
-          env.RPMBUILD_ARGS = params.BUILD_TYPE == 'dev' ? "--define 'dev_build true'" : ""
-          env.DOTNET_CLI_HOME = "/tmp/.dotnet"
-          env.DEBEMAIL="xkaess22@gmail.com"
-          env.DEBFULLNAME="Karl Essinger"
-
-          sh 'dotnet restore'
-        }
-      }
-    }
-    stage('Release Checks')
+    stage('Release Pre-Checks')
     {
       when
       {
@@ -65,19 +59,17 @@ pipeline
       {
         script
         {
-          withCredentials([usernamePassword(credentialsId: 'karlofduty_github', usernameVariable: 'GH_USER', passwordVariable: 'GH_TOKEN')]) {
-            sh """
-              if [ -z "${params.RELEASE_VERSION}" ]; then
-                echo "Error: RELEASE_VERSION parameter is not set."
-                exit 1
-              fi
-
-              if gh release view ${params.RELEASE_VERSION} --repo KarlOfDuty/SupportBoi > /dev/null 2>&1; then
-                echo "Error: Release '${params.RELEASE_VERSION}' already exists."
-                exit 1
-              fi
-            """
-          }
+          common.verify_release_does_not_exist("KarlOfDuty/SupportBoi", params.RELEASE_VERSION)
+        }
+      }
+    }
+    stage('Prepare Build')
+    {
+      steps
+      {
+        script
+        {
+          sh 'dotnet restore'
         }
       }
     }
@@ -157,11 +149,7 @@ pipeline
           {
             dockerfile { filename 'ci-utilities/docker/Debian12.Dockerfile' }
           }
-          environment
-          {
-            DISTRO="debian"
-            PACKAGE_ROOT="${WORKSPACE}/debian"
-          }
+          environment { DISTRO="debian"; PACKAGE_ROOT="${WORKSPACE}/debian" }
           steps
           {
             sh './packaging/generate-deb.sh'
@@ -183,11 +171,7 @@ pipeline
           {
             dockerfile { filename 'ci-utilities/docker/Ubuntu24.04.Dockerfile' }
           }
-          environment
-          {
-            DISTRO="ubuntu"
-            PACKAGE_ROOT="${WORKSPACE}/ubuntu"
-          }
+          environment { DISTRO="ubuntu"; PACKAGE_ROOT="${WORKSPACE}/ubuntu" }
           steps
           {
             sh './packaging/generate-deb.sh'
@@ -294,11 +278,7 @@ pipeline
           {
             expression { return env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'beta' || params.BUILD_TYPE != 'dev'; }
           }
-          environment
-          {
-            DISTRO="debian"
-            COMPONENT="main"
-          }
+          environment { DISTRO="debian"; COMPONENT="main" }
           steps
           {
             script
@@ -314,11 +294,7 @@ pipeline
           {
             expression { return env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'beta' || params.BUILD_TYPE != 'dev'; }
           }
-          environment
-          {
-            DISTRO="ubuntu"
-            COMPONENT="main"
-          }
+          environment { DISTRO="ubuntu"; COMPONENT="main" }
           steps
           {
             script
@@ -340,7 +316,7 @@ pipeline
       {
         script
         {
-          def ARTIFACTS = [
+          def artifacts = [
             env.BASIC_LINUX_PATH,
             env.BASIC_LINUX_SC_PATH,
             env.BASIC_WINDOWS_PATH,
@@ -355,30 +331,7 @@ pipeline
             env.UBUNTU_SRC_PATH
           ]
 
-          if (params.RELEASE_VERSION.toUpperCase().contains("RC"))
-          {
-            env.TITLE = "Release Candidate ${params.RELEASE_VERSION}"
-          }
-          else if (params.BUILD_TYPE == 'pre-release')
-          {
-            env.TITLE = "Pre-release ${params.RELEASE_VERSION}"
-          }
-          else
-          {
-            env.TITLE = "Release ${params.RELEASE_VERSION}"
-          }
-          def EXTRA_PARAMETERS = params.BUILD_TYPE == 'pre-release' ? '--prerelease' : ''
-
-          def ARTIFACTS_STR = ARTIFACTS.collect { "\"${it}\"" }.join(' ')
-          withCredentials([usernamePassword(credentialsId: 'karlofduty_github', usernameVariable: 'GH_USER', passwordVariable: 'GH_TOKEN')]) {
-            sh """
-              gh release create ${params.RELEASE_VERSION} ${ARTIFACTS_STR} \\
-                --title "${env.TITLE}" \\
-                --notes "Automated Jenkins release for ${params.RELEASE_VERSION}. This description will be replaced shortly." \\
-                --repo KarlOfDuty/SupportBoi \\
-                ${EXTRA_PARAMETERS}
-            """
-          }
+          common.create_github_release("KarlOfDuty/SupportBoi", params.RELEASE_VERSION, artifacts, params.BUILD_TYPE == 'pre-release')
         }
       }
     }
