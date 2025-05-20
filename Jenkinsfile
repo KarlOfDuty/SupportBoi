@@ -2,16 +2,6 @@ pipeline
 {
   agent any
 
-  environment
-  {
-    DEV_BUILD = params.BUILD_TYPE == 'dev' ? "true" : "false"
-    PACKAGE_NAME = params.BUILD_TYPE == 'dev' ? "supportboi-dev" : "supportboi"
-    RPMBUILD_ARGS = params.BUILD_TYPE == 'dev' ? "--define 'dev_build true'" : ""
-    DOTNET_CLI_HOME = "/tmp/.dotnet"
-    DEBEMAIL="xkaess22@gmail.com"
-    DEBFULLNAME="Karl Essinger"
-  }
-
   parameters
   {
     choice(name: 'BUILD_TYPE', choices: ['dev', 'pre-release', 'release'], description: 'Choose build type')
@@ -19,33 +9,25 @@ pipeline
   }
   stages
   {
-    stage('Load CI Scripts')
+    stage('Initialize Environment')
     {
       steps
       {
         script
         {
+          env.DOTNET_CLI_HOME = "/tmp/.dotnet"
+          env.DEBEMAIL="xkaess22@gmail.com"
+          env.DEBFULLNAME="Karl Essinger"
+          env.AUR_GIT_PACKAGE="supportboi-git"
+          env.DEV_BUILD = params.BUILD_TYPE == 'dev' ? "true" : "false"
+          env.PACKAGE_NAME = params.BUILD_TYPE == 'dev' ? "supportboi-dev" : "supportboi"
+          env.RPMBUILD_ARGS = params.BUILD_TYPE == 'dev' ? "--define 'dev_build true'" : ""
+
           common = load("${env.WORKSPACE}/ci-utilities/scripts/common.groovy")
           common.prepare_gpg_key()
-        }
-      }
-    }
-    stage('Update AUR Version')
-    {
-      when {
-        expression {
-          def remoteBranch = sh(
-            script: 'curl -s "https://aur.archlinux.org/cgit/aur.git/plain/.git_branch?h=supportboi-git"',
-            returnStdout: true
-          ).trim()
-          return remoteBranch == env.BRANCH_NAME && params.BUILD_TYPE == 'dev'
-        }
-      }
-      steps
-      {
-        script
-        {
-          common.update_aur_git_package('supportboi-git')
+          common.verify_release_does_not_exist("KarlOfDuty/SupportBoi", params.RELEASE_VERSION)
+
+          sh 'dotnet restore'
         }
       }
     }
@@ -63,13 +45,24 @@ pipeline
         }
       }
     }
-    stage('Prepare Build')
+    stage('Update AUR Version')
     {
+      when
+      {
+        expression
+        {
+          def remoteBranch = sh(
+            script: "curl -s 'https://aur.archlinux.org/cgit/aur.git/plain/.git_branch?h=${env.AUR_GIT_PACKAGE}'",
+            returnStdout: true
+          ).trim()
+          return remoteBranch == env.BRANCH_NAME && params.BUILD_TYPE == 'dev'
+        }
+      }
       steps
       {
         script
         {
-          sh 'dotnet restore'
+          common.update_aur_git_package(env.AUR_GIT_PACKAGE)
         }
       }
     }
