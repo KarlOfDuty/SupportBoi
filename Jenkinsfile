@@ -314,13 +314,13 @@ pipeline
             env.BASIC_WINDOWS_PATH,
             env.BASIC_WINDOWS_SC_PATH,
             env.RHEL_RPM_PATH,
-            env.RHEL_SRPM_PATH,
+            //env.RHEL_SRPM_PATH,
             env.FEDORA_RPM_PATH,
-            env.FEDORA_SRPM_PATH,
+            //env.FEDORA_SRPM_PATH,
             env.DEBIAN_DEB_PATH,
-            env.DEBIAN_SRC_PATH,
+            //env.DEBIAN_SRC_PATH,
             env.UBUNTU_DEB_PATH,
-            env.UBUNTU_SRC_PATH
+            //env.UBUNTU_SRC_PATH
           ]
 
           common.create_github_release("KarlOfDuty/SupportBoi", params.RELEASE_VERSION, artifacts, params.BUILD_TYPE == 'pre-release')
