@@ -25,7 +25,6 @@ pipeline
 
           common = load("${env.WORKSPACE}/ci-utilities/scripts/common.groovy")
           common.prepare_gpg_key()
-          common.verify_release_does_not_exist("KarlOfDuty/SupportBoi", params.RELEASE_VERSION)
 
           sh 'dotnet restore'
         }
