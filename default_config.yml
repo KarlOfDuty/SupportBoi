@@ -33,8 +33,13 @@ bot:
     # Set to true if you want the /new command to show a selection box instead of a series of buttons.
     new-command-uses-selector: false
 
-    # Number of tickets a single user can have open at a time, staff members are excluded from this.
-    ticket-limit: 5
+    ticket-limits:
+        # Maximum number of tickets a single user can have open at a time, staff members are excluded from this.
+        # Set to 0 to disable limit.
+        user: 5
+        # Maximum number of tickets that can be open at a time.
+        # Set to 0 to disable limit.
+        total: 0
 
     # Pins the first message in a ticket to allow for quick navigation to the top in large tickets.
     pin-first-message: true

@@ -18,7 +18,8 @@ internal static class Config
     internal static string presenceType = "Playing";
     internal static string presenceText = "";
     internal static bool newCommandUsesSelector = false;
-    internal static int ticketLimit = 5;
+    internal static int userTicketLimit = 0;
+    internal static int globalTicketLimit = 0;
     internal static bool pinFirstMessage = false;
     internal static string transcriptDir = "";
 
@@ -89,7 +90,8 @@ internal static class Config
         presenceType = json.SelectToken("bot.presence-type")?.Value<string>() ?? "Playing";
         presenceText = json.SelectToken("bot.presence-text")?.Value<string>() ?? "";
         newCommandUsesSelector = json.SelectToken("bot.new-command-uses-selector")?.Value<bool>() ?? false;
-        ticketLimit = json.SelectToken("bot.ticket-limit")?.Value<int>() ?? 5;
+        userTicketLimit = json.SelectToken("bot.ticket-limits.user")?.Value<int>() ?? 0;
+        globalTicketLimit = json.SelectToken("bot.ticket-limits.total")?.Value<int>() ?? 0;
         pinFirstMessage = json.SelectToken("bot.pin-first-message")?.Value<bool>() ?? false;
         transcriptDir = json.SelectToken("bot.transcript-dir")?.Value<string>() ?? "";
 

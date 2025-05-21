@@ -109,16 +109,24 @@ public class NewCommand
             return (false, "You are banned from opening tickets.");
         }
 
+        if (Config.globalTicketLimit != 0
+          && !Database.StaffMember.IsStaff(userID)
+          && Database.Ticket.GetNumberOfTickets() >= Config.globalTicketLimit)
+        {
+            return (false, "The bot has reached the maximum allowed open tickets, it cannot open more at this time.\n\nPlease try again later.");
+        }
+
         if (Database.Ticket.IsOpenTicket(commandChannelID))
         {
             return (false, "You cannot use this command in a ticket channel.");
         }
 
-        if (!Database.StaffMember.IsStaff(userID)
+        if (Config.userTicketLimit != 0
+          && !Database.StaffMember.IsStaff(userID)
           && Database.Ticket.TryGetOpenTickets(userID, out List<Database.Ticket> ownTickets)
-          && (ownTickets.Count >= Config.ticketLimit && Config.ticketLimit != 0))
+          && ownTickets.Count >= Config.userTicketLimit)
         {
-            return (false, "You have reached the limit for maximum open tickets.");
+            return (false, "You have reached the limit for maximum number of open tickets.\n\nPlease close an existing ticket before opening a new one.");
         }
 
         DiscordChannel category = null;
