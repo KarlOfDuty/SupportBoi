@@ -103,7 +103,7 @@ public static class Utilities
             throw new InvalidOperationException("Could not load manifest resource stream.");
         }
 
-        using StreamReader reader = new StreamReader(stream, Encoding.Unicode);
+        using StreamReader reader = new StreamReader(stream, Encoding.UTF8);
         return reader.ReadToEnd();
     }
 
