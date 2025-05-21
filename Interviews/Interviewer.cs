@@ -265,8 +265,7 @@ public static class Interviewer
         }
 
         // The channel does not have an active interview.
-        if (!Database.Interviews.TryGetInterview(answerMessage.ReferencedMessage.Channel.Id,
-                                      out Interview interview))
+        if (!Database.Interviews.TryGetInterview(answerMessage.ReferencedMessage.Channel.Id, out Interview interview))
         {
             return;
         }
@@ -285,6 +284,19 @@ public static class Interviewer
         // The user responded to a question which does not take a text response.
         if (currentStep.stepType != StepType.TEXT_INPUT)
         {
+            return;
+        }
+
+        if (answerMessage.Attachments.Count > 0)
+        {
+            DiscordMessage attachmentMessage = await answerMessage.RespondAsync(new DiscordEmbedBuilder
+            {
+                Description = "Error: Attachments are not allowed in text responses, you may post them after the automated interview finishes.\n\n" +
+                              "Please reply to the question again without attachments.",
+                Color = DiscordColor.Red
+            });
+            currentStep.AddRelatedMessageIDs(answerMessage.Id, attachmentMessage.Id);
+            Database.Interviews.SaveInterview(interview);
             return;
         }
 
