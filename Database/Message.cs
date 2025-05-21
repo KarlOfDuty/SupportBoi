@@ -32,6 +32,29 @@ public class Message(MySqlDataReader reader)
         return messages;
     }
 
+    public static List<string> GetIDs()
+    {
+        using MySqlConnection c = Connection.GetConnection();
+        c.Open();
+        using MySqlCommand selection = new("SELECT `identifier` FROM messages", c);
+        selection.Prepare();
+        MySqlDataReader results = selection.ExecuteReader();
+
+        if (!results.Read())
+        {
+            return [];
+        }
+
+        List<string> messages = [results.GetString("identifier")];
+        while (results.Read())
+        {
+            messages.Add(results.GetString("identifier"));
+        }
+        results.Close();
+
+        return messages;
+    }
+
     public static bool TryGetMessage(string identifier, out Message message)
     {
         using MySqlConnection c = Connection.GetConnection();

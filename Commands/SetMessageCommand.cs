@@ -77,6 +77,7 @@ public class SetMessageCommand
     {
         if(Database.Message.AddMessage(identifier, command.Member.Id, message))
         {
+            SayCommand.IdentifierAutoCompleteProvider.InvalidateCache();
             await command.RespondAsync(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Green,
@@ -90,6 +91,7 @@ public class SetMessageCommand
                 Color = DiscordColor.Red,
                 Description = "Error: Failed adding the message to the database."
             }, true);
+            return;
         }
 
         await LogChannel.Success(command.User.Mention + " added the `" + identifier + "` message for the /say command.\n\n**Content:**\n\n" + message);
@@ -119,6 +121,7 @@ public class SetMessageCommand
 
         if (Database.Message.RemoveMessage(command.identifier))
         {
+            SayCommand.IdentifierAutoCompleteProvider.InvalidateCache();
             await interaction.CreateResponseAsync(DiscordInteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Green,
@@ -132,6 +135,7 @@ public class SetMessageCommand
                 Color = DiscordColor.Red,
                 Description = "Error: Failed removing the message from the database."
             }));
+            return;
         }
 
         await LogChannel.Success("`" + command.identifier + "` was removed from the /say command by " + interaction.User.Mention + ".");
@@ -170,6 +174,7 @@ public class SetMessageCommand
 
         if (Database.Message.UpdateMessage(command.identifier, interaction.User.Id, command.message))
         {
+            SayCommand.IdentifierAutoCompleteProvider.InvalidateCache();
             await interaction.CreateResponseAsync(DiscordInteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Green,
@@ -183,6 +188,7 @@ public class SetMessageCommand
                 Color = DiscordColor.Red,
                 Description = "Error: Failed updating the message in the database."
             }));
+            return;
         }
 
         await LogChannel.Success("`" + command.identifier + "` was updated for the /say command by " + interaction.User.Mention + ".");

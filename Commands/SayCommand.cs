@@ -1,24 +1,89 @@
-﻿using DSharpPlus.Entities;
+﻿using System;
+using DSharpPlus.Entities;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using DSharpPlus.Commands;
 using DSharpPlus.Commands.ContextChecks;
 using DSharpPlus.Commands.Processors.SlashCommands;
-using DSharpPlus.Exceptions;
+using DSharpPlus.Commands.Processors.SlashCommands.ArgumentModifiers;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
+using System.Threading;
 
 namespace SupportBoi.Commands;
 
 public class SayCommand
 {
+    public class IdentifierAutoCompleteProvider : IAutoCompleteProvider
+    {
+        private static List<string> ids = [];
+        private static DateTime lastRefresh = DateTime.MinValue;
+        private static readonly Lock cacheLock = new();
+        private static readonly int cacheMinutes = 15;
+
+        public ValueTask<IEnumerable<DiscordAutoCompleteChoice>> AutoCompleteAsync(AutoCompleteContext context)
+        {
+            if (string.IsNullOrWhiteSpace(context.UserInput))
+            {
+                return ValueTask.FromResult(Enumerable.Empty<DiscordAutoCompleteChoice>());
+            }
+
+            if (lastRefresh < DateTime.UtcNow.AddMinutes(-cacheMinutes))
+            {
+                lock (cacheLock)
+                {
+                    if (lastRefresh < DateTime.UtcNow.AddMinutes(-cacheMinutes))
+                    {
+                        ids = Database.Message.GetIDs();
+                        lastRefresh = DateTime.UtcNow;
+                    }
+                }
+            }
+
+            SortedSet<string> exactMatchAtBeginning = [];
+            SortedSet<string> exactMatchAnywhere = [];
+            foreach(string id in ids)
+            {
+                if (id.StartsWith(context.UserInput, StringComparison.OrdinalIgnoreCase))
+                {
+                    exactMatchAtBeginning.Add(id);
+                    continue;
+                }
+
+                if (id.Contains(context.UserInput, StringComparison.OrdinalIgnoreCase))
+                {
+                    exactMatchAnywhere.Add(id);
+                }
+            }
+
+            IEnumerable<DiscordAutoCompleteChoice> choices = exactMatchAtBeginning
+                .Concat(exactMatchAnywhere.Except(exactMatchAtBeginning))
+                .Take(25)
+                .Select(id => new DiscordAutoCompleteChoice(id, id));
+
+            return ValueTask.FromResult(choices);
+        }
+
+        public static void InvalidateCache()
+        {
+            lock (cacheLock)
+            {
+                lastRefresh = DateTime.MinValue;
+            }
+        }
+    }
+
     [RequireGuild]
     [Command("say")]
     [Description("Prints a message with information from staff. Use without identifier to list all identifiers.")]
     public async Task OnExecute(SlashCommandContext command,
-        [Parameter("Identifier")] [Description("(Optional) The identifier word to summon a message.")] string identifier = null)
+        [Parameter("Identifier")]
+        [Description("(Optional) The identifier word to summon a message.")]
+        [SlashAutoCompleteProvider<IdentifierAutoCompleteProvider>]
+        string identifier = null)
     {
         // Print list of all messages if no identifier is provided
         if (identifier == null)
