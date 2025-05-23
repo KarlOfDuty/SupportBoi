@@ -64,18 +64,18 @@ public class NewCommand
 
     public static async Task CreateButtons(SlashCommandContext command, List<Database.Category> verifiedCategories)
     {
-        DiscordInteractionResponseBuilder builder = new DiscordInteractionResponseBuilder().WithContent(" ");
+        DiscordInteractionResponseBuilder builder = new();
 
         int nrOfButtons = 0;
         for (int nrOfButtonRows = 0; nrOfButtonRows < 5 && nrOfButtons < verifiedCategories.Count; nrOfButtonRows++)
         {
-            List<DiscordButtonComponent> buttonRow = new List<DiscordButtonComponent>();
+            List<DiscordButtonComponent> buttonRow = [];
 
             for (; nrOfButtons < 5 * (nrOfButtonRows + 1) && nrOfButtons < verifiedCategories.Count; nrOfButtons++)
             {
                 buttonRow.Add(new DiscordButtonComponent(DiscordButtonStyle.Primary, "supportboi_newcommandbutton " + verifiedCategories[nrOfButtons].id, verifiedCategories[nrOfButtons].name));
             }
-            builder.AddComponents(buttonRow);
+            builder.AddActionRowComponent(new DiscordActionRowComponent(buttonRow));
         }
 
         await command.RespondAsync(builder.AsEphemeral());
@@ -83,14 +83,14 @@ public class NewCommand
 
     public static async Task CreateSelector(SlashCommandContext command, List<Database.Category> verifiedCategories)
     {
+        DiscordInteractionResponseBuilder builder = new();
         verifiedCategories = verifiedCategories.OrderBy(x => x.name).ToList();
-        List<DiscordSelectComponent> selectionComponents = new List<DiscordSelectComponent>();
 
         int selectionOptions = 0;
+        List<DiscordSelectComponent> selectionComponents = [];
         for (int selectionBoxes = 0; selectionBoxes < 5 && selectionOptions < verifiedCategories.Count; selectionBoxes++)
         {
-            List<DiscordSelectComponentOption> categoryOptions = new List<DiscordSelectComponentOption>();
-
+            List<DiscordSelectComponentOption> categoryOptions = [];
             for (; selectionOptions < 25 * (selectionBoxes + 1) && selectionOptions < verifiedCategories.Count; selectionOptions++)
             {
                 categoryOptions.Add(new DiscordSelectComponentOption(verifiedCategories[selectionOptions].name, verifiedCategories[selectionOptions].id.ToString()));
@@ -98,7 +98,7 @@ public class NewCommand
             selectionComponents.Add(new DiscordSelectComponent("supportboi_newcommandselector" + selectionBoxes, "Open new ticket...", categoryOptions, false, 0, 1));
         }
 
-        await command.RespondAsync(new DiscordInteractionResponseBuilder().AddComponents(selectionComponents).AsEphemeral());
+        await command.RespondAsync(builder.AddActionRowComponent(new DiscordActionRowComponent(selectionComponents)).AsEphemeral());
     }
 
     public static async Task<(bool, string)> OpenNewTicket(ulong userID, ulong commandChannelID, ulong categoryID)

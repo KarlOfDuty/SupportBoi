@@ -20,7 +20,7 @@ public class CreateSelectionBoxPanelCommand
     {
         DiscordMessageBuilder builder = new DiscordMessageBuilder()
             .WithContent(" ")
-            .AddComponents(await GetSelectComponents(command, message ?? "Open new ticket..."));
+            .AddActionRowComponent(new DiscordActionRowComponent(await GetSelectComponents(command, message ?? "Open new ticket...")));
 
         await command.Channel.SendMessageAsync(builder);
         await command.RespondAsync(new DiscordEmbedBuilder

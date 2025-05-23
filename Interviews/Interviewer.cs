@@ -570,7 +570,7 @@ public static class Interviewer
                         (string stepPattern, InterviewStep nextStep) = step.steps.ToArray()[nrOfButtons];
                         buttonRow.Add(new DiscordButtonComponent(nextStep.GetButtonStyle(), "supportboi_interviewbutton " + nrOfButtons, stepPattern));
                     }
-                    msgBuilder.AddComponents(buttonRow);
+                    msgBuilder.AddActionRowComponent(buttonRow);
                 }
                 break;
             case StepType.TEXT_SELECTOR:
@@ -590,22 +590,22 @@ public static class Interviewer
                                               string.IsNullOrWhiteSpace(step.selectorPlaceholder) ? "Select an option..." : step.selectorPlaceholder, categoryOptions));
                 }
 
-                msgBuilder.AddComponents(selectionComponents);
+                msgBuilder.AddActionRowComponent(new DiscordActionRowComponent(selectionComponents));
                 break;
             case StepType.ROLE_SELECTOR:
-                msgBuilder.AddComponents(new DiscordRoleSelectComponent("supportboi_interviewroleselector",
+                msgBuilder.AddActionRowComponent(new DiscordRoleSelectComponent("supportboi_interviewroleselector",
                                            string.IsNullOrWhiteSpace(step.selectorPlaceholder) ? "Select a role..." : step.selectorPlaceholder));
                 break;
             case StepType.USER_SELECTOR:
-                msgBuilder.AddComponents(new DiscordUserSelectComponent("supportboi_interviewuserselector",
+                msgBuilder.AddActionRowComponent(new DiscordUserSelectComponent("supportboi_interviewuserselector",
                                            string.IsNullOrWhiteSpace(step.selectorPlaceholder) ? "Select a user..." : step.selectorPlaceholder));
                 break;
             case StepType.CHANNEL_SELECTOR:
-                msgBuilder.AddComponents(new DiscordChannelSelectComponent("supportboi_interviewchannelselector",
+                msgBuilder.AddActionRowComponent(new DiscordChannelSelectComponent("supportboi_interviewchannelselector",
                                            string.IsNullOrWhiteSpace(step.selectorPlaceholder) ? "Select a channel..." : step.selectorPlaceholder));
                 break;
             case StepType.MENTIONABLE_SELECTOR:
-                msgBuilder.AddComponents(new DiscordMentionableSelectComponent("supportboi_interviewmentionableselector",
+                msgBuilder.AddActionRowComponent(new DiscordMentionableSelectComponent("supportboi_interviewmentionableselector",
                                            string.IsNullOrWhiteSpace(step.selectorPlaceholder) ? "Select a user or role..." : step.selectorPlaceholder));
                 break;
             case StepType.TEXT_INPUT:
@@ -620,6 +620,7 @@ public static class Interviewer
                 }
                 embed.WithFooter("Reply to this message with your answer" + lengthInfo + ". You cannot include images or files.");
                 break;
+            case StepType.REFERENCE_END:
             case StepType.INTERVIEW_END:
             case StepType.ERROR:
             default:

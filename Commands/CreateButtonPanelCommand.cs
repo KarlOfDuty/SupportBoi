@@ -41,7 +41,7 @@ public class CreateButtonPanelCommand
             {
                 buttonRow.Add(new DiscordButtonComponent(DiscordButtonStyle.Primary, "supportboi_newticketbutton " + verifiedCategories[nrOfButtons].id, verifiedCategories[nrOfButtons].name));
             }
-            builder.AddComponents(buttonRow);
+            builder.AddActionRowComponent(buttonRow);
         }
 
         await command.Channel.SendMessageAsync(builder);

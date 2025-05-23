@@ -38,8 +38,8 @@ public class SetMessageCommand
                         Color = DiscordColor.Orange,
                         Description = "Are you sure you want to delete the `" + identifier + "` message?"
                     })
-                    .AddComponents(new DiscordButtonComponent(DiscordButtonStyle.Danger, "supportboi_confirmmessagedelete " + command.Interaction.Id, "Confirm"),
-                                   new DiscordButtonComponent(DiscordButtonStyle.Secondary, "supportboi_cancelmessagedelete " + command.Interaction.Id, "Cancel")));
+                    .AddActionRowComponent(new DiscordButtonComponent(DiscordButtonStyle.Danger, "supportboi_confirmmessagedelete " + command.Interaction.Id, "Confirm"),
+                                           new DiscordButtonComponent(DiscordButtonStyle.Secondary, "supportboi_cancelmessagedelete " + command.Interaction.Id, "Cancel")));
             }
             else
             {
@@ -50,8 +50,8 @@ public class SetMessageCommand
                         Title = "Replace the `" + identifier + "` message?"
                     }
                     .AddField("Old message:", oldMessage.message.Truncate(1024)).AddField("New message:", message.Truncate(1024)))
-                    .AddComponents(new DiscordButtonComponent(DiscordButtonStyle.Success, "supportboi_confirmmessageupdate " + command.Interaction.Id, "Confirm"),
-                                   new DiscordButtonComponent(DiscordButtonStyle.Secondary, "supportboi_cancelmessageupdate " + command.Interaction.Id, "Cancel")));
+                    .AddActionRowComponent(new DiscordButtonComponent(DiscordButtonStyle.Success, "supportboi_confirmmessageupdate " + command.Interaction.Id, "Confirm"),
+                                           new DiscordButtonComponent(DiscordButtonStyle.Secondary, "supportboi_cancelmessageupdate " + command.Interaction.Id, "Cancel")));
             }
 
             waitingCommands.Add(command.Interaction.Id, new CommandInfo(identifier, message));

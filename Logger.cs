@@ -13,13 +13,13 @@ internal class LoggerProvider : ILoggerProvider
 
     public ILogger CreateLogger(string categoryName)
     {
-        return Logger.instance;
+        return new Logger(categoryName);
     }
 }
 
-public class Logger : ILogger
+public class Logger(string logCategory) : ILogger
 {
-    public static Logger instance { get; } = new Logger();
+    public static Logger instance { get; } = new Logger("SupportBoi");
 
     private static LogLevel minimumLogLevel = LogLevel.Trace;
     private readonly Lock @lock = new();
@@ -89,6 +89,15 @@ public class Logger : ILogger
             logLevel = LogLevel.Debug;
         }
 
+        // Uncomment to check log category of log message
+        //Console.WriteLine("Log Category: " + logCategory);
+
+        // Remove HTTP Client spam
+        if (logCategory.StartsWith("System.Net.Http.HttpClient"))
+        {
+            return;
+        }
+
         if (!IsEnabled(logLevel))
         {
             return;
@@ -104,7 +113,7 @@ public class Logger : ILogger
         }
     }
 
-    public void SystemdLog(LogLevel logLevel, EventId eventId, Exception exception, string message)
+    private void SystemdLog(LogLevel logLevel, EventId eventId, Exception exception, string message)
     {
         // TODO: Replace with logging directly to systemd using correct log levels.
         string logLevelTag = logLevel switch
@@ -125,7 +134,7 @@ public class Logger : ILogger
         }
     }
 
-    public void ConsoleLog(LogLevel logLevel, EventId eventId, Exception exception, string message)
+    private void ConsoleLog(LogLevel logLevel, EventId eventId, Exception exception, string message)
     {
         string[] logLevelParts = logLevel switch
         {

@@ -32,16 +32,17 @@
   <ItemGroup>
     <PackageReference Include="AsyncKeyedLock" Version="7.1.4" />
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
-    <PackageReference Include="DSharpPlus" Version="5.0.0-nightly-02450" />
-    <PackageReference Include="DSharpPlus.Commands" Version="5.0.0-nightly-02450" />
-    <PackageReference Include="DSharpPlus.Interactivity" Version="5.0.0-nightly-02450" />
+    <PackageReference Include="DSharpPlus" Version="5.0.0-nightly-02513" />
+    <PackageReference Include="DSharpPlus.Analyzers" Version="5.0.0-nightly-02513" />
+    <PackageReference Include="DSharpPlus.Commands" Version="5.0.0-nightly-02513" />
+    <PackageReference Include="DSharpPlus.Interactivity" Version="5.0.0-nightly-02513" />
     <PackageReference Include="EmbeddedBuildTime" Version="1.0.3" />
     <PackageReference Include="GitInfo" Version="3.3.5">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="JsonExtensions" Version="1.2.0" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="9.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="9.0.5" />
     <PackageReference Include="MySqlConnector" Version="2.4.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Newtonsoft.Json.Schema" Version="4.0.1" />

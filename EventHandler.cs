@@ -126,7 +126,9 @@ public static class EventHandler
                 {
                     try
                     {
+#pragma warning disable DSP0007
                         await channel.AddOverwriteAsync(e.Member, DiscordPermission.ViewChannel);
+#pragma warning restore DSP0007
                         await channel.SendMessageAsync(new DiscordEmbedBuilder
                         {
                             Color = DiscordColor.Green,
