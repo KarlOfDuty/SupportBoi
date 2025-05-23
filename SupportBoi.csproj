@@ -9,6 +9,7 @@
     <RuntimeIdentifiers>win-x64;linux-x64</RuntimeIdentifiers>
     <PublishSingleFile>true</PublishSingleFile>
     <TrimMode>partial</TrimMode>
+    <DebugType>embedded</DebugType>
 
     <Authors>KarlofDuty</Authors>
     <Description>A Discord support ticket bot. Saves to a MySQL database and has the option to output open tickets to HTML ticket transcript files when they are closed.</Description>
