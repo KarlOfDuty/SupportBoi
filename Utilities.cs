@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -12,6 +13,8 @@ namespace SupportBoi;
 
 public static class Extensions
 {
+    private static readonly Random rng = new();
+
     public static bool ContainsAny(this string haystack, params string[] needles)
     {
         return needles.Any(haystack.Contains);
@@ -26,17 +29,6 @@ public static class Extensions
     {
         return value.Length <= maxChars ? value : string.Concat(value.AsSpan(0, maxChars - 3), "...");
     }
-}
-
-public static class Utilities
-{
-    private static readonly Random rng = new Random();
-
-    public class File(string fileName, Stream contents)
-    {
-        public string fileName = fileName;
-        public Stream contents = contents;
-    }
 
     public static void Shuffle<T>(this IList<T> list)
     {
@@ -47,6 +39,29 @@ public static class Utilities
             int k = rng.Next(n + 1);
             (list[k], list[n]) = (list[n], list[k]);
         }
+    }
+}
+
+public static class Utilities
+{
+    public class File(string fileName, Stream contents)
+    {
+        public string fileName = fileName;
+        public Stream contents = contents;
+    }
+
+    public class ConcurrentSet<T>
+    {
+        // This seems like a strange way of doing things but is apparently recommended
+        private readonly ConcurrentDictionary<T, byte> dict = new();
+
+        public bool Add(T item) => dict.TryAdd(item, 0);
+
+        public bool Remove(T item) => dict.TryRemove(item, out _);
+
+        public bool Contains(T item) => dict.ContainsKey(item);
+
+        public IEnumerable<T> Items => dict.Keys;
     }
 
     public static LinkedList<string> ParseListIntoMessages(List<string> listItems)

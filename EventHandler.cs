@@ -25,6 +25,7 @@ public static class EventHandler
         Logger.Log("Connected to Discord.");
 
         SupportBoi.RefreshBotActivity();
+        CategorySuffixHandler.Start();
         hasLoggedGuilds = true;
         return Task.CompletedTask;
     }

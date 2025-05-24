@@ -45,7 +45,11 @@ bot:
     pin-first-message: true
 
     # Ticket transcript location, can be overridden using command line arguments.
+    # When running the bot as a service this will be set to "/var/lib/supportboi/transcripts" by default.
     transcript-dir: "./transcripts"
+
+    # Adds the number of tickets open in a category to the end of the category name.
+    add-category-ticket-count: true
 
 # Direct message notifications
 notifications:

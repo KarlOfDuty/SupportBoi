@@ -22,6 +22,7 @@ internal static class Config
     internal static int globalTicketLimit = 0;
     internal static bool pinFirstMessage = false;
     internal static string transcriptDir = "";
+    internal static bool addCategoryTicketCount = false;
 
     internal static bool ticketUpdatedNotifications = false;
     internal static double ticketUpdatedNotificationDelay = 0.0;
@@ -94,6 +95,7 @@ internal static class Config
         globalTicketLimit = json.SelectToken("bot.ticket-limits.total")?.Value<int>() ?? 0;
         pinFirstMessage = json.SelectToken("bot.pin-first-message")?.Value<bool>() ?? false;
         transcriptDir = json.SelectToken("bot.transcript-dir")?.Value<string>() ?? "";
+        addCategoryTicketCount = json.SelectToken("bot.add-category-ticket-count")?.Value<bool>() ?? false;
 
         ticketUpdatedNotifications = json.SelectToken("notifications.ticket-updated")?.Value<bool>() ?? false;
         ticketUpdatedNotificationDelay = json.SelectToken("notifications.ticket-updated-delay")?.Value<double>() ?? 0.0;

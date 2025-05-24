@@ -40,6 +40,7 @@ public class MoveCommand
             return;
         }
 
+        DiscordChannel existingCategory = command.Channel.Parent;
         IReadOnlyList<DiscordChannel> channels = await command.Guild.GetChannelsAsync();
         IEnumerable<DiscordChannel> categories = channels.Where(x => x.IsCategory);
         DiscordChannel categoryChannel = categories.FirstOrDefault(x => x.Name.StartsWith(category.Trim(), StringComparison.OrdinalIgnoreCase));
@@ -54,7 +55,7 @@ public class MoveCommand
             return;
         }
 
-        if (command.Channel.Parent.Id == categoryChannel.Id)
+        if (existingCategory.Id == categoryChannel.Id)
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {
@@ -106,5 +107,8 @@ public class MoveCommand
         });
 
         await LogChannel.Success(command.User.Mention + " moved " + command.Channel.Mention + " to `" + categoryChannel.Name + "`.", ticket.id);
+
+        await CategorySuffixHandler.ScheduleSuffixUpdate(categoryChannel.Id);
+        await CategorySuffixHandler.ScheduleSuffixUpdate(existingCategory.Id);
     }
 }

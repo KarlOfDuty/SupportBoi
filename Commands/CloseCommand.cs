@@ -219,10 +219,17 @@ public class CloseCommand
 
             await Task.Delay(3000);
 
+            DiscordChannel category = interaction.Channel.Parent;
+
             // Delete the channel and database entry
             await interaction.Channel.DeleteAsync("Ticket closed.");
 
             Database.Ticket.DeleteOpenTicket(ticket.id);
+
+            if (category != null)
+            {
+                await CategorySuffixHandler.ScheduleSuffixUpdate(category.Id);
+            }
 
             closeReasons.Remove(interaction.Channel.Id);
             currentlyClosingTickets.Remove(interaction.Channel.Id);

@@ -252,6 +252,7 @@ public class NewCommand
         }
 
         await LogChannel.Success("Ticket " + ticketChannel.Mention + " opened by " + member.Mention + ".", (uint)id);
+        await CategorySuffixHandler.ScheduleSuffixUpdate(category.Id);
         return (true, "Ticket opened, " + member.Mention + "!\n" + ticketChannel.Mention);
     }
 }

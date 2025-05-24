@@ -4,7 +4,6 @@ using DSharpPlus.Commands;
 using DSharpPlus.Commands.ContextChecks;
 using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
-using DSharpPlus.Exceptions;
 
 namespace SupportBoi.Commands;
 
@@ -75,5 +74,6 @@ public class AddCategoryCommand
         }
 
         await LogChannel.Success(command.User.Mention + " added `" + category.Name + "` as `" + title + "` to the category list.");
+        await CategorySuffixHandler.ScheduleSuffixUpdate(category.Id);
     }
 }

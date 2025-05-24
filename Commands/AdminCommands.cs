@@ -5,7 +5,6 @@ using DSharpPlus.Commands;
 using DSharpPlus.Commands.ContextChecks;
 using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
-using DSharpPlus.Exceptions;
 using SupportBoi.Interviews;
 
 namespace SupportBoi.Commands;
@@ -39,6 +38,11 @@ public class AdminCommands
             Color = DiscordColor.Green,
             Description = "Channel has been designated ticket " + id.ToString("00000") + "."
         });
+
+        if (command.Channel.Parent != null)
+        {
+            await CategorySuffixHandler.ScheduleSuffixUpdate(command.Channel.Parent.Id);
+        }
 
         await LogChannel.Success(command.Channel.Mention + " has been designated ticket " + id.ToString("00000") + " by " + command.Member?.Mention + ".", (uint)id);
     }
@@ -93,6 +97,10 @@ public class AdminCommands
         if (channel != null)
         {
             await Interviewer.StopInterview(channel);
+            if (channel.Parent != null)
+            {
+                await CategorySuffixHandler.ScheduleSuffixUpdate(channel.Parent.Id);
+            }
         }
 
         // Delete the ticket from the database and respond to command
