@@ -55,7 +55,7 @@ public class MoveCommand
             return;
         }
 
-        if (existingCategory.Id == categoryChannel.Id)
+        if (existingCategory != null &&existingCategory.Id == categoryChannel.Id)
         {
             await command.RespondAsync(new DiscordEmbedBuilder
             {
@@ -109,6 +109,9 @@ public class MoveCommand
         await LogChannel.Success(command.User.Mention + " moved " + command.Channel.Mention + " to `" + categoryChannel.Name + "`.", ticket.id);
 
         await CategorySuffixHandler.ScheduleSuffixUpdate(categoryChannel.Id);
-        await CategorySuffixHandler.ScheduleSuffixUpdate(existingCategory.Id);
+        if (existingCategory != null)
+        {
+            await CategorySuffixHandler.ScheduleSuffixUpdate(existingCategory.Id);
+        }
     }
 }
