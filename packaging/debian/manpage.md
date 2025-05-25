@@ -1,134 +1,108 @@
-% supportboi(SECTION) | User Commands
+% supportboi(1) | User Commands
 %
-% "March 30 2025"
-
-[comment]: # The lines above form a Pandoc metadata block. They must be
-[comment]: # the first ones in the file.
-[comment]: # See https://pandoc.org/MANUAL.html#metadata-blocks for details.
-
-[comment]: # pandoc -s -f markdown -t man package.md -o package.1
-[comment]: # 
-[comment]: # A manual page package.1 will be generated. You may view the
-[comment]: # manual page with: nroff -man package.1 | less. A typical entry
-[comment]: # in a Makefile or Makefile.am is:
-[comment]: # 
-[comment]: # package.1: package.md
-[comment]: #         pandoc --standalone --from=markdown --to=man $< --output=$@
-[comment]: # 
-[comment]: # The pandoc binary is found in the pandoc package. Please remember
-[comment]: # that if you create the nroff version in one of the debian/rules
-[comment]: # file targets, such as build, you will need to include pandoc in
-[comment]: # your Build-Depends control field.
-
-[comment]: # lowdown is a low dependency, lightweight alternative to
-[comment]: # pandoc as a markdown to manpage translator. Use with:
-[comment]: # 
-[comment]: # package.1: package.md
-[comment]: #         lowdown -s -Tman -o $@ $<
-[comment]: # 
-[comment]: # And add lowdown to the Build-Depends control field.
-
-[comment]: # Remove the lines starting with '[comment]:' in this file in order
-[comment]: # to avoid warning messages.
+% "2025-05-25"
 
 # NAME
 
-supportboi - program to do something
+supportboi - A support ticket Discord bot
 
 # SYNOPSIS
 
-**supportboi** **-e** _this_ [**\-\-example=that**] [{**-e** | **\-\-example**} _this_]
-                 [{**-e** | **\-\-example**} {_this_ | _that_}]
-
-**supportboi** [{**-h** | *\-\-help**} | {**-v** | **\-\-version**}]
+**supportboi** [**-c** *CONFIG*] [**-t** *DIR*] [**--leave**=*ID,ID,...*]  
+**supportboi** [**-h** | **--help**]  
+**supportboi** [**-v** | **--version**]
 
 # DESCRIPTION
 
-This manual page documents briefly the **supportboi** and **bar** commands.
-
-This manual page was written for the Debian distribution because the
-original program does not have a manual page. Instead, it has documentation
-in the GNU info(1) format; see below.
-
-**supportboi** is a program that...
+**supportboi** is a Discord bot designed to manage support tickets in Discord servers.
+It provides features for ticket management, transcripts, automated interviews, and more.
 
 # OPTIONS
 
-The program follows the usual GNU command line syntax, with long options
-starting with two dashes ('-'). A summary of options is included below. For
-a complete description, see the **info**(1) files.
+**-c**, **--config**=*PATH*
+:   Specify an alternative configuration file to use.
 
-**-e** _this_, **\-\-example=**_that_
-:   Does this and that.
+**-t**, **--transcripts**=*DIR*
+:   Set the directory where ticket transcripts should be stored.
 
-**-h**, **\-\-help**
-:   Show summary of options.
+**--leave**=*ID[,ID...]*
+:   Make the bot leave specific Discord servers using their server IDs.
 
-**-v**, **\-\-version**
-:   Show version of program.
+**-h**, **--help**
+:   Show help message and exit.
+
+**-v**, **--version**
+:   Show version information and exit.
+
+# CONFIGURATION
+
+The bot configuration uses the YAML format (<https://yaml.org>).
+
+A default configuration file is created automatically if none exists when the bot starts.
+
+It is fully commented and includes documentation for each configuration option.
+
+# DATABASE
+
+The bot requires a MySQL/MariaDB database to store most of its data.
+
+Requirements:
+
+- A database for the bot to store its data in.
+- A user with full permissions on the database, and ideally no permissions on anything else.
 
 # FILES
 
-/etc/foo.conf
-:   The system-wide configuration file to control the behaviour of
-    supportboi. See **foo.conf**(5) for further details.
+*/etc/supportboi/config.yml*
+:   System-wide configuration file, used when running as a service.
 
-${HOME}/.foo.conf
-:   The per-user configuration file to control the behaviour of
-    supportboi. See **foo.conf**(5) for further details.
+*/var/lib/supportboi/transcripts/*
+:   System-wide transcript directory, used when running as a service.
 
-# ENVIRONMENT
+# EXIT STATUS
 
-**FOO_CONF**
-:   If used, the defined file is used as configuration file (see also
-    the section called “FILES”).
+- **0** Success
 
-# DIAGNOSTICS
+- **1** Error
 
-The following diagnostics may be issued on stderr:
+# EXAMPLES
 
-Bad configuration file. Exiting.
-:   The configuration file seems to contain a broken configuration
-    line. Use the **\-\-verbose** option, to get more info.
+Start the bot with the configuration file and transcripts in the current working directory:
 
-**supportboi** provides some return codes, that can be used in scripts:
+    supportboi
 
-    Code Diagnostic
-    0 Program exited successfully.
-    1 The configuration file seems to be broken.
+Specify a custom configuration file and transcripts directory:
+
+    supportboi --config /path/to/config.yml --transcripts /path/to/transcripts
+
+Run the bot as the supportboi user using default system paths:
+
+    sudo -u "supportboi" supportboi --config /etc/supportboi/config.yml --transcripts /var/lib/supportboi/transcripts
+
+Start the bot using the included systemd service:
+
+    sudo systemctl start supportboi
+
+Make the bot leave specific servers:
+
+    supportboi --leave 123456789012345678,987654321098765432
+
+# COPYRIGHT
+
+Copyright © 2025 Karl Essinger
+
+This software is licensed under the GNU General Public License version 3.0 (GPLv3).
+
+On Debian systems, the complete text of the GNU General Public License v3.0
+can be found in /usr/share/common-licenses/GPL-3.
+
+Otherwise, see <https://www.gnu.org/licenses/gpl-3.0.html>.
 
 # BUGS
 
-The program is currently limited to only work with the foobar library.
-
-The upstream BTS can be found at http://bugzilla.foo.tld.
-
-# SEE ALSO
-
-**bar**(1), **baz**(1), **foo.conf**(5)
-
-The programs are documented fully by The Rise and Fall of a Fooish Bar
-available via the **info**(1) system.
+Report bugs at the project's issue tracker:  
+<https://github.com/KarlOfDuty/SupportBoi/issues>
 
 # AUTHOR
 
 Karl Essinger <xkaess22@gmail.com>
-:   Wrote this manpage for the Debian system.
-
-# COPYRIGHT
-
-Copyright © 2007 Karl Essinger
-
-This manual page was written for the Debian system (and may be used by
-others).
-
-Permission is granted to copy, distribute and/or modify this document under
-the terms of the GNU General Public License, Version 2 or (at your option)
-any later version published by the Free Software Foundation.
-
-On Debian systems, the complete text of the GNU General Public License
-can be found in /usr/share/common-licenses/GPL.
-
-[comment]: #  Local Variables:
-[comment]: #  mode: markdown
-[comment]: #  End:
