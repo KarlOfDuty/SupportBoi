@@ -18,6 +18,7 @@ The bot is tested on the following operating systems:
 
 <details>
 <summary>Ubuntu-based (Ubuntu, Pop!_OS, Mint, Zorin, etc)</summary>
+<br/>
 
 SupportBoi is available in the repository at repo.karlofduty.com.
 
@@ -47,7 +48,7 @@ sudo apt install supportboi-dev
 
 <details>
 <summary>Other Debian-based (Debian, Kali, Deepin)</summary>
-
+<br/>
 SupportBoi is available in the repository at repo.karlofduty.com.
 
 **Install the Debian 12 dotnet repository:**
@@ -82,6 +83,7 @@ sudo apt install supportboi-dev
 
 <details>
 <summary>RHEL-based (RHEL, Alma, Rocky, etc)</summary>
+<br/>
 
 SupportBoi is available in the repository at repo.karlofduty.com.
 
@@ -100,6 +102,7 @@ sudo dnf install supportboi-dev --refresh
 
 <details>
 <summary>Other Fedora-based (Fedora, Nobara, Bazzite, etc)</summary>
+<br/>
 
 SupportBoi is available in the repository at repo.karlofduty.com.
 
@@ -118,6 +121,7 @@ sudo dnf install supportboi-dev --refresh
 
 <details>
 <summary>Arch-based (Arch, Manjaro, EndeavourOS, SteamOS, etc)</summary>
+<br/>
 
 SupportBoi is available in the Arch User Repository as [supportboi](https://aur.archlinux.org/packages/supportboi/) and [supportboi-git](https://aur.archlinux.org/packages/supportboi-git/).
 This example uses yay, but you can use any package manager with AUR support.
@@ -140,6 +144,7 @@ yay -S supportboi-git
 
 <details>
 <summary>Manual Download (Windows / Other Linux)</summary>
+<br/>
 
 > [!WARNING]
 > It is highly recommended to install the bot using the package managers listed above if possible.
