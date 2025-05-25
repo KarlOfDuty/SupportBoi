@@ -16,6 +16,8 @@ The bot is tested on the following operating systems:
 > 
 > Please contact me immediately if any of the packages don't work properly on a specific distro.
 
+### Installation Instructions
+
 <details>
 <summary>Ubuntu-based (Ubuntu, Pop!_OS, Mint, Zorin, etc)</summary>
 <br/>
