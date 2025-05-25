@@ -49,6 +49,7 @@ sudo apt install supportboi-dev
 <details>
 <summary>Other Debian-based (Debian, Kali, Deepin)</summary>
 <br/>
+
 SupportBoi is available in the repository at repo.karlofduty.com.
 
 **Installing the Debian 12 dotnet repository:**  
