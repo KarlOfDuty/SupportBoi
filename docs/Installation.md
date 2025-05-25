@@ -51,16 +51,14 @@ sudo apt install supportboi-dev
 <br/>
 SupportBoi is available in the repository at repo.karlofduty.com.
 
-**Install the Debian 12 dotnet repository:**
+**Installing the Debian 12 dotnet repository:**  
+The url used in the `wget` command is for Debian 12, if you are using a different version, replace `12` with the version you are using.
+See this link for a list of all available versions: https://packages.microsoft.com/config/.
 ```bash
 wget https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
 sudo dpkg -i packages-microsoft-prod.deb
 rm packages-microsoft-prod.deb
 ```
-
-> [!IMPORTANT]
-> The link above is for Debian 12, if you are using a different version, replace `12` with the version you are using.
-> See this link for a list of all available versions: https://packages.microsoft.com/config/.
 
 **Installing the repo.karlofduty.com repository:**
 ```bash
@@ -130,25 +128,29 @@ This example uses yay, but you can use any package manager with AUR support.
 ```bash
 yay -S supportboi
 ```
+
 **Installing the dev build:**
 ```bash
 yay -S supportboi-git
 ```
 
-> [!IMPORTANT]
-> **For mariadb users:**  
-> When mariadb is installed it will not automatically set up its data locations like in other distros.
-> You have to run the following command to complete the installation: `sudo mariadb-install-db --user=mysql --basedir=/usr --datadir=/var/lib/mysql`
+**For mariadb users:**  
+When mariadb is installed it will not automatically set up its data locations like in other distros.
+You have to run the following command to complete the installation: 
+
+```bash
+sudo mariadb-install-db --user=mysql --basedir=/usr --datadir=/var/lib/mysql
+```
 
 </details>
-
-<details>
-<summary>Manual Download (Windows / Other Linux)</summary>
-<br/>
 
 > [!WARNING]
 > It is highly recommended to install the bot using the package managers listed above if possible.
 > When manually installing you will not get additional features such as automatic updates, manual entries, system services, etc.
+
+<details>
+<summary>Manual Download (Windows / Other Linux)</summary>
+<br/>
 
 1. Set up a mysql-compatible server, such as MariaDB.
 
