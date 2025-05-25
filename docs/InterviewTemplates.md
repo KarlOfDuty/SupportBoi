@@ -37,7 +37,6 @@ It is highly recommended to use the interview template JSON schema to get live v
 ### Guides for Different Editors
 
 <details>
-
 <summary>VS Code</summary>
 
 1. Go to `File->Preferences->Settings`.
@@ -65,7 +64,6 @@ It is highly recommended to use the interview template JSON schema to get live v
 </details>
 
 <details>
-
 <summary>Jetbrains Editors</summary>
 
 1. Go to `File->Settings->Languages & Frameworks->Schemas->JSON Schema Mapping`.
