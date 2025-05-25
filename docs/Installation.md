@@ -52,7 +52,7 @@ sudo apt install supportboi-dev
 
 SupportBoi is available in the repository at repo.karlofduty.com.
 
-**Installing the Debian 12 dotnet repository:**  
+**Installing the dotnet repository:**  
 The url used in the `wget` command is for Debian 12, if you are using a different version, replace `12` with the version you are using.
 See this link for a list of all available versions: https://packages.microsoft.com/config/.
 ```bash
@@ -144,6 +144,7 @@ sudo mariadb-install-db --user=mysql --basedir=/usr --datadir=/var/lib/mysql
 ```
 
 </details>
+<br/><br/>
 
 > [!WARNING]
 > It is highly recommended to install the bot using the package managers listed above if possible.
