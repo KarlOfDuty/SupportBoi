@@ -11,7 +11,7 @@ A support ticket Discord bot. Uses a MySQL database for storage of ticket inform
 
 2. (Optional) Install .NET 9 if it doesn't already exist on your system.
 
-3. [Create a new bot application and invite it to your server](docs/CreateBot.md).
+3. [Create a new bot application and invite it to your server](docs/RegisterBotApplication.md).
 
 4. Download the bot for your operating system, either a [release version](https://github.com/KarlOfDuty/SupportBoi/releases) or a [dev build](https://jenkins.karlofduty.com/blue/organizations/jenkins/DiscordBots%2FSupportBoi/activity). While the Windows version is fully supported it is not as well tested as the Linux one.
 
