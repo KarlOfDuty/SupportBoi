@@ -9,6 +9,7 @@ namespace SupportBoi;
 
 internal static class Config
 {
+    // TODO: Rewrite with read-only properties
     internal static string token = "";
     internal static ulong logChannel;
     internal static string welcomeMessage = "";

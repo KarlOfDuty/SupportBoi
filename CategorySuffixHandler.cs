@@ -9,7 +9,7 @@ using DSharpPlus.Entities;
 
 namespace SupportBoi;
 
-public partial class CategorySuffixHandler
+public static partial class CategorySuffixHandler
 {
     private const int RETRY_INTERVAL_MIN = 10;
     private const int CHECK_INTERVAL_SEC = 30;

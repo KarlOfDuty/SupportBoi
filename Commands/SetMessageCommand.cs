@@ -13,11 +13,11 @@ public class SetMessageCommand
 {
     private readonly struct CommandInfo(string identifier, string message)
     {
-        public string identifier { get; } = identifier;
-        public string message { get; } = message;
+        public string Identifier { get; } = identifier;
+        public string Message { get; } = message;
     }
 
-    private static Dictionary<ulong, CommandInfo> waitingCommands = new();
+    private static readonly Dictionary<ulong, CommandInfo> waitingCommands = new();
 
     [RequireGuild]
     [Command("setmessage")]
@@ -26,8 +26,6 @@ public class SetMessageCommand
         [Parameter("identifier")] [Description("The identifier word used in the /say command.")] string identifier,
         [Parameter("message")] [Description("The message the /say command will return. Empty to delete message.")] string message = "")
     {
-
-
         if (Database.Message.TryGetMessage(identifier.ToLower(CultureInfo.InvariantCulture), out Database.Message oldMessage))
         {
             if (string.IsNullOrEmpty(message))
@@ -75,7 +73,7 @@ public class SetMessageCommand
 
     private static async Task AddNewMessage(SlashCommandContext command, string identifier, string message)
     {
-        if(Database.Message.AddMessage(identifier, command.Member.Id, message))
+        if(command.Member != null && Database.Message.AddMessage(identifier, command.Member.Id, message))
         {
             SayCommand.IdentifierAutoCompleteProvider.InvalidateCache();
             await command.RespondAsync(new DiscordEmbedBuilder
@@ -109,7 +107,7 @@ public class SetMessageCommand
             return;
         }
 
-        if (!Database.Message.TryGetMessage(command.identifier.ToLower(CultureInfo.InvariantCulture), out Database.Message _))
+        if (!Database.Message.TryGetMessage(command.Identifier.ToLower(CultureInfo.InvariantCulture), out Database.Message _))
         {
             await interaction.CreateResponseAsync(DiscordInteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder
             {
@@ -119,7 +117,7 @@ public class SetMessageCommand
             return;
         }
 
-        if (Database.Message.RemoveMessage(command.identifier))
+        if (Database.Message.RemoveMessage(command.Identifier))
         {
             SayCommand.IdentifierAutoCompleteProvider.InvalidateCache();
             await interaction.CreateResponseAsync(DiscordInteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder
@@ -138,7 +136,7 @@ public class SetMessageCommand
             return;
         }
 
-        await LogChannel.Success("`" + command.identifier + "` was removed from the /say command by " + interaction.User.Mention + ".");
+        await LogChannel.Success("`" + command.Identifier + "` was removed from the /say command by " + interaction.User.Mention + ".");
     }
 
     public static async Task CancelMessageDeletion(DiscordInteraction interaction, ulong previousInteractionID)
@@ -162,7 +160,7 @@ public class SetMessageCommand
             return;
         }
 
-        if (!Database.Message.TryGetMessage(command.identifier.ToLower(CultureInfo.InvariantCulture), out Database.Message _))
+        if (!Database.Message.TryGetMessage(command.Identifier.ToLower(CultureInfo.InvariantCulture), out Database.Message _))
         {
             await interaction.CreateResponseAsync(DiscordInteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder
             {
@@ -172,7 +170,7 @@ public class SetMessageCommand
             return;
         }
 
-        if (Database.Message.UpdateMessage(command.identifier, interaction.User.Id, command.message))
+        if (Database.Message.UpdateMessage(command.Identifier, interaction.User.Id, command.Message))
         {
             SayCommand.IdentifierAutoCompleteProvider.InvalidateCache();
             await interaction.CreateResponseAsync(DiscordInteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder
@@ -191,7 +189,7 @@ public class SetMessageCommand
             return;
         }
 
-        await LogChannel.Success("`" + command.identifier + "` was updated for the /say command by " + interaction.User.Mention + ".");
+        await LogChannel.Success("`" + command.Identifier + "` was updated for the /say command by " + interaction.User.Mention + ".");
     }
 
     public static async Task CancelMessageUpdate(DiscordInteraction interaction, ulong previousInteractionID)

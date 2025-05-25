@@ -301,7 +301,7 @@ public static class Interviewer
         }
 
         // The length requirement is less than 1024 characters, and must be less than the configurable limit if it is set.
-        int maxLength = Math.Min(currentStep.maxLength ?? InterviewStep.DEFAULT_MAX_FIELD_LENGTH, InterviewStep.DEFAULT_MAX_FIELD_LENGTH);
+        int maxLength = Math.Min(currentStep.maxLength ?? InterviewStep.DefaultMaxFieldLength, InterviewStep.DefaultMaxFieldLength);
 
         if (answerMessage.Content.Length > maxLength)
         {
@@ -315,7 +315,7 @@ public static class Interviewer
             return;
         }
 
-        if (answerMessage.Content.Length < (currentStep.minLength ?? InterviewStep.DEFAULT_MIN_FIELD_LENGTH))
+        if (answerMessage.Content.Length < (currentStep.minLength ?? InterviewStep.DefaultMinFieldLength))
         {
             DiscordMessage lengthMessage = await answerMessage.RespondAsync(new DiscordEmbedBuilder
             {
@@ -612,11 +612,11 @@ public static class Interviewer
                 string lengthInfo;
                 if (step.minLength != null)
                 {
-                    lengthInfo = " (" + step.minLength + "-" + (step.maxLength ?? InterviewStep.DEFAULT_MAX_FIELD_LENGTH) + " characters)";
+                    lengthInfo = " (" + step.minLength + "-" + (step.maxLength ?? InterviewStep.DefaultMaxFieldLength) + " characters)";
                 }
                 else
                 {
-                    lengthInfo = " (Maximum " + (step.maxLength ?? InterviewStep.DEFAULT_MAX_FIELD_LENGTH) + " characters)";
+                    lengthInfo = " (Maximum " + (step.maxLength ?? InterviewStep.DefaultMaxFieldLength) + " characters)";
                 }
                 embed.WithFooter("Reply to this message with your answer" + lengthInfo + ". You cannot include images or files.");
                 break;

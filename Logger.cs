@@ -23,6 +23,7 @@ public class Logger(string logCategory) : ILogger
 
     private static LogLevel minimumLogLevel = LogLevel.Trace;
     private readonly Lock @lock = new();
+    private bool IsSingleton => logCategory == "SupportBoi";
 
     internal static void SetLogLevel(LogLevel level)
     {
@@ -127,7 +128,7 @@ public class Logger(string logCategory) : ILogger
             _                    => " [None] ",
         };
 
-        Console.WriteLine(logLevelTag + message);
+        Console.WriteLine((IsSingleton ? "[BOT] " : "[API] ") + logLevelTag + message);
         if (exception != null)
         {
             Console.WriteLine($"{exception} : {exception.Message}\n{exception.StackTrace}");
@@ -167,8 +168,8 @@ public class Logger(string logCategory) : ILogger
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.Write("[");
 
-            Console.ForegroundColor = eventId == 420 ? ConsoleColor.Green : ConsoleColor.DarkGreen;
-            Console.Write(eventId == 420 ? "BOT" : "API");
+            Console.ForegroundColor = IsSingleton ? ConsoleColor.Green : ConsoleColor.DarkGreen;
+            Console.Write(IsSingleton ? "BOT" : "API");
 
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.Write("] ");

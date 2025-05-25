@@ -93,8 +93,8 @@ public class ReferencedInterviewStep
 // The entire interview tree is serialized and stored in the database to record responses as they are made.
 public class InterviewStep
 {
-    public const int DEFAULT_MAX_FIELD_LENGTH = 1024;
-    public const int DEFAULT_MIN_FIELD_LENGTH = 0;
+    public static int DefaultMaxFieldLength => 1024;
+    public static int DefaultMinFieldLength => 0;
 
     // Title of the message embed.
     [JsonProperty("heading")]

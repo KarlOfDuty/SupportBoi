@@ -7,7 +7,7 @@ using SupportBoi.Interviews;
 
 namespace SupportBoi.Database;
 
-public class Interviews
+public static class Interviews
 {
     public static bool TryGetInterviewTemplateJSON(ulong categoryID, out string templateJSON)
     {
