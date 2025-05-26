@@ -19,7 +19,7 @@ The bot is tested on the following operating systems:
 ### Installation Instructions
 
 <details>
-<summary>Ubuntu-based (Ubuntu, Pop!_OS, Mint, Zorin, etc)</summary>
+<summary><b>Ubuntu-based (Ubuntu, Pop!_OS, Mint, Zorin, etc)</b></summary>
 <br/>
 
 SupportBoi is available in the repository at repo.karlofduty.com.
@@ -49,7 +49,7 @@ sudo apt install supportboi-dev
 </details>
 
 <details>
-<summary>Other Debian-based (Debian, Kali, Deepin)</summary>
+<summary><b>Other Debian-based (Debian, Kali, Deepin, etc)</b></summary>
 <br/>
 
 SupportBoi is available in the repository at repo.karlofduty.com.
@@ -83,7 +83,7 @@ sudo apt install supportboi-dev
 </details>
 
 <details>
-<summary>RHEL-based (RHEL, Alma, Rocky, etc)</summary>
+<summary><b>RHEL-based (RHEL, Alma, Rocky, etc)</b></summary>
 <br/>
 
 SupportBoi is available in the repository at repo.karlofduty.com.
@@ -102,7 +102,7 @@ sudo dnf install supportboi-dev --refresh
 </details>
 
 <details>
-<summary>Other Fedora-based (Fedora, Nobara, Bazzite, etc)</summary>
+<summary><b>Other Fedora-based (Fedora, Nobara, Bazzite, etc)</b></summary>
 <br/>
 
 SupportBoi is available in the repository at repo.karlofduty.com.
@@ -121,7 +121,7 @@ sudo dnf install supportboi-dev --refresh
 </details>
 
 <details>
-<summary>Arch-based (Arch, Manjaro, EndeavourOS, SteamOS, etc)</summary>
+<summary><b>Arch-based (Arch, Manjaro, EndeavourOS, SteamOS, etc)</b></summary>
 <br/>
 
 SupportBoi is available in the Arch User Repository as [supportboi](https://aur.archlinux.org/packages/supportboi/) and [supportboi-git](https://aur.archlinux.org/packages/supportboi-git/).
@@ -136,6 +136,8 @@ yay -S supportboi
 ```bash
 yay -S supportboi-git
 ```
+
+You may see a warnign about verifying workloads during installation, this can be ignored.
 
 **For mariadb users:**  
 When mariadb is installed it will not automatically set up its data locations like in other distros.
@@ -153,15 +155,17 @@ sudo mariadb-install-db --user=mysql --basedir=/usr --datadir=/var/lib/mysql
 > When manually installing you will not get additional features such as automatic updates, manual entries, system services, etc.
 
 <details>
-<summary>Manual Download (Windows / Other Linux)</summary>
+<summary><b>Manual Download (Windows / Other Linux)</b></summary>
 <br/>
+
+You can download the bot manually by downloading the binary directly from the github release or jenkins build:
 
 1. Set up a mysql-compatible server, such as MariaDB.
 
 2. (Optional) Install .NET 9 if it isn't already installed on your system.
 
 3. Download the bot for your operating system, either a [release version](https://github.com/KarlOfDuty/SupportBoi/releases) or a [dev build](https://jenkins.karlofduty.com/blue/organizations/jenkins/DiscordBots%2FSupportBoi/activity).
-While the Windows version is fully supported it is not as well tested as the Linux one.
+While the Windows versions are fully supported they are not as well tested as the Linux ones.
 
 | Application         | Description                                                         |
 |---------------------|---------------------------------------------------------------------|
@@ -173,20 +177,108 @@ While the Windows version is fully supported it is not as well tested as the Lin
 </details>
 
 # Database Setup
+This guide assumes a MySQL/MariaDB installation, but it will be the same with other compatible database servers.
 
-**TODO:** Database instructions.
+Start the service if it isn't already running:
+```bash
+sudo systemctl start mysql
+# or
+sudo systemctl start mariadb
+```
+
+Open a mysql prompt:
+```bash
+sudo mysql
+# or
+sudo mariadb
+```
+
+Create a database:
+```sql
+CREATE DATABASE supportboi;
+```
+
+Create a user with full access to the database:
+```sql
+GRANT ALL PRIVILEGES ON supportboi.* TO 'supportboi'@'localhost' IDENTIFIED BY '<password here>'
+```
+
+This will have created a database called `supportboi` and a user called `supportboi` with the password `<password here>`.
+
+> [!NOTE]
+> This example only allows connections from the local host. If you need to host the bot on a different device from the mysql server you can change `localhost` in the query to `%`. Just make sure to properly secure your system to prevent unauthorized access.
+
+> [!TIP]
+> If anything went wrong creating the user you can simply delete it using `DROP USER 'supportboi'@localhost;` and run the above query again.
+
 
 # Running the Bot for the First Time
 
-**TODO:** Instructions about running in the current directory, running using the default locations, running the system service.
+> [!TIP]
+> If you want a very simple setup with its files placed in the current working directory and the bot running in your terminal, choose the basic setup.
+>
+> If you want to run the bot in the background as a system service that automatically starts up when the system is restarted and runs as its own user for security, choose the system service setup.
 
-[//]: # (5. Run the bot application, `./SupportBoi-<version>`, this creates a config file in the current directory.)
+<details>
+<summary><b>Basic Setup</b></summary>
+<br/>
 
-[//]: # ()
-[//]: # (6. Set up the config, there are instructions inside. If you need more help either contact me in Discord or through an issue here.)
+**1.** Run the bot to generate the config file:
+![image](https://github.com/user-attachments/assets/b9a2e896-d128-4b01-9fbe-b9d62f6d4490)
 
-[//]: # ()
-[//]: # (7. Restart the bot.)
 
-[//]: # ()
-[//]: # (8. Go to `Settings->Integrations->Bot->Command Permissions` in your Discord server to set up permissions for the commands.)
+**2.** A config file will have been generated in the current working directory. Open it in a text editor of your choice and set it up to your liking. It contains instructions for all options.
+
+**3.** Run the bot again and it should start without issue:
+
+![image](https://github.com/user-attachments/assets/ace4011e-445e-4e51-b261-64a18e653c46)
+
+</details>
+
+<details>
+<summary><b>System Service Setup</b></summary>
+<br/>
+
+**1.** Open the bot config at `/etc/supportboi/config.yml` using your preferred text editor and set it up to your liking. It contains instructions for all options.
+
+**2.** Run the bot manually as the service user once to test that it works correctly:
+```bash
+sudo --user supportboi supportboi --config /etc/supportboi/config.yml --transcripts /var/lib/supportboi/transcripts
+```
+![image](https://github.com/user-attachments/assets/f8819bd8-99e1-4891-bcaf-92d0ecb92061)
+
+**3.** When you have the bot working properly you can turn it off again.
+
+**4.** Starting the bot service:
+```bash
+sudo systemctl start supportboi
+```
+
+**5.** Checking the service status:
+```bash
+systemctl status supportboi
+```
+![image](https://github.com/user-attachments/assets/7473d4de-36f4-4064-b13f-2ab294fdeea9)
+
+**6.** (Optional) Make the service start automatically on boot:
+```bash
+sudo systemctl enable supportboi
+```
+
+Showing the full service log:
+```bash
+journalctl -u supportboi
+```
+
+Showing the live updating log:
+```bash
+journalctl -fu supportboi
+```
+
+</details>
+
+# Set up command permissions
+
+Go to `Settings->Integrations->Bot->Command Permissions` in your Discord server to set up permissions for the commands:
+
+![image](https://github.com/user-attachments/assets/e220808b-6f93-4efa-89a9-a2be5e0ec603)
