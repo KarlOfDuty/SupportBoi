@@ -197,9 +197,10 @@ sudo mariadb
 CREATE DATABASE supportboi;
 ```
 
-**4.** Create a user with full access to the database:
+**4.** Create a user with full access to the database, and reload permissions:
 ```sql
-GRANT ALL PRIVILEGES ON supportboi.* TO 'supportboi'@'localhost' IDENTIFIED BY '<password here>'
+GRANT ALL PRIVILEGES ON supportboi.* TO 'supportboi'@'localhost' IDENTIFIED BY '<password here>';
+FLUSH PRIVILEGES;
 ```
 
 This will have created a database called `supportboi` and a user called `supportboi` with the password `<password here>`.
