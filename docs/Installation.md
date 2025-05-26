@@ -24,28 +24,28 @@ The bot is tested on the following operating systems:
 
 SupportBoi is available in the repository at repo.karlofduty.com.
 
-**Installing the dotnet repository (Only needed for Ubuntu 24.04 and older):**
+**1.** Installing the dotnet repository (Only needed for Ubuntu 24.04 and older):
 ```bash
 sudo add-apt-repository ppa:dotnet/backports
 sudo apt update
 ```
 
-**Installing the repo.karlofduty.com repository:**
+**2.** Installing the repo.karlofduty.com repository:
 ```bash
 wget https://repo.karlofduty.com/ubuntu/dists/ubuntu/karlofduty-repo_latest_amd64.deb
 sudo apt install ./karlofduty-repo_latest_amd64.deb
 sudo apt update
 ```
 
-**Installing the release build:**
+**3.** Installing the bot:
 ```bash
+# Release build
 sudo apt install supportboi
-```
 
-**Installing the dev build:**
-```bash
+# Dev build
 sudo apt install supportboi-dev
 ```
+
 </details>
 
 <details>
@@ -54,7 +54,7 @@ sudo apt install supportboi-dev
 
 SupportBoi is available in the repository at repo.karlofduty.com.
 
-**Installing the dotnet repository:**  
+**1.** Installing the dotnet repository:  
 The url used in the `wget` command is for Debian 12, if you are using a different version, replace `12` with the version you are using.
 See this link for a list of all available versions: https://packages.microsoft.com/config/.
 ```bash
@@ -63,20 +63,19 @@ sudo dpkg -i packages-microsoft-prod.deb
 rm packages-microsoft-prod.deb
 ```
 
-**Installing the repo.karlofduty.com repository:**
+**2.** Installing the repo.karlofduty.com repository:
 ```bash
 wget https://repo.karlofduty.com/debian/dists/debian/karlofduty-repo_latest_amd64.deb
 sudo apt install ./karlofduty-repo_latest_amd64.deb
 sudo apt update
 ```
 
-**Installing the release build:**
+**3.** Installing the bot:
 ```bash
+# Release build
 sudo apt install supportboi
-```
 
-**Installing the dev build:**
-```bash
+# Dev build
 sudo apt install supportboi-dev
 ```
 
@@ -88,13 +87,13 @@ sudo apt install supportboi-dev
 
 SupportBoi is available in the repository at repo.karlofduty.com.
 
-**Installing the release build:**
+- Installing the release build:
 ```bash
 sudo dnf install https://repo.karlofduty.com/rhel/karlofduty-repo-latest.x86_64.rpm
 sudo dnf install supportboi --refresh
 ```
 
-**Installing the dev build:**
+- Installing the dev build:
 ```bash
 sudo dnf install https://repo.karlofduty.com/rhel/karlofduty-repo-latest.x86_64.rpm
 sudo dnf install supportboi-dev --refresh
@@ -107,13 +106,13 @@ sudo dnf install supportboi-dev --refresh
 
 SupportBoi is available in the repository at repo.karlofduty.com.
 
-**Installing the release build:**
+- Installing the release build:
 ```bash
 sudo dnf install https://repo.karlofduty.com/fedora/karlofduty-repo-latest.x86_64.rpm
 sudo dnf install supportboi --refresh
 ```
 
-**Installing the dev build:**
+- Installing the dev build:
 ```bash
 sudo dnf install https://repo.karlofduty.com/fedora/karlofduty-repo-latest.x86_64.rpm
 sudo dnf install supportboi-dev --refresh
@@ -127,12 +126,12 @@ sudo dnf install supportboi-dev --refresh
 SupportBoi is available in the Arch User Repository as [supportboi](https://aur.archlinux.org/packages/supportboi/) and [supportboi-git](https://aur.archlinux.org/packages/supportboi-git/).
 This example uses yay, but you can use any package manager with AUR support.
 
-**Installing the release build:**
+- Installing the release build:
 ```bash
 yay -S supportboi
 ```
 
-**Installing the dev build:**
+- Installing the dev build:
 ```bash
 yay -S supportboi-git
 ```
@@ -160,11 +159,11 @@ sudo mariadb-install-db --user=mysql --basedir=/usr --datadir=/var/lib/mysql
 
 You can download the bot manually by downloading the binary directly from the github release or jenkins build:
 
-1. Set up a mysql-compatible server, such as MariaDB.
+**1.** Set up a mysql-compatible server, such as MariaDB.
 
-2. (Optional) Install .NET 9 if it isn't already installed on your system.
+**2.** (Optional) Install .NET 9 if it isn't already installed on your system.
 
-3. Download the bot for your operating system, either a [release version](https://github.com/KarlOfDuty/SupportBoi/releases) or a [dev build](https://jenkins.karlofduty.com/blue/organizations/jenkins/DiscordBots%2FSupportBoi/activity).
+**3.** Download the bot for your operating system, either a [release version](https://github.com/KarlOfDuty/SupportBoi/releases) or a [dev build](https://jenkins.karlofduty.com/blue/organizations/jenkins/DiscordBots%2FSupportBoi/activity).
 While the Windows versions are fully supported they are not as well tested as the Linux ones.
 
 | Application         | Description                                                         |
@@ -179,26 +178,26 @@ While the Windows versions are fully supported they are not as well tested as th
 # Database Setup
 This guide assumes a MySQL/MariaDB installation, but it will be the same with other compatible database servers.
 
-Start the service if it isn't already running:
+**1.** Start the service if it isn't already running:
 ```bash
 sudo systemctl start mysql
 # or
 sudo systemctl start mariadb
 ```
 
-Open a mysql prompt:
+**2.** Open a mysql prompt:
 ```bash
 sudo mysql
 # or
 sudo mariadb
 ```
 
-Create a database:
+**3.** Create a database:
 ```sql
 CREATE DATABASE supportboi;
 ```
 
-Create a user with full access to the database:
+**4.** Create a user with full access to the database:
 ```sql
 GRANT ALL PRIVILEGES ON supportboi.* TO 'supportboi'@'localhost' IDENTIFIED BY '<password here>'
 ```
