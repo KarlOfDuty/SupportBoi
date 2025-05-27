@@ -12,9 +12,9 @@ The bot is tested on the following operating systems:
 
 > [!NOTE]
 > The bot should work on other versions of the above systems and other distributions based on them.
-> You must however use an x64 architecture, Arm systems such as the Raspberry Pi are not supported at this time.
+> However, you must use an x64 architecture operating system. Arm systems such as the Raspberry Pi are not supported at this time.
 > 
-> Please contact me immediately if any of the packages don't work properly on a specific distro.
+> Please contact me immediately if any of the packages don't work properly on a specific distribution.
 
 ### Installation Instructions
 
@@ -136,10 +136,10 @@ yay -S supportboi
 yay -S supportboi-git
 ```
 
-You may see a warnign about verifying workloads during installation, this can be ignored.
+You may see a warning about verifying workloads during installation, this can be ignored.
 
 **For mariadb users:**  
-When mariadb is installed it will not automatically set up its data locations like in other distros.
+When mariadb is installed it will not automatically set up its data locations like in other distributions.
 You have to run the following command to complete the installation: 
 
 ```bash
@@ -185,7 +185,7 @@ sudo systemctl start mysql
 sudo systemctl start mariadb
 ```
 
-**2.** Open a mysql prompt:
+**2.** Open a MySQL prompt:
 ```bash
 sudo mysql
 # or
