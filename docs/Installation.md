@@ -224,14 +224,13 @@ This will have created a database called `supportboi` and a user called `support
 <br/>
 
 **1.** Run the bot to generate the config file:
-![image](https://github.com/user-attachments/assets/b9a2e896-d128-4b01-9fbe-b9d62f6d4490)
-
+![Example of running the bot without editing the config](https://github.com/user-attachments/assets/b9a2e896-d128-4b01-9fbe-b9d62f6d4490)
 
 **2.** A config file will have been generated in the current working directory. Open it in a text editor of your choice and set it up to your liking. It contains instructions for all options.
 
 **3.** Run the bot again and it should start without issue:
 
-![image](https://github.com/user-attachments/assets/ace4011e-445e-4e51-b261-64a18e653c46)
+![Example of running the bot with a set up config](https://github.com/user-attachments/assets/ace4011e-445e-4e51-b261-64a18e653c46)
 
 </details>
 
@@ -245,7 +244,7 @@ This will have created a database called `supportboi` and a user called `support
 ```bash
 sudo --user supportboi supportboi --config /etc/supportboi/config.yml --transcripts /var/lib/supportboi/transcripts
 ```
-![image](https://github.com/user-attachments/assets/f8819bd8-99e1-4891-bcaf-92d0ecb92061)
+![Example of running the bot as the service user](https://github.com/user-attachments/assets/f8819bd8-99e1-4891-bcaf-92d0ecb92061)
 
 **3.** When you have the bot working properly you can turn it off again.
 
@@ -258,7 +257,7 @@ sudo systemctl start supportboi
 ```bash
 systemctl status supportboi
 ```
-![image](https://github.com/user-attachments/assets/7473d4de-36f4-4064-b13f-2ab294fdeea9)
+![Example of starting and checking the status of the service](https://github.com/user-attachments/assets/7473d4de-36f4-4064-b13f-2ab294fdeea9)
 
 **6.** (Optional) Make the service start automatically on boot:
 ```bash
@@ -281,4 +280,4 @@ journalctl -fu supportboi
 
 Go to `Settings->Integrations->Bot->Command Permissions` in your Discord server to set up permissions for the commands:
 
-![image](https://github.com/user-attachments/assets/e220808b-6f93-4efa-89a9-a2be5e0ec603)
+![Image of the Discord command permissions menu](https://github.com/user-attachments/assets/e220808b-6f93-4efa-89a9-a2be5e0ec603)
