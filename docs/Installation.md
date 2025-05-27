@@ -14,7 +14,7 @@ The bot is tested on the following operating systems:
 > The bot should work on other versions of the above systems and other distributions based on them.
 > However, you must use an x64 architecture operating system. Arm systems such as the Raspberry Pi are not supported at this time.
 > 
-> Please contact me immediately if any of the packages don't work properly on a specific distribution.
+> Please open an issue or contact me in Discord immediately if any of the packages don't work properly on a specific distribution.
 
 ### Installation Instructions
 
