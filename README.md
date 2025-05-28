@@ -37,7 +37,8 @@ It is possible to set up a json interview tree where the bot asks questions and 
 
 **TODO: Pictures here**
 
-![image](https://github.com/user-attachments/assets/e0f872be-bbec-436c-9e04-f28e9e6013aa)
+![image](https://github.com/user-attachments/assets/e0f872be-bbec-436c-9e04-f28e9e6013aa)![image](https://github.com/user-attachments/assets/f71d02eb-dbf0-4596-9058-b72731800c94)
+
 
 
 #### Fully formatted transcripts
