@@ -17,3 +17,5 @@ packaging/rpmbuild/
 .dpkg-deb/
 
 supportboi.log
+
+out/

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Channels;
 using DSharpPlus;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Enums;
@@ -66,34 +67,27 @@ internal static class SupportBoi
 
     internal static CommandLineArguments commandLineArgs;
 
+    private static readonly Channel<PosixSignal> signalChannel = Channel.CreateUnbounded<PosixSignal>();
+
+    private static void HandleSignal(PosixSignalContext context)
+    {
+        context.Cancel = true;
+        signalChannel.Writer.TryWrite(context.Signal);
+    }
+
+    // ServiceManager will steal this value later so we have to copy it while we have the chance.
     private static readonly string systemdSocket = Environment.GetEnvironmentVariable("NOTIFY_SOCKET");
 
     private static async Task<int> Main(string[] args)
     {
-        // ServiceManager will steal this value later so we have to copy it while we have the chance.
-        Journal.SyslogIdentifier = Assembly.GetEntryAssembly()?.GetName().Name;
-
-        PosixSignalRegistration.Create(PosixSignal.SIGHUP, context =>
+        if (SystemdHelpers.IsSystemdService())
         {
-            context.Cancel = true;
-            Reload();
-        });
+            Journal.SyslogIdentifier = Assembly.GetEntryAssembly()?.GetName().Name;
+            PosixSignalRegistration.Create(PosixSignal.SIGHUP, HandleSignal);
+        }
 
-        PosixSignalRegistration.Create(PosixSignal.SIGTERM, _ =>
-        {
-            ServiceManager.Notify(ServiceState.Stopping);
-            Logger.Log("Shutting down...");
-            // TODO: Shut down threads and disconnect from Discord here
-            Environment.Exit(0);
-        });
-
-        PosixSignalRegistration.Create(PosixSignal.SIGINT, _ =>
-        {
-            ServiceManager.Notify(ServiceState.Stopping);
-            Logger.Warn("Received interrupt signal, shutting down...");
-            // TODO: Shut down threads and disconnect from Discord here
-            Environment.Exit(0);
-        });
+        PosixSignalRegistration.Create(PosixSignal.SIGTERM, HandleSignal);
+        PosixSignalRegistration.Create(PosixSignal.SIGINT, HandleSignal);
 
         StringWriter sw = new();
         commandLineArgs = new Parser(settings =>
@@ -140,8 +134,45 @@ internal static class SupportBoi
             }
 
             ServiceManager.Notify(ServiceState.Ready);
-            // Block this task until the program is closed.
-            await Task.Delay(-1);
+
+            // Loop here until application closes, handle any signals received
+            while (await signalChannel.Reader.WaitToReadAsync())
+            {
+                while (signalChannel.Reader.TryRead(out PosixSignal signal))
+                {
+                    switch (signal)
+                    {
+                        case PosixSignal.SIGHUP:
+                            // Tmds.Systemd.ServiceManager doesn't support the notify-reload service type so we have to send the reloading message manually.
+                            // According to the documentation this shouldn't be the right way to calculate MONOTONIC_USEC, but it works for some reason.
+                            byte[] data = System.Text.Encoding.UTF8.GetBytes($"RELOADING=1\nMONOTONIC_USEC={DateTimeOffset.UtcNow.ToUnixTimeMicroseconds()}\n");
+                            UnixDomainSocketEndPoint ep = new(systemdSocket);
+                            using (Socket cl = new(AddressFamily.Unix, SocketType.Dgram, ProtocolType.Unspecified))
+                            {
+                                await cl.ConnectAsync(ep);
+                                cl.Send(data);
+                            }
+
+                            Reload();
+                            ServiceManager.Notify(ServiceState.Ready);
+                            break;
+                        case PosixSignal.SIGTERM:
+                            Logger.Log("Shutting down...");
+                            ServiceManager.Notify(ServiceState.Stopping);
+                            await client.DisconnectAsync();
+                            client.Dispose();
+                            return 0;
+                        case PosixSignal.SIGINT:
+                            Logger.Warn("Received interrupt signal, shutting down...");
+                            ServiceManager.Notify(ServiceState.Stopping);
+                            await client.DisconnectAsync();
+                            client.Dispose();
+                            return 0;
+                        default:
+                            break;
+                    }
+                }
+            }
         }
         catch (Exception e)
         {
@@ -164,16 +195,6 @@ internal static class SupportBoi
 
     public static bool Reload()
     {
-        if (SystemdHelpers.IsSystemdService())
-        {
-            // According to the documentation this shouldn't be the right way to calculate MONOTONIC_USEC, but it works for some reason.
-            byte[] data = System.Text.Encoding.UTF8.GetBytes($"RELOADING=1\nMONOTONIC_USEC={DateTimeOffset.UtcNow.ToUnixTimeMicroseconds()}\n");
-            UnixDomainSocketEndPoint ep = new UnixDomainSocketEndPoint(systemdSocket);
-            using Socket cl = new Socket(AddressFamily.Unix, SocketType.Dgram, ProtocolType.Unspecified);
-            cl.Connect(ep);
-            cl.Send(data);
-        }
-
         try
         {
             Config.LoadConfig();
@@ -203,8 +224,6 @@ internal static class SupportBoi
             Logger.Fatal("Could not set up database tables, please confirm connection settings, status of the server and permissions of MySQL user.", e);
             return false;
         }
-
-        ServiceManager.Notify(ServiceState.Ready);
         return true;
     }
 
