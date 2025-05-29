@@ -3,9 +3,9 @@ using System;
 using System.Collections.Generic;
 using DSharpPlus;
 using DSharpPlus.Exceptions;
-using Microsoft.Extensions.Hosting.Systemd;
 using System.Threading;
 using System.IO;
+using Microsoft.Extensions.Hosting.Systemd;
 using Tmds.Systemd;
 
 namespace SupportBoi;
@@ -159,14 +159,13 @@ public class Logger(string logCategory) : ILogger
         }
 
         JournalMessage msg = Journal.GetMessage().Append(JournalFieldName.Message, logMessage);
-        Journal.Log(priority, msg);
         if (Journal.IsAvailable)
         {
             Journal.Log(priority, msg);
         }
         else
         {
-            Console.WriteLine("NO JOURNAL AVAILABLE: " + logMessage);
+            Console.WriteLine(logMessage);
         }
     }
 

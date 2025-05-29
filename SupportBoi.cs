@@ -4,6 +4,7 @@ using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using DSharpPlus;
 using DSharpPlus.Interactivity;
@@ -64,7 +65,30 @@ internal static class SupportBoi
 
     private static void Main(string[] args)
     {
-        StringWriter sw = new StringWriter();
+        Journal.SyslogIdentifier = Assembly.GetEntryAssembly()?.GetName().Name;
+
+        PosixSignalRegistration.Create(PosixSignal.SIGHUP, _ =>
+        {
+            Reload();
+        });
+
+        PosixSignalRegistration.Create(PosixSignal.SIGTERM, _ =>
+        {
+            ServiceManager.Notify(ServiceState.Stopping);
+            Logger.Log("Shutting down...");
+            // TODO: Shut down threads and disconnect from Discord here
+            Environment.Exit(0);
+        });
+
+        PosixSignalRegistration.Create(PosixSignal.SIGINT, _ =>
+        {
+            ServiceManager.Notify(ServiceState.Stopping);
+            Logger.Warn("Received interrupt signal, shutting down...");
+            // TODO: Shut down threads and disconnect from Discord here
+            Environment.Exit(0);
+        });
+
+        StringWriter sw = new();
         commandLineArgs = new Parser(settings =>
         {
             settings.AutoHelp = true;
@@ -90,7 +114,6 @@ internal static class SupportBoi
             return;
         }
 
-        Journal.SyslogIdentifier = Assembly.GetEntryAssembly()?.GetName().Name;
         MainAsync().GetAwaiter().GetResult();
     }
 
@@ -99,7 +122,7 @@ internal static class SupportBoi
         Logger.Log("Starting " + Assembly.GetEntryAssembly()?.GetName().Name + " version " + GetVersion() + "...");
         try
         {
-            if (!Reload())
+            if (!Reload(true))
             {
                 Logger.Fatal("Aborting startup due to a fatal error.");
                 Environment.ExitCode = 1;
@@ -116,6 +139,7 @@ internal static class SupportBoi
                 return;
             }
 
+            ServiceManager.Notify(ServiceState.Ready);
             // Block this task until the program is closed.
             await Task.Delay(-1);
         }
@@ -136,8 +160,13 @@ internal static class SupportBoi
              + " (" + ThisAssembly.Git.Commit + ")";
     }
 
-    public static bool Reload()
+    public static bool Reload(bool isStartup = false)
     {
+        if (!isStartup)
+        {
+            ServiceManager.Notify(ServiceState.Reloading);
+        }
+
         try
         {
             Config.LoadConfig();
@@ -166,6 +195,11 @@ internal static class SupportBoi
         {
             Logger.Fatal("Could not set up database tables, please confirm connection settings, status of the server and permissions of MySQL user.", e);
             return false;
+        }
+
+        if (!isStartup)
+        {
+            ServiceManager.Notify(ServiceState.Ready);
         }
 
         return true;
