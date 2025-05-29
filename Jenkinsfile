@@ -61,7 +61,7 @@ pipeline
       {
         script
         {
-          common.update_aur_git_package(env.AUR_GIT_PACKAGE)
+          common.update_aur_git_package(env.AUR_GIT_PACKAGE, "packaging/supportboi-git.pkgbuild", "packaging/supportboi.install")
         }
       }
     }
