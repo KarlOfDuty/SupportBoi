@@ -29,6 +29,13 @@ case "$1" in
     install -m 700 -o supportboi -g supportboi -d /var/lib/supportboi
     install -m 755 -o supportboi -g supportboi -d /var/lib/supportboi/transcripts
     install -m 755 -o supportboi -g supportboi -d /var/logs/supportboi
+
+    SYSTEMD_VERSION=$(systemctl --version | awk '{if($1=="systemd" && $2~"^[0-9]"){print $2}}' | head -n 1)
+    if (( $SYSTEMD_VERSION < 253 )); then
+        echo "Systemd version is lower than 253 ($SYSTEMD_VERSION); using legacy service type 'notify' instead of 'notify-reload'"
+        sed -i 's/^Type=notify-reload$/Type=notify/' "/usr/lib/systemd/system/supportboi.service"
+    fi
+
     systemctl daemon-reload
     if [ -f "/tmp/.supportboi-upgrade-stopped-service" ]; then
       systemctl start supportboi.service

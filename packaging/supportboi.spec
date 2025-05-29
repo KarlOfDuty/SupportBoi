@@ -55,6 +55,11 @@ getent group supportboi > /dev/null || groupadd supportboi
 getent passwd supportboi > /dev/null || useradd -r -m -d /var/lib/supportboi -s /sbin/nologin -g supportboi supportboi
 
 %post
+SYSTEMD_VERSION=$(systemctl --version | awk '{if($1=="systemd" && $2~"^[0-9]"){print $2}}' | head -n 1)
+if (( $SYSTEMD_VERSION < 253 )); then
+    echo "Systemd version is lower than 253 ($SYSTEMD_VERSION); using legacy service type 'notify' instead of 'notify-reload'"
+    sed -i 's/^Type=notify-reload$/Type=notify/' "/usr/lib/systemd/system/supportboi.service"
+fi
 %systemd_post supportboi.service
 
 %preun

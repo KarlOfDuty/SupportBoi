@@ -3,13 +3,20 @@ Description=SupportBoi Discord Bot
 Documentation=https://github.com/KarlOfDuty/SupportBoi
 After=network.target
 Wants=network.target
+StartLimitIntervalSec=30
+StartLimitBurst=3
 
 [Service]
 User=supportboi
-ExecStart=/usr/bin/supportboi --config /etc/supportboi/config.yml --transcripts /var/lib/supportboi/transcripts --log-file /var/log/supportboi/supportboi.log
-Restart=no
 Type=notify-reload
+Restart=on-failure
 NotifyAccess=main
+RestartSec=5
+RestartPreventExitStatus=1
+
+ExecStart=/usr/bin/supportboi --config /etc/supportboi/config.yml --transcripts /var/lib/supportboi/transcripts --log-file /var/log/supportboi/supportboi.log
+ExecReload=/bin/kill -HUP $MAINPID
+
 
 [Install]
 WantedBy=multi-user.target
