@@ -20,6 +20,7 @@ Source:     rpm-source.tar.gz
 
 BuildRequires: systemd-rpm-macros
 Requires: dotnet-runtime-9.0
+Requires: mariadb-server
 %{?systemd_requires}
 
 %description

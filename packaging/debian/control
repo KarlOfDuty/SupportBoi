@@ -15,6 +15,7 @@ Architecture: amd64
 Multi-Arch: foreign
 Depends:
  dotnet-runtime-9.0,
+ mariadb-server,
  ${shlibs:Depends},
  ${misc:Depends},
 Description: A support ticket Discord bot.
