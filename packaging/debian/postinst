@@ -28,7 +28,7 @@ case "$1" in
     chown supportboi:supportboi /usr/bin/supportboi
     install -m 700 -o supportboi -g supportboi -d /var/lib/supportboi
     install -m 755 -o supportboi -g supportboi -d /var/lib/supportboi/transcripts
-    install -m 755 -o supportboi -g supportboi -d /var/logs/supportboi
+    install -m 755 -o supportboi -g supportboi -d /var/log/supportboi
 
     SYSTEMD_VERSION=$(systemctl --version | awk '{if($1=="systemd" && $2~"^[0-9]"){print $2}}' | head -n 1)
     if [ "$SYSTEMD_VERSION" -lt 253 ]; then
