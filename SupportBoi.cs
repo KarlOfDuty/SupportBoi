@@ -100,6 +100,7 @@ internal static class SupportBoi
             if (!Reload())
             {
                 Logger.Fatal("Aborting startup due to a fatal error.");
+                Environment.ExitCode = 1;
                 return;
             }
 
@@ -109,6 +110,7 @@ internal static class SupportBoi
             if (!await Connect())
             {
                 Logger.Fatal("Aborting startup due to a fatal error when trying to connect to Discord.");
+                Environment.ExitCode = 2;
                 return;
             }
 
@@ -118,6 +120,7 @@ internal static class SupportBoi
         catch (Exception e)
         {
             Logger.Fatal("Fatal error.", e);
+            Environment.ExitCode = 3;
         }
     }
 
