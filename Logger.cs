@@ -6,6 +6,7 @@ using DSharpPlus.Exceptions;
 using Microsoft.Extensions.Hosting.Systemd;
 using System.Threading;
 using System.IO;
+using Tmds.Systemd;
 
 namespace SupportBoi;
 
@@ -129,7 +130,6 @@ public class Logger(string logCategory) : ILogger
 
     private void SystemdLog(LogLevel logLevel, Exception exception, string message)
     {
-        // TODO: Replace with logging directly to systemd using correct log levels.
         string logLevelTag = logLevel switch
         {
             LogLevel.Trace       => "[Trace] ",
@@ -141,19 +141,32 @@ public class Logger(string logCategory) : ILogger
             _                    => " [None] ",
         };
 
+        LogFlags priority = logLevel switch
+        {
+            LogLevel.Trace       => LogFlags.Debug,
+            LogLevel.Debug       => LogFlags.Debug,
+            LogLevel.Information => LogFlags.Information,
+            LogLevel.Warning     => LogFlags.Warning,
+            LogLevel.Error       => LogFlags.Error,
+            LogLevel.Critical    => LogFlags.Critical,
+            _                    => LogFlags.Information
+        };
+
         string logMessage = (IsSingleton ? "[BOT] " : "[API] ") + logLevelTag + message;
         if (exception != null)
         {
             logMessage += "\n" + GetExceptionString(exception, 0);
         }
 
-        if (logLevel is LogLevel.Error or LogLevel.Critical)
+        JournalMessage msg = Journal.GetMessage().Append(JournalFieldName.Message, logMessage);
+        Journal.Log(priority, msg);
+        if (Journal.IsAvailable)
         {
-            Console.Error.WriteLine(logMessage);
+            Journal.Log(priority, msg);
         }
         else
         {
-            Console.WriteLine(logMessage);
+            Console.WriteLine("NO JOURNAL AVAILABLE: " + logMessage);
         }
     }
 

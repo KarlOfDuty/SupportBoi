@@ -17,6 +17,7 @@ using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
 using DSharpPlus.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
+using Tmds.Systemd;
 
 namespace SupportBoi;
 
@@ -89,6 +90,7 @@ internal static class SupportBoi
             return;
         }
 
+        Journal.SyslogIdentifier = Assembly.GetEntryAssembly()?.GetName().Name;
         MainAsync().GetAwaiter().GetResult();
     }
 
