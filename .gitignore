@@ -15,3 +15,5 @@ packaging/rpmbuild-nightly/
 packaging/rpmbuild/
 
 .dpkg-deb/
+
+supportboi.log

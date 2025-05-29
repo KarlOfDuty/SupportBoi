@@ -414,13 +414,13 @@ public static class EventHandler
             }
 
             case BadRequestException ex:
-                Logger.Error("Command exception occured:\n" + e.Exception);
+                Logger.Error("Command exception occured.", e.Exception);
                 Logger.Error("JSON Message: " + ex.JsonMessage);
                 return;
 
             default:
             {
-                Logger.Error("Exception occured: " + e.Exception.GetType() + ": " + e.Exception);
+                Logger.Error("Command exception occured.", e.Exception);
                 await e.Context.Channel.SendMessageAsync(new DiscordEmbedBuilder
                 {
                     Color = DiscordColor.Red,

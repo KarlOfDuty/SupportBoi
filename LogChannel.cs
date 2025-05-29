@@ -31,6 +31,15 @@ public static class LogChannel
 
   private static async Task Log(DiscordColor color, string message, uint ticketID = 0, Utilities.File file = null)
   {
+    if (ticketID != 0)
+    {
+      Logger.Log("Log Channel: (ticket-" + ticketID.ToString("00000") + ") " + message.Trim());
+    }
+    else
+    {
+      Logger.Log("Log Channel: " + message.Trim());
+    }
+
     if (!IsEnabled)
     {
       return;

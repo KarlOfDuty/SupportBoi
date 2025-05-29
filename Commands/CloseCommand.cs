@@ -97,7 +97,7 @@ public class CloseCommand
             catch (Exception e)
             {
                 currentlyClosingTickets.Remove(interaction.Channel.Id);
-                Logger.Error("Exception occured when trying to save transcript while closing ticket: " + e);
+                Logger.Error("Exception occured when trying to save transcript while closing ticket.", e);
                 await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder
                 {
                     Color = DiscordColor.Red,

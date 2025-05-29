@@ -8,7 +8,7 @@ bot:
     # Message posted when a ticket is opened.
     welcome-message: "Please describe your issue below, and include all information needed for us to take action. This is an example ticket message and can be changed in the config."
 
-    # Decides what messages are shown in console.
+    # Decides what messages are shown in console. Does not affect the log file.
     # Possible values are: Critical, Error, Warning, Information, Debug.
     console-log-level: "Information"
 
@@ -45,8 +45,13 @@ bot:
     pin-first-message: true
 
     # Ticket transcript location, can be overridden using command line arguments.
-    # When running the bot as a service this will be set to "/var/lib/supportboi/transcripts" by default.
+    # When running the bot as a service this will be set to "/var/lib/supportboi/transcripts" by the service.
     transcript-dir: "./transcripts"
+
+    # Log all console output to a file, can be overridden using command line arguments. Set to "" to disable.
+    # When running the bot as a service this will be set to "/var/log/supportboi/supportboi.log" by the service.
+    # The log file will still log all log levels regardless of the console log level setting.
+    log-file: ""
 
     # Adds the number of tickets open in a category to the end of the category name.
     add-category-ticket-count: true
@@ -83,5 +88,5 @@ database:
     name: "supportboi"
 
     # Username and password for authentication.
-    user: ""
+    user: "supportboi"
     password: ""

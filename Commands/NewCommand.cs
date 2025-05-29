@@ -188,7 +188,7 @@ public class NewCommand
         }
         catch (DiscordException e)
         {
-            Logger.Error("Exception occurred trying to modify channel: " + e);
+            Logger.Error("Exception occurred trying to modify channel.", e);
             Logger.Error("JsonMessage: " + e.JsonMessage);
         }
 
@@ -198,7 +198,7 @@ public class NewCommand
         }
         catch (DiscordException e)
         {
-            Logger.Error("Exception occurred trying to add channel permissions: " + e);
+            Logger.Error("Exception occurred trying to add channel permissions.", e);
             Logger.Error("JsonMessage: " + e.JsonMessage);
         }
 
@@ -245,7 +245,7 @@ public class NewCommand
                 }
                 catch (DiscordException e)
                 {
-                    Logger.Error("Exception occurred assign random staff member: " + e);
+                    Logger.Error("Exception occurred assign random staff member.", e);
                     Logger.Error("JsonMessage: " + e.JsonMessage);
                 }
             }

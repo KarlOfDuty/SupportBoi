@@ -48,6 +48,7 @@ fi
 %{__install} -m 600 %{repo_root}/default_config.yml %{buildroot}/etc/supportboi/config.yml
 
 %{__install} -d %{buildroot}/var/lib/supportboi/transcripts
+%{__install} -d %{buildroot}/var/log/supportboi
 
 %pre
 getent group supportboi > /dev/null || groupadd supportboi
@@ -68,3 +69,4 @@ getent passwd supportboi > /dev/null || useradd -r -m -d /var/lib/supportboi -s 
 %config %attr(0600, supportboi, supportboi) /etc/supportboi/config.yml
 %dir %attr(0700, supportboi, supportboi) /var/lib/supportboi
 %dir %attr(0755, supportboi, supportboi) /var/lib/supportboi/transcripts
+%dir %attr(0755, supportboi, supportboi) /var/log/supportboi

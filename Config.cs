@@ -23,6 +23,7 @@ internal static class Config
     internal static int globalTicketLimit = 0;
     internal static bool pinFirstMessage = false;
     internal static string transcriptDir = "";
+    internal static string logFile = "";
     internal static bool addCategoryTicketCount = false;
 
     internal static bool ticketUpdatedNotifications = false;
@@ -35,29 +36,30 @@ internal static class Config
 
     internal static string hostName = "127.0.0.1";
     internal static int port = 3306;
-    internal static string database = "supportbot";
-    internal static string username = "supportbot";
+    internal static string database = "supportboi";
+    internal static string username = "supportboi";
     internal static string password = "";
 
-    public static string configPath { get; private set; } = "./config.yml";
+    public static string ConfigPath { get; private set; } = "./config.yml";
+    public static bool Initialized { get; private set; } = false;
 
     public static void LoadConfig()
     {
         if (!string.IsNullOrEmpty(SupportBoi.commandLineArgs.configPath))
         {
-            configPath = SupportBoi.commandLineArgs.configPath;
+            ConfigPath = SupportBoi.commandLineArgs.configPath;
         }
 
-        Logger.Log("Loading config \"" + Path.GetFullPath(configPath) + "\"");
+        Logger.Log("Loading config \"" + Path.GetFullPath(ConfigPath) + "\"");
 
         // Writes default config to file if it does not already exist
-        if (!File.Exists(configPath))
+        if (!File.Exists(ConfigPath))
         {
-            File.WriteAllText(configPath, Utilities.ReadManifestData("default_config.yml"));
+            File.WriteAllText(ConfigPath, Utilities.ReadManifestData("default_config.yml"));
         }
 
         // Reads config contents into FileStream
-        FileStream stream = File.OpenRead(configPath);
+        FileStream stream = File.OpenRead(ConfigPath);
 
         // Converts the FileStream into a YAML object
         IDeserializer deserializer = new DeserializerBuilder().Build();
@@ -96,6 +98,7 @@ internal static class Config
         globalTicketLimit = json.SelectToken("bot.ticket-limits.total")?.Value<int>() ?? 0;
         pinFirstMessage = json.SelectToken("bot.pin-first-message")?.Value<bool>() ?? false;
         transcriptDir = json.SelectToken("bot.transcript-dir")?.Value<string>() ?? "";
+        logFile = json.SelectToken("bot.log-file")?.Value<string>() ?? "";
         addCategoryTicketCount = json.SelectToken("bot.add-category-ticket-count")?.Value<bool>() ?? false;
 
         ticketUpdatedNotifications = json.SelectToken("notifications.ticket-updated")?.Value<bool>() ?? false;
@@ -109,8 +112,11 @@ internal static class Config
         // Reads database info
         hostName = json.SelectToken("database.address")?.Value<string>() ?? "";
         port = json.SelectToken("database.port")?.Value<int>() ?? 3306;
-        database = json.SelectToken("database.name")?.Value<string>() ?? "supportbot";
-        username = json.SelectToken("database.user")?.Value<string>() ?? "supportbot";
+        database = json.SelectToken("database.name")?.Value<string>() ?? "supportboi";
+        username = json.SelectToken("database.user")?.Value<string>() ?? "supportboi";
         password = json.SelectToken("database.password")?.Value<string>() ?? "";
+
+        Logger.SetupLogfile();
+        Initialized = true;
     }
 }

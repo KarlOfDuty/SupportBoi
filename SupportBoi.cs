@@ -42,6 +42,13 @@ internal static class SupportBoi
                 MetaValue = "PATH")]
         public string transcriptDir { get; set; }
 
+        [Option('l',
+            "log-file",
+            Required = false,
+            HelpText = "Select log file to write bot logs to.",
+            MetaValue = "PATH")]
+        public string logFilePath { get; set; }
+
         [Option("leave",
                 Required = false,
                 HelpText = "Leaves one or more Discord servers. " +
@@ -110,7 +117,7 @@ internal static class SupportBoi
         }
         catch (Exception e)
         {
-            Logger.Fatal("Fatal error:\n" + e);
+            Logger.Fatal("Fatal error.", e);
         }
     }
 
@@ -132,7 +139,7 @@ internal static class SupportBoi
         }
         catch (Exception e)
         {
-            Logger.Fatal("Unable to read the config file: \"" + Config.configPath + "\"", e);
+            Logger.Fatal("Unable to read the config file: \"" + Config.ConfigPath + "\"", e);
             return false;
         }
 

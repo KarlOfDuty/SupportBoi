@@ -27,7 +27,8 @@ case "$1" in
     chown supportboi:supportboi /etc/supportboi/config.yml
     chown supportboi:supportboi /usr/bin/supportboi
     install -m 700 -o supportboi -g supportboi -d /var/lib/supportboi
-    install -m 700 -o supportboi -g supportboi -d /var/lib/supportboi/transcripts
+    install -m 755 -o supportboi -g supportboi -d /var/lib/supportboi/transcripts
+    install -m 755 -o supportboi -g supportboi -d /var/logs/supportboi
     systemctl daemon-reload
     if [ -f "/tmp/.supportboi-upgrade-stopped-service" ]; then
       systemctl start supportboi.service
