@@ -203,7 +203,7 @@ GRANT ALL PRIVILEGES ON supportboi.* TO 'supportboi'@'localhost' IDENTIFIED BY '
 FLUSH PRIVILEGES;
 ```
 
-This will have created a database called `supportboi` and a user called `supportboi` with the password `<password here>`.
+This will have created a database called `supportboi` and a user called `supportboi` with the password `<password here>`. You can type `exit` to exit the sql prompt.
 
 > [!NOTE]
 > This example only allows connections from the local host. If you need to host the bot on a different device from the mysql server you can change `localhost` in the query to `%`. Just make sure to properly secure your system to prevent unauthorized access.
