@@ -618,7 +618,7 @@ public static class Interviewer
                 {
                     lengthInfo = " (Maximum " + (step.maxLength ?? InterviewStep.DefaultMaxFieldLength) + " characters)";
                 }
-                embed.WithFooter("Reply to this message with your answer" + lengthInfo + ". You cannot include images or files.");
+                embed.WithFooter("Right-click on this message and reply with your answer" + lengthInfo + ". You cannot include images or files.");
                 break;
             case StepType.REFERENCE_END:
             case StepType.INTERVIEW_END:
