@@ -4,6 +4,7 @@ using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Linq;
+using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Threading;
 using DSharpPlus;
@@ -18,7 +19,9 @@ using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
 using DSharpPlus.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting.Systemd;
 using Tmds.Systemd;
+using ServiceState = Tmds.Systemd.ServiceState;
 
 namespace SupportBoi;
 
@@ -63,12 +66,16 @@ internal static class SupportBoi
 
     internal static CommandLineArguments commandLineArgs;
 
-    private static void Main(string[] args)
+    private static readonly string systemdSocket = Environment.GetEnvironmentVariable("NOTIFY_SOCKET");
+
+    private static async Task<int> Main(string[] args)
     {
+        // ServiceManager will steal this value later so we have to copy it while we have the chance.
         Journal.SyslogIdentifier = Assembly.GetEntryAssembly()?.GetName().Name;
 
-        PosixSignalRegistration.Create(PosixSignal.SIGHUP, _ =>
+        PosixSignalRegistration.Create(PosixSignal.SIGHUP, context =>
         {
+            context.Cancel = true;
             Reload();
         });
 
@@ -104,29 +111,23 @@ internal static class SupportBoi
 
         if (args.Contains("--help"))
         {
-            return;
+            return 0;
         }
 
         if (args.Contains("--version"))
         {
             Console.WriteLine(Assembly.GetEntryAssembly()?.GetName().Name + ' ' + GetVersion());
             Console.WriteLine("Build time: " + BuildInfo.BuildTimeUTC.ToString("yyyy-MM-dd HH:mm:ss") + " UTC");
-            return;
+            return 0;
         }
 
-        MainAsync().GetAwaiter().GetResult();
-    }
-
-    private static async Task MainAsync()
-    {
         Logger.Log("Starting " + Assembly.GetEntryAssembly()?.GetName().Name + " version " + GetVersion() + "...");
         try
         {
-            if (!Reload(true))
+            if (!Reload())
             {
-                Logger.Fatal("Aborting startup due to a fatal error.");
-                Environment.ExitCode = 1;
-                return;
+                Logger.Fatal("Aborting startup due to a fatal error when loading the configuration and setting up the database.");
+                return 1;
             }
 
             // Create but don't start the timer, it will be started when the bot is connected.
@@ -135,8 +136,7 @@ internal static class SupportBoi
             if (!await Connect())
             {
                 Logger.Fatal("Aborting startup due to a fatal error when trying to connect to Discord.");
-                Environment.ExitCode = 2;
-                return;
+                return 2;
             }
 
             ServiceManager.Notify(ServiceState.Ready);
@@ -146,8 +146,10 @@ internal static class SupportBoi
         catch (Exception e)
         {
             Logger.Fatal("Fatal error.", e);
-            Environment.ExitCode = 3;
+            return 3;
         }
+
+        return 0;
     }
 
     public static string GetVersion()
@@ -160,11 +162,16 @@ internal static class SupportBoi
              + " (" + ThisAssembly.Git.Commit + ")";
     }
 
-    public static bool Reload(bool isStartup = false)
+    public static bool Reload()
     {
-        if (!isStartup)
+        if (SystemdHelpers.IsSystemdService())
         {
-            ServiceManager.Notify(ServiceState.Reloading);
+            // According to the documentation this shouldn't be the right way to calculate MONOTONIC_USEC, but it works for some reason.
+            byte[] data = System.Text.Encoding.UTF8.GetBytes($"RELOADING=1\nMONOTONIC_USEC={DateTimeOffset.UtcNow.ToUnixTimeMicroseconds()}\n");
+            UnixDomainSocketEndPoint ep = new UnixDomainSocketEndPoint(systemdSocket);
+            using Socket cl = new Socket(AddressFamily.Unix, SocketType.Dgram, ProtocolType.Unspecified);
+            cl.Connect(ep);
+            cl.Send(data);
         }
 
         try
@@ -197,11 +204,7 @@ internal static class SupportBoi
             return false;
         }
 
-        if (!isStartup)
-        {
-            ServiceManager.Notify(ServiceState.Ready);
-        }
-
+        ServiceManager.Notify(ServiceState.Ready);
         return true;
     }
 
