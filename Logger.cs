@@ -141,10 +141,19 @@ public class Logger(string logCategory) : ILogger
             _                    => " [None] ",
         };
 
-        Console.WriteLine((IsSingleton ? "[BOT] " : "[API] ") + logLevelTag + message);
+        string logMessage = (IsSingleton ? "[BOT] " : "[API] ") + logLevelTag + message;
         if (exception != null)
         {
-            Console.WriteLine(GetExceptionString(exception, 0));
+            logMessage += "\n" + GetExceptionString(exception, 0);
+        }
+
+        if (logLevel is LogLevel.Error or LogLevel.Critical)
+        {
+            Console.Error.WriteLine(logMessage);
+        }
+        else
+        {
+            Console.WriteLine(logMessage);
         }
     }
 
