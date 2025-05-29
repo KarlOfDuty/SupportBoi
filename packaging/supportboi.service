@@ -1,5 +1,5 @@
 [Unit]
-Description=SupportBoi Ticket Discord Bot
+Description=SupportBoi Discord Bot
 Documentation=https://github.com/KarlOfDuty/SupportBoi
 After=network.target
 Wants=network.target

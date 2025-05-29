@@ -29,6 +29,7 @@ source=("git+${url}.git")
 #noextract=()
 sha512sums=("SKIP")
 #validpgpkeys=()
+backup=(etc/supportboi/config.yml)
 
 _srcdir="SupportBoi"
 
