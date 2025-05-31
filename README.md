@@ -29,7 +29,7 @@ Users can open support tickets using the following methods:
 
 You can either set up the bot to automatically open new tickets in a specific category or give the user a choice depending on their issue, regardless of which method they use.
 
-![Screenshot_20250527_202230](https://github.com/user-attachments/assets/e68a0bee-470a-46a9-8609-3c744c79aa71) ![image](https://github.com/user-attachments/assets/1f27ecf7-91cc-4f28-ae9d-c26b7fec4241)
+![Screenshot_20250527_202230](https://github.com/user-attachments/assets/20efc8d5-2f86-4001-ae72-844e51ccfd5c) ![Screenshot_20250527_201947](https://github.com/user-attachments/assets/877e94aa-be0c-4e82-9c68-5998ba008710)
 
 
 ### Automated Interviews
