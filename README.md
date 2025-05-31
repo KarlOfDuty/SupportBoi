@@ -43,7 +43,7 @@ It is possible to set up a json interview tree where the bot asks questions and 
 
 When a ticket is closed the Discord channel is saved to a local backup file on the server which can then be downloaded by the user who originally opened the ticket and staff members.
 
-![Screenshot_20250531_185154](https://github.com/user-attachments/assets/d5ff77cd-5a5e-4e0a-b282-49f99f490638) ![Screenshot_20250531_185137](https://github.com/user-attachments/assets/fce63592-a957-4b2d-ae41-42df1b08212f)
+![Screenshot_20250531_185154](https://github.com/user-attachments/assets/2a4ad3cf-8abf-4c94-b71e-56c9daf51389) ![Screenshot_20250531_185137](https://github.com/user-attachments/assets/0e9129c4-4911-47ec-90de-ff1db9cc0baa)
 
 
 ### Staff Tools
