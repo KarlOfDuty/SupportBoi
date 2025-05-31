@@ -63,7 +63,9 @@ The bot can be set up to send direct message notifications when different things
 
 Users can show their tickets (open and closed), list the oldest open tickets and list all their assigned tickets.
 
-![Screenshot_20250531_162230](https://github.com/user-attachments/assets/f217593a-5206-4401-872b-a7db5c783e7d) ![Screenshot_20250531_162401](https://github.com/user-attachments/assets/87094a48-6723-4fc9-9da5-8f17f494db8e)
+![Screenshot_20250531_162230](https://github.com/user-attachments/assets/4b7a1fa4-6910-4e8b-ba43-596ddd5ff681) ![Screenshot_20250531_162401](https://github.com/user-attachments/assets/a8ca2d70-4f12-4f79-904b-96650c2096f4)
+
+
 
 
 
