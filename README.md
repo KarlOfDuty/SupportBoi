@@ -23,8 +23,8 @@ A support ticket Discord bot. Uses a MySQL database for storage of ticket inform
 
 Users can open support tickets using the following methods:
 - Using the `/new` command.
-- Using a button panel created by you.
-- Using a selection box created by you.
+- Using a permanent button panel created by you.
+- Using a permanent selection box created by you.
 
 You can either set up the bot to automatically open new tickets in a specific category or give the user a choice depending on their issue, regardless of which method they use.
 
