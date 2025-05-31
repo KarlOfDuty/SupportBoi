@@ -19,7 +19,7 @@ A support ticket Discord bot. Uses a MySQL database for storage of ticket inform
 
 ## Features
 
-#### Opening tickets in different categories
+### Ticket Categories
 
 Users can open support tickets using the following methods:
 - Using the `/new` command.
@@ -31,40 +31,62 @@ You can either set up the bot to automatically open new tickets in a specific ca
 ![image](https://github.com/user-attachments/assets/318067b6-37ac-433f-885a-975aa2fd4e7c) ![image](https://github.com/user-attachments/assets/1f27ecf7-91cc-4f28-ae9d-c26b7fec4241)
 
 
-#### Automated interviews
+### Automated Interviews
 
 It is possible to set up a json interview tree where the bot asks questions and depending on the user's answer decides on what to do next. At the end of the interview you can configure the bot to post an interview summary where the bot will take all the previous answers and compile them in a single table. All of the messages in the interview are then deleted to keep the channel clean.
 
 ![Screenshot_20250528_181315_resize](https://github.com/user-attachments/assets/a81189a5-a330-42d8-8086-7490b1c1a564) ![Screenshot_20250528_181540_resize](https://github.com/user-attachments/assets/1f1f3e17-8dc6-4630-b1a6-3f01ec141b6a)
 
 
-
-
-#### Fully formatted transcripts
+### Fully Rendered Transcripts
 
 When a ticket is closed the Discord channel is saved to a local backup file on the server which can then be downloaded by the user who originally opened the ticket and staff members.
 
 **TODO: Pictures here**
 
-#### Assigning tickets to staff
 
-Tickets can be assigned to specific staff members and this can be done automatically on creation. When the bot picks a random staff member to assign it picks between all users registered as staff, but individual staff members may opt out using the `/toggleactive` command.
+### Staff Tools
 
-You can also manually assign a random staff member using the /rassign command, either among all staff members or by supplying a Discord role to only assign among staff members with that role.
+Tickets can be assigned automatically on ticket creation or using commands. The commands can assign randomly across all staff, a specific Discord role or assign a specific user. Individual staff members can also opt-out of automatic assignment if they wish.
 
-**TODO: Pictures here**
+![image](https://github.com/user-attachments/assets/279d2410-8fad-426c-b848-02c309b6d615) ![image](https://github.com/user-attachments/assets/3cbf67db-ce68-47c7-a551-d8857b1e8622)
 
-#### Automated notifications
 
 The bot can be set up to send direct message notifications when different things happen:
 - For staff members when they are assigned to tickets.
 - For the assigned staff member if a new message is sent in a ticket after it has been inactive for a configurable period.
 - For users when their ticket is closed. They also get the ticket transcript included with their notificaiton.
 
-**TODO: Pictures here**
+![image](https://github.com/user-attachments/assets/c5ac4000-701f-4cbd-86a8-e521a72d98f3)
 
-#### Logging
+![image](https://github.com/user-attachments/assets/37c804a0-d273-43df-a160-77f91b89fcdd) 
+
+Staff can show tickets assigned to a specific staff member, tickets opened by a specific user, the oldest open tickets, and more.
+
+![image](https://github.com/user-attachments/assets/0c2725a3-da6c-4c9a-a6d9-b55dce4cbf44) ![image](https://github.com/user-attachments/assets/a7e6f920-7306-450d-9580-962d05068b9d)
+
+Staff can set reusable messages which can then be reposted using the /say command.
+
+![Screenshot_20250531_160944](https://github.com/user-attachments/assets/59cc1c36-9d5f-427c-ad18-ac25e9b48787) ![Screenshot_20250531_161640](https://github.com/user-attachments/assets/920415bc-002e-490b-9447-e863d4c3b1c4)
+
+
+### Logging
 
 The bot can be set to log all actions to a Discord channel, including uploading ticket transcripts to it. It can also be set to log information to a log file on the server.
 
-**TODO: Pictures here**
+**Action:**
+
+![image](https://github.com/user-attachments/assets/6baca401-d925-4632-a92d-9731dad0f60c)
+
+**Discord Log Channel:**
+
+![image](https://github.com/user-attachments/assets/21ff12f1-1fb9-42db-92ce-413a8e9aaf31)
+
+**Bot Console:**
+
+![image](https://github.com/user-attachments/assets/4b289b11-3896-4b74-85f1-969cf70bf529)
+
+**Log File:**
+
+![image](https://github.com/user-attachments/assets/b77b0587-5a33-4b99-ac2e-4955a415bace)
+
