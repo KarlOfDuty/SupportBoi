@@ -324,6 +324,7 @@ pipeline
             //env.UBUNTU_SRC_PATH
           ]
 
+          currentBuild.description = params.BUILD_TYPE == 'pre-release' ? "Pre-release ${env.RELEASE_VERSION}" : "Release ${env.RELEASE_VERSION}"
           common.create_github_release("KarlOfDuty/SupportBoi", params.RELEASE_VERSION, artifacts, params.BUILD_TYPE == 'pre-release')
 
           // Update AUR version after the tag is created
