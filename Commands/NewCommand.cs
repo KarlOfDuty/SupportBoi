@@ -219,11 +219,6 @@ public class NewCommand
         // Refreshes the channel as changes were made to it above
         ticketChannel = await SupportBoi.client.GetChannelAsync(ticketChannel.Id);
 
-        if (Config.interviewsEnabled)
-        {
-            await Interviewer.StartInterview(ticketChannel);
-        }
-
         if (assignedStaff != null)
         {
             await ticketChannel.SendMessageAsync(new DiscordEmbedBuilder
@@ -249,6 +244,11 @@ public class NewCommand
                     Logger.Error("JsonMessage: " + e.JsonMessage);
                 }
             }
+        }
+
+        if (Config.interviewsEnabled)
+        {
+            await Interviewer.StartInterview(ticketChannel);
         }
 
         await LogChannel.Success("Ticket " + ticketChannel.Mention + " opened by " + member.Mention + ".", (uint)id);
