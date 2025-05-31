@@ -52,7 +52,6 @@ Tickets can be assigned automatically on ticket creation or using commands. The 
 
 ![image](https://github.com/user-attachments/assets/279d2410-8fad-426c-b848-02c309b6d615) ![image](https://github.com/user-attachments/assets/3cbf67db-ce68-47c7-a551-d8857b1e8622)
 
-
 The bot can be set up to send direct message notifications when different things happen:
 - For staff members when they are assigned to tickets.
 - For the assigned staff member if a new message is sent in a ticket after it has been inactive for a configurable period.
@@ -62,7 +61,7 @@ The bot can be set up to send direct message notifications when different things
 
 ![image](https://github.com/user-attachments/assets/37c804a0-d273-43df-a160-77f91b89fcdd) 
 
-Staff can show tickets assigned to a specific staff member, tickets opened by a specific user, the oldest open tickets, and more.
+Users can show their tickets (open and closed), list the oldest open tickets and list all their assigned tickets.
 
 ![image](https://github.com/user-attachments/assets/0c2725a3-da6c-4c9a-a6d9-b55dce4cbf44) ![image](https://github.com/user-attachments/assets/a7e6f920-7306-450d-9580-962d05068b9d)
 
