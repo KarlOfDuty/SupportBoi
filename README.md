@@ -5,13 +5,14 @@ A support ticket Discord bot. Uses a MySQL database for storage of ticket inform
 
 #### Thanks to [Tyrrrz](https://github.com/Tyrrrz/DiscordChatExporter) for the amazing library used in the transcript function.
 
-## Setup
+## Documentation
+
+#### Setup
 
 1. [Register a bot in the Discord Developer panel](docs/RegisterBotApplication.md)
-
 2. [Install the bot and set up a MySQL database for it](docs/Installation.md)
 
-## Documentation
+#### Usage
 
 - [Commands](./docs/Commands.md)
 - [Interview templates](./docs/InterviewTemplates.md)
