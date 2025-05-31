@@ -60,11 +60,11 @@ public class ToggleActiveCommand
 
         if (user != null && user.Id != command.User.Id)
         {
-            await LogChannel.Success(staffUser.Mention + " set " + command.Channel.Mention + "'s status to " + (staffMember.active ? "active" : "inactive"));
+            await LogChannel.Success(staffUser.Mention + " set " + command.Channel.Mention + "'s status to " + (staffMember.active ? "inactive" : "active"));
         }
         else
         {
-            await LogChannel.Success(staffUser.Mention + " set their own status to " + (staffMember.active ? "active" : "inactive"));
+            await LogChannel.Success(staffUser.Mention + " set their own status to " + (staffMember.active ? "inactive" : "active"));
         }
     }
 }
