@@ -50,7 +50,7 @@ When a ticket is closed the Discord channel is saved to a local backup file on t
 
 Tickets can be assigned automatically on ticket creation or using commands. The commands can assign randomly across all staff, a specific Discord role or assign a specific user. Individual staff members can also opt-out of automatic assignment if they wish.
 
-![Screenshot_20250531_171434](https://github.com/user-attachments/assets/9522ed65-5ac5-401d-8b18-9a14fe2ebfee) ![Screenshot_20250531_171818](https://github.com/user-attachments/assets/20fb5df5-bb60-4cd3-b475-cd2bd38cb475)
+![Screenshot_20250531_171434](https://github.com/user-attachments/assets/5867e76e-e9a0-4714-9ade-4101990cec82) ![Screenshot_20250531_171818](https://github.com/user-attachments/assets/72655853-499d-4b10-9401-119e2b0e58ea)
 
 The bot can be set up to send direct message notifications when different things happen:
 - For staff members when they are assigned to tickets.
