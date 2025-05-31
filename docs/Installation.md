@@ -242,7 +242,7 @@ This will have created a database called `supportboi` and a user called `support
 
 **2.** Run the bot manually as the service user once to test that it works correctly:
 ```bash
-sudo --user supportboi supportboi --config /etc/supportboi/config.yml --transcripts /var/lib/supportboi/transcripts
+sudo --user supportboi supportboi --config /etc/supportboi/config.yml --transcripts /var/lib/supportboi/transcripts --log-file /var/log/supportboi/supportboi.log
 ```
 ![Example of running the bot as the service user](https://github.com/user-attachments/assets/f8819bd8-99e1-4891-bcaf-92d0ecb92061)
 
