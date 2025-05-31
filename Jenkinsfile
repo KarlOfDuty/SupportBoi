@@ -327,7 +327,7 @@ pipeline
           common.create_github_release("KarlOfDuty/SupportBoi", params.RELEASE_VERSION, artifacts, params.BUILD_TYPE == 'pre-release')
 
           // Update AUR version after the tag is created
-          common.update_aur_git_package(env.AUR_GIT_PACKAGE)
+          common.update_aur_git_package(env.AUR_GIT_PACKAGE, "packaging/supportboi-git.pkgbuild", "packaging/supportboi.install")
         }
       }
     }
