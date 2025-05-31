@@ -18,8 +18,7 @@ conflicts=(
   "supportboi-git"
 )
 install=supportboi.install
-#source=("git+${url}.git#tag=${pkgver}")
-source=("git+${url}.git")
+source=("git+${url}.git#tag=${pkgver}")
 sha512sums=("SKIP")
 #validpgpkeys=()
 backup=(etc/supportboi/config.yml)
