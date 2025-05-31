@@ -36,7 +36,9 @@ You can either set up the bot to automatically open new tickets in a specific ca
 
 It is possible to set up a json interview tree where the bot asks questions and depending on the user's answer decides on what to do next. At the end of the interview you can configure the bot to post an interview summary where the bot will take all the previous answers and compile them in a single table. All of the messages in the interview are then deleted to keep the channel clean.
 
-![Screenshot_20250531_185154](https://github.com/user-attachments/assets/2160d8b7-3870-4fde-a519-900d02d41773) ![Screenshot_20250531_185137](https://github.com/user-attachments/assets/387dcef2-f50a-4f79-9da9-c67fed60ce92)
+![Screenshot_20250528_181315_resize](https://github.com/user-attachments/assets/03aebd85-16fb-4277-b491-d01c33f51ea6) ![Screenshot_20250528_181540_resize](https://github.com/user-attachments/assets/89990915-b3c7-44f5-9bf8-6d14f3698421)
+
+
 
 
 ### Fully Rendered Transcript Files
