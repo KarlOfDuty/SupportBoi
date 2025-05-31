@@ -88,7 +88,7 @@ public class ListCommand
             {
                 Color = DiscordColor.Cyan,
                 Description = "User does not have any open or closed tickets."
-            });
+            }, true);
             return;
         }
 

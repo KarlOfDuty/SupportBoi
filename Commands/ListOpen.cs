@@ -26,7 +26,7 @@ public class ListOpen
             {
                 Color = DiscordColor.Red,
                 Description = "Could not fetch any open tickets."
-            });
+            }, true);
             return;
         }
 

@@ -26,7 +26,7 @@ public class ListAssignedCommand
             {
                 Color = DiscordColor.Red,
                 Description = "User does not have any assigned tickets."
-            });
+            }, true);
             return;
         }
 

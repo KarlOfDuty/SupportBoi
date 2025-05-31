@@ -26,7 +26,7 @@ public class ListUnassignedCommand
             {
                 Color = DiscordColor.Green,
                 Description = "There are no unassigned tickets."
-            });
+            }, true);
             return;
         }
 
