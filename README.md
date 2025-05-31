@@ -29,7 +29,7 @@ Users can open support tickets using the following methods:
 
 You can either set up the bot to automatically open new tickets in a specific category or give the user a choice depending on their issue, regardless of which method they use.
 
-![image](https://github.com/user-attachments/assets/318067b6-37ac-433f-885a-975aa2fd4e7c) ![image](https://github.com/user-attachments/assets/1f27ecf7-91cc-4f28-ae9d-c26b7fec4241)
+![Screenshot_20250527_202230](https://github.com/user-attachments/assets/e68a0bee-470a-46a9-8609-3c744c79aa71) ![image](https://github.com/user-attachments/assets/1f27ecf7-91cc-4f28-ae9d-c26b7fec4241)
 
 
 ### Automated Interviews
@@ -37,8 +37,6 @@ You can either set up the bot to automatically open new tickets in a specific ca
 It is possible to set up a json interview tree where the bot asks questions and depending on the user's answer decides on what to do next. At the end of the interview you can configure the bot to post an interview summary where the bot will take all the previous answers and compile them in a single table. All of the messages in the interview are then deleted to keep the channel clean.
 
 ![Screenshot_20250528_181315_resize](https://github.com/user-attachments/assets/03aebd85-16fb-4277-b491-d01c33f51ea6) ![Screenshot_20250528_181540_resize](https://github.com/user-attachments/assets/89990915-b3c7-44f5-9bf8-6d14f3698421)
-
-
 
 
 ### Fully Rendered Transcript Files
