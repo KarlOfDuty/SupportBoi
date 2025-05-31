@@ -63,7 +63,7 @@ The bot can be set up to send direct message notifications when different things
 
 Users can show their tickets (open and closed), list the oldest open tickets and list all their assigned tickets.
 
-![image](https://github.com/user-attachments/assets/0c2725a3-da6c-4c9a-a6d9-b55dce4cbf44) ![image](https://github.com/user-attachments/assets/a7e6f920-7306-450d-9580-962d05068b9d)
+![Screenshot_20250531_162230](https://github.com/user-attachments/assets/08675a70-a8f6-4e60-9309-c761b9406cd1) ![Screenshot_20250531_162401](https://github.com/user-attachments/assets/8b0154c8-9b60-43ab-98be-baa1bba495e6)
 
 Staff can set reusable messages which can then be reposted using the /say command.
 
