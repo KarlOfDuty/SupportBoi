@@ -148,7 +148,7 @@ public class TranscriptCommand
                     Description = "Transcript generated.\n\nThe zip file is too large, sending only the HTML file. Ask an administrator for the zip if you need it.",
                     Footer = new DiscordEmbedBuilder.EmbedFooter
                     {
-                        Text = "Ticket: " + ticketID.ToString("00000")
+                        Text = "Ticket: " + ticket.id.ToString("00000")
                     }
                 });
             }
@@ -160,7 +160,7 @@ public class TranscriptCommand
                     Description = "Transcript generated!\n",
                     Footer = new DiscordEmbedBuilder.EmbedFooter
                     {
-                        Text = "Ticket: " + ticketID.ToString("00000")
+                        Text = "Ticket: " + ticket.id.ToString("00000")
                     }
                 });
             }
