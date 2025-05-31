@@ -52,8 +52,6 @@ Tickets can be assigned automatically on ticket creation or using commands. The 
 
 ![Screenshot_20250531_171434](https://github.com/user-attachments/assets/13099b05-f460-4d05-bdd4-c58d68f34dd1) ![Screenshot_20250531_171818](https://github.com/user-attachments/assets/867f3cab-595b-4e2a-bc07-ed9e35b0d446)
 
-
-
 The bot can be set up to send direct message notifications when different things happen:
 - For staff members when they are assigned to tickets.
 - For the assigned staff member if a new message is sent in a ticket after it has been inactive for a configurable period.
@@ -67,13 +65,9 @@ Users can show their tickets (open and closed), list the oldest open tickets and
 
 ![Screenshot_20250531_162230](https://github.com/user-attachments/assets/4b7a1fa4-6910-4e8b-ba43-596ddd5ff681) ![Screenshot_20250531_162401](https://github.com/user-attachments/assets/a8ca2d70-4f12-4f79-904b-96650c2096f4)
 
-
-
-
-
 Staff can set reusable messages which can then be reposted using the /say command.
 
-![Screenshot_20250531_160944](https://github.com/user-attachments/assets/59cc1c36-9d5f-427c-ad18-ac25e9b48787) ![Screenshot_20250531_161640](https://github.com/user-attachments/assets/920415bc-002e-490b-9447-e863d4c3b1c4)
+![Screenshot_20250531_160944](https://github.com/user-attachments/assets/59cc1c36-9d5f-427c-ad18-ac25e9b48787)
 
 
 ### Logging
