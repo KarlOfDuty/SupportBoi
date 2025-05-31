@@ -247,6 +247,7 @@ pipeline
             {
               common.publish_rpm_package("rhel/el8", env.RHEL_RPM_PATH, env.RHEL_SRPM_PATH, env.PACKAGE_NAME)
               common.publish_rpm_package("rhel/el9", env.RHEL_RPM_PATH, env.RHEL_SRPM_PATH, env.PACKAGE_NAME)
+              common.publish_rpm_package("rhel/el10", env.RHEL_RPM_PATH, env.RHEL_SRPM_PATH, env.PACKAGE_NAME)
             }
           }
         }
