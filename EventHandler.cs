@@ -398,36 +398,44 @@ public static class EventHandler
 
     public static async Task OnCommandError(CommandsExtension commandSystem, CommandErroredEventArgs e)
     {
-        switch (e.Exception)
+        try
         {
-            case ChecksFailedException checksFailedException:
+            switch (e.Exception)
             {
-                foreach (ContextCheckFailedData error in checksFailedException.Errors)
+                case ChecksFailedException checksFailedException:
                 {
+                    foreach (ContextCheckFailedData error in checksFailedException.Errors)
+                    {
+                        await e.Context.Channel.SendMessageAsync(new DiscordEmbedBuilder
+                        {
+                            Color = DiscordColor.Red,
+                            Description = error.ErrorMessage
+                        });
+                    }
+                    return;
+                }
+
+                case BadRequestException ex:
+                    Logger.Error("Command exception occured.", e.Exception);
+                    Logger.Error("JSON Message: " + ex.JsonMessage);
+                    return;
+
+                default:
+                {
+                    Logger.Error("Command exception occured.", e.Exception);
                     await e.Context.Channel.SendMessageAsync(new DiscordEmbedBuilder
                     {
                         Color = DiscordColor.Red,
-                        Description = error.ErrorMessage
+                        Description = "Internal error occured, please report this to the developer."
                     });
+                    return;
                 }
-                return;
             }
-
-            case BadRequestException ex:
-                Logger.Error("Command exception occured.", e.Exception);
-                Logger.Error("JSON Message: " + ex.JsonMessage);
-                return;
-
-            default:
-            {
-                Logger.Error("Command exception occured.", e.Exception);
-                await e.Context.Channel.SendMessageAsync(new DiscordEmbedBuilder
-                {
-                    Color = DiscordColor.Red,
-                    Description = "Internal error occured, please report this to the developer."
-                });
-                return;
-            }
+        }
+        catch (Exception ex)
+        {
+            Logger.Error("An error occurred in command error handler.", ex);
+            Logger.Error("Original exception:", e.Exception);
         }
     }
 

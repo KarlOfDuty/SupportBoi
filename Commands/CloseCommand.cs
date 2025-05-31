@@ -44,7 +44,15 @@ public class CloseCommand
             })
             .AddActionRowComponent(new DiscordButtonComponent(DiscordButtonStyle.Danger, "supportboi_closeconfirm", "Confirm"));
 
-        await command.RespondAsync(confirmation);
+        try
+        {
+            await command.RespondAsync(confirmation);
+        }
+        catch (NotFoundException e)
+        {
+            Logger.Warn("Unable to respond to interaction for close command confirmation.", e);
+            return;
+        }
 
         if (!string.IsNullOrWhiteSpace(reason))
         {
