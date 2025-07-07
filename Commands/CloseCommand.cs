@@ -187,7 +187,7 @@ public class CloseCommand
                         {
                             Color = DiscordColor.Orange,
                             Description = "Ticket " + ticket.id.ToString("00000") + " which you opened has now been closed, check the transcript for more info.\n\n" +
-                                          "The zip file is too large, sending only the HTML file. Ask an administrator for the zip if you need it.\"\n" + closeReason,
+                                          "The zip file is too large, sending only the HTML file. Ask an administrator for the zip if you need it.\n" + closeReason,
                             Footer = new DiscordEmbedBuilder.EmbedFooter
                             {
                                 Text = "Ticket: " + ticket.id.ToString("00000")
