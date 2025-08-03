@@ -53,8 +53,11 @@ bot:
     # The log file will still log all log levels regardless of the console log level setting.
     log-file: ""
 
-    # Adds the number of tickets open in a category to the end of the category name.
-    add-category-ticket-count: true
+    category-ticket-count:
+        # Adds the number of tickets open in a category to the end of the category name.
+        enabled: true
+        # Only set the ticket number suffix if the category is registered in the bot as a ticket category.
+        only-ticket-categories: true
 
 # Direct message notifications
 notifications:

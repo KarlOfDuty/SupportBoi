@@ -25,6 +25,7 @@ internal static class Config
     internal static string transcriptDir = "";
     internal static string logFile = "";
     internal static bool addCategoryTicketCount = false;
+    internal static bool ticketCountRegisteredOnly = false;
 
     internal static bool ticketUpdatedNotifications = false;
     internal static double ticketUpdatedNotificationDelay = 0.0;
@@ -99,7 +100,8 @@ internal static class Config
         pinFirstMessage = json.SelectToken("bot.pin-first-message")?.Value<bool>() ?? false;
         transcriptDir = json.SelectToken("bot.transcript-dir")?.Value<string>() ?? "";
         logFile = json.SelectToken("bot.log-file")?.Value<string>() ?? "";
-        addCategoryTicketCount = json.SelectToken("bot.add-category-ticket-count")?.Value<bool>() ?? false;
+        addCategoryTicketCount = json.SelectToken("bot.category-ticket-count.enabled")?.Value<bool>() ?? false;
+        ticketCountRegisteredOnly = json.SelectToken("bot.category-ticket-count.only-ticket-categories")?.Value<bool>() ?? true;
 
         ticketUpdatedNotifications = json.SelectToken("notifications.ticket-updated")?.Value<bool>() ?? false;
         ticketUpdatedNotificationDelay = json.SelectToken("notifications.ticket-updated-delay")?.Value<double>() ?? 0.0;

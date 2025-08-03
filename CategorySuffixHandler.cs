@@ -74,7 +74,7 @@ public static partial class CategorySuffixHandler
 
     public static async Task ScheduleSuffixUpdate(ulong categoryID)
     {
-        if (!Config.addCategoryTicketCount || !Database.Category.TryGetCategory(categoryID, out _))
+        if (!Config.addCategoryTicketCount || (!Database.Category.TryGetCategory(categoryID, out _) && Config.ticketCountRegisteredOnly))
         {
             return;
         }
