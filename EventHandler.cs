@@ -249,9 +249,6 @@ public static class EventHandler
                 case DiscordComponentType.ActionRow:
                     Logger.Warn("Unknown action row received! '" + e.Id + "'");
                     return;
-                case DiscordComponentType.FormInput:
-                    Logger.Warn("Unknown form input received! '" + e.Id + "'");
-                    return;
                 case DiscordComponentType.UserSelect:
                     if (e.Id.StartsWith("supportboi_interviewuserselector"))
                     {
@@ -364,7 +361,6 @@ public static class EventHandler
                 break;
 
             case DiscordComponentType.ActionRow:
-            case DiscordComponentType.FormInput:
             default:
                 return;
         }
