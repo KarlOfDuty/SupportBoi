@@ -13,9 +13,9 @@
 >
 > If someone else has added your bot to their server you can tell the bot to leave it using the `--leave` command line parameter (Use `--help` for more info).
 
-**4.** Turn on all intents in the bot tab:
+**4.** Turn on member and message intents in the bot tab:
 
-![Image showing a Discord selection box](img/botPage.png)
+![Image showing a Discord selection box](img/botPresence.png)
 
 **5.** Generate an invite link in the OAuth2 tab with the following scopes (bot permissions do not matter in this step):
 
