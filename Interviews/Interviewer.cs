@@ -174,7 +174,6 @@ public static class Interviewer
                 componentID = interaction.Data.CustomId.Replace("supportboi_interviewbutton ", "");
                 break;
             case DiscordComponentType.ActionRow:
-            case DiscordComponentType.FormInput:
             default:
                 throw new ArgumentOutOfRangeException("Tried to process an invalid component type: " + interaction.Data.ComponentType);
         }
