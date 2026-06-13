@@ -230,7 +230,7 @@ internal static class SupportBoi
     private static async Task<bool> Connect()
     {
         Logger.Log("Setting up Discord client.");
-        DiscordClientBuilder clientBuilder = DiscordClientBuilder.CreateDefault(Config.token, DiscordIntents.All)
+        DiscordClientBuilder clientBuilder = DiscordClientBuilder.CreateDefault(Config.token, DiscordIntents.AllUnprivileged | DiscordIntents.GuildMembers | DiscordIntents.MessageContents)
                                                                  .SetReconnectOnFatalGatewayErrors();
 
         clientBuilder.ConfigureServices(configure =>
