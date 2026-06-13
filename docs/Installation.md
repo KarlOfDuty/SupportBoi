@@ -175,6 +175,61 @@ While the Windows versions are fully supported they are not as well tested as th
 
 </details>
 
+> [!WARNING]
+> Only advanced users beyond this point.
+
+<details>
+<summary><b>Docker</b></summary>
+<br/>
+
+Until Karl uploads an official container image you need to build the container yourself.
+
+**0.** In the main directory you can build the container image with 
+
+```bash
+sudo docker build -t supportboi:latest .
+```
+
+**1.** Create a compose file
+
+You can use compose.yaml in the main repo as a reference.
+
+**2.** Set up the config.yml file
+
+```bash
+curl -so config.yml https://raw.githubusercontent.com/KarlOfDuty/SupportBoi/refs/heads/main/default_config.yml
+```
+
+Open the bot config using your preferred text editor and set it up to your liking. It contains instructions for all options
+
+If you are defining the bot and database in the same file you can set the database address to the database container name.
+
+```yaml
+database:
+    # Address and port of the mysql server.
+    address: "supportboi-db"
+    port: 3306
+```
+
+Set the log file and transcript dir to bind mounts so you can reach them on the host system.
+
+```yaml
+  transcript-dir: "/app/transcripts"
+  log-file: "/app/log/supportboi.log"
+```
+
+**3.** Run the compose file
+
+If you are using the example compose.yaml you need to source the database passwords that will be used to create the database!
+
+Start the bot and database:
+
+```
+sudo docker compose up -d
+```
+
+</details>
+
 # Database Setup
 This guide assumes a MySQL/MariaDB installation, but it will be the same with other compatible database servers.
 
