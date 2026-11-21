@@ -1,0 +1,30 @@
+services:
+  supportboi:
+    image: supportboi:latest
+    restart: unless-stopped
+    volumes:
+      - ./config.yml:/app/config.yml:ro
+      - ./transcripts:/app/transcripts
+      - ./logs:/app/log
+    depends_on:
+      supportboi-db:
+        condition: service_healthy
+
+  supportboi-db:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?required}
+      MARIADB_DATABASE: supportboi
+      MARIADB_USER: supportboi
+      MARIADB_PASSWORD: ${DB_PASSWORD:?required}
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  db_data:
